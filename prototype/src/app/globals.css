@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #FFFFFF;
+  --bg-subtle: #F7F8FA;
+  --border: #E5E7EB;
+  --text: #0F172A;
+  --text-muted: #64748B;
+  --primary: #0B2A4A;      /* navy — buttons, links, active states */
+  --accent: #E8710A;       /* saffron — ONLY the logo mark and one highlight word in hero */
+  --ok: #228f4a;
+  --warn: #B45309;
+  --danger: #bd2f2f;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 2px rgba(15,23,42,.06);
+
+  /* Semantic palette bridge */
+  --color-navy: #0B2A4A;
+  --color-navy-deep: #081e36;
+  --color-surface: #FFFFFF;
+  --color-surface-raised: #FFFFFF;
+  --color-surface-alt: #F7F8FA;
+  --color-surface-sunken: #F1F5F9;
+  --color-border: #E5E7EB;
+  --color-border-strong: #CBD5E1;
+  --color-ink: #0F172A;
+  --color-ink-soft: #334155;
+  --color-ink-faint: #64748B;
+  --color-accent: #E8710A;
+  --color-accent-soft: #FFF7ED;
+  --color-accent-ink: #C2410C;
+  --color-success: #228f4a;
+  --color-success-soft: #DCFCE7;
+  --color-warning: #B45309;
+  --color-warning-soft: #FEF3C7;
+  --color-danger: #bd2f2f;
+  --color-danger-soft: #FEE2E2;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-primary: var(--primary);
+  --color-accent: var(--accent);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+
+  --color-navy: var(--color-navy);
+  --color-navy-deep: var(--color-navy-deep);
+  --color-surface: var(--color-surface);
+  --color-surface-raised: var(--color-surface-raised);
+  --color-surface-alt: var(--color-surface-alt);
+  --color-surface-sunken: var(--color-surface-sunken);
+  --color-border-strong: var(--color-border-strong);
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-ink-faint: var(--color-ink-faint);
+  --color-accent-soft: var(--color-accent-soft);
+  --color-accent-ink: var(--color-accent-ink);
+  --color-success: var(--color-success);
+  --color-success-soft: var(--color-success-soft);
+  --color-warning: var(--color-warning);
+  --color-warning-soft: var(--color-warning-soft);
+  --color-danger-soft: var(--color-danger-soft);
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  color-scheme: light;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: #FFF7ED;
+  color: #C2410C;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-subtle);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}

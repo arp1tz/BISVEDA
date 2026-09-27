@@ -1,0 +1,2404 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "BISVEDA V8 API Gateway",
+    "description": "Sovereign AI Assistant for Indian Standards and BIS Services",
+    "version": "8.0.0"
+  },
+  "paths": {
+    "/api/v8/health": {
+      "get": {
+        "summary": "Get Health",
+        "operationId": "get_health_api_v8_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/taxonomy": {
+      "get": {
+        "summary": "Get Taxonomy",
+        "operationId": "get_taxonomy_api_v8_taxonomy_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/standards": {
+      "get": {
+        "summary": "List Standards",
+        "operationId": "list_standards_api_v8_standards_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search term or IS number",
+              "title": "Q"
+            },
+            "description": "Search term or IS number"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/labs": {
+      "get": {
+        "summary": "List Labs",
+        "operationId": "list_labs_api_v8_labs_get",
+        "parameters": [
+          {
+            "name": "standard",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Standard number filter, e.g. IS 2347",
+              "title": "Standard"
+            },
+            "description": "Standard number filter, e.g. IS 2347"
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "City name",
+              "title": "City"
+            },
+            "description": "City name"
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "State name",
+              "title": "State"
+            },
+            "description": "State name"
+          },
+          {
+            "name": "pin",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "6-digit Indian PIN code for distance sorting",
+              "title": "Pin"
+            },
+            "description": "6-digit Indian PIN code for distance sorting"
+          },
+          {
+            "name": "near",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "City or district for proximity sorting",
+              "title": "Near"
+            },
+            "description": "City or district for proximity sorting"
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "General query filter",
+              "title": "Q"
+            },
+            "description": "General query filter"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/sources": {
+      "get": {
+        "summary": "List Authorized Sources",
+        "description": "V8 Canonical Spec \u00a79.1: Authorized Source Registry provenance.",
+        "operationId": "list_authorized_sources_api_v8_sources_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/sources/sync": {
+      "post": {
+        "summary": "Sync Authorized Sources",
+        "description": "V8 Canonical Spec \u00a79.4: Synchronizes sources and exports offline snapshots.",
+        "operationId": "sync_authorized_sources_api_v8_sources_sync_post",
+        "parameters": [
+          {
+            "name": "export_snapshots",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Export Snapshots"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/updates": {
+      "get": {
+        "summary": "List Updates",
+        "description": "V8 Canonical Spec \u00a74.9: What's New & Gazette notifications.",
+        "operationId": "list_updates_api_v8_updates_get",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/faqs": {
+      "get": {
+        "summary": "List Faqs",
+        "description": "V8 Canonical Spec \u00a79.2: Official Verbatim FAQs.",
+        "operationId": "list_faqs_api_v8_faqs_get",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/qcos": {
+      "get": {
+        "summary": "List Qcos",
+        "operationId": "list_qcos_api_v8_qcos_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter QCOs",
+              "title": "Q"
+            },
+            "description": "Filter QCOs"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/dossier": {
+      "post": {
+        "summary": "Generate Dossier",
+        "description": "Direct synchronous endpoint generating ComplianceDossier.",
+        "operationId": "generate_dossier_api_v8_dossier_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QueryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceDossier"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/query": {
+      "post": {
+        "summary": "Stream Query",
+        "description": "Server-Sent Events streaming endpoint emitting real stage events\n(stage.started, stage.completed) followed by the ComplianceDossier (D38).",
+        "operationId": "stream_query_api_v8_query_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QueryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/ingest/upload": {
+      "post": {
+        "summary": "Upload Document",
+        "operationId": "upload_document_api_v8_ingest_upload_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_document_api_v8_ingest_upload_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/ingest/upload-sample": {
+      "post": {
+        "summary": "Upload Sample Document",
+        "operationId": "upload_sample_document_api_v8_ingest_upload_sample_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SampleUploadRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/ingest/jobs": {
+      "get": {
+        "summary": "Get Ingestion Jobs",
+        "operationId": "get_ingestion_jobs_api_v8_ingest_jobs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/ingest/jobs/{job_id}": {
+      "get": {
+        "summary": "Get Ingestion Job",
+        "operationId": "get_ingestion_job_api_v8_ingest_jobs__job_id__get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/ingest/jobs/{job_id}/events": {
+      "get": {
+        "summary": "Stream Job Events",
+        "operationId": "stream_job_events_api_v8_ingest_jobs__job_id__events_get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/ingest/publish/{job_id}": {
+      "post": {
+        "summary": "Publish Ingestion Job",
+        "operationId": "publish_ingestion_job_api_v8_ingest_publish__job_id__post",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/ingest/quarantine": {
+      "get": {
+        "summary": "List Quarantine",
+        "operationId": "list_quarantine_api_v8_ingest_quarantine_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/ingest/quarantine/scan/{media_id}": {
+      "post": {
+        "summary": "Scan Quarantine",
+        "operationId": "scan_quarantine_api_v8_ingest_quarantine_scan__media_id__post",
+        "parameters": [
+          {
+            "name": "media_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Media Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/missions": {
+      "post": {
+        "summary": "Create Mission",
+        "description": "Creates a new persistent Compliance Mission (V8 Canonical Spec \u00a76).",
+        "operationId": "create_mission_api_v8_missions_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMissionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceMission"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List Missions",
+        "operationId": "list_missions_api_v8_missions_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/MissionStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "user_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Type"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/missions/{mission_id}": {
+      "get": {
+        "summary": "Get Mission",
+        "operationId": "get_mission_api_v8_missions__mission_id__get",
+        "parameters": [
+          {
+            "name": "mission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Mission Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceMission"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Mission",
+        "operationId": "delete_mission_api_v8_missions__mission_id__delete",
+        "parameters": [
+          {
+            "name": "mission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Mission Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/missions/{mission_id}/step": {
+      "patch": {
+        "summary": "Update Mission Step",
+        "operationId": "update_mission_step_api_v8_missions__mission_id__step_patch",
+        "parameters": [
+          {
+            "name": "mission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Mission Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStepRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceMission"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/dossiers/{dossier_id}": {
+      "get": {
+        "summary": "Get Dossier",
+        "operationId": "get_dossier_api_v8_dossiers__dossier_id__get",
+        "parameters": [
+          {
+            "name": "dossier_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Dossier Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceDossier"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v8/feedback": {
+      "post": {
+        "summary": "Submit Feedback",
+        "operationId": "submit_feedback_api_v8_feedback_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedbackRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Get All Feedback",
+        "operationId": "get_all_feedback_api_v8_feedback_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApplicabilityClass": {
+        "type": "string",
+        "enum": [
+          "directly_applicable",
+          "potentially_applicable",
+          "related_standard",
+          "related_material_mismatch",
+          "scope_unclear",
+          "insufficient_evidence",
+          "not_applicable"
+        ],
+        "title": "ApplicabilityClass"
+      },
+      "Body_upload_document_api_v8_ingest_upload_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "doc_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Doc Type"
+          },
+          "committee": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Committee",
+            "default": "MED 32"
+          },
+          "is_user_upload": {
+            "type": "boolean",
+            "title": "Is User Upload",
+            "default": false
+          },
+          "auto_publish": {
+            "type": "boolean",
+            "title": "Auto Publish",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_document_api_v8_ingest_upload_post"
+      },
+      "CitableEvidenceItem": {
+        "properties": {
+          "sid": {
+            "type": "string",
+            "title": "Sid",
+            "description": "e.g. 'S1', 'S2'"
+          },
+          "evidence_class": {
+            "$ref": "#/components/schemas/EvidenceClass",
+            "default": "official_source"
+          },
+          "tier": {
+            "$ref": "#/components/schemas/KnowledgeTier"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "standard_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Standard Id"
+          },
+          "locator": {
+            "type": "string",
+            "title": "Locator"
+          },
+          "snippet": {
+            "type": "string",
+            "title": "Snippet"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "retrieved_at": {
+            "type": "string",
+            "title": "Retrieved At"
+          },
+          "document_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sid",
+          "tier",
+          "kind",
+          "locator",
+          "snippet",
+          "retrieved_at"
+        ],
+        "title": "CitableEvidenceItem"
+      },
+      "ComplianceDossier": {
+        "properties": {
+          "dossier_id": {
+            "type": "string",
+            "title": "Dossier Id"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "query_id": {
+            "type": "string",
+            "title": "Query Id"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language",
+            "default": "en"
+          },
+          "interpretation": {
+            "$ref": "#/components/schemas/DossierInterpretation"
+          },
+          "standards": {
+            "items": {
+              "$ref": "#/components/schemas/DossierStandardItem"
+            },
+            "type": "array",
+            "title": "Standards"
+          },
+          "regulatory": {
+            "$ref": "#/components/schemas/DossierRegulatory"
+          },
+          "certification_route": {
+            "$ref": "#/components/schemas/DossierCertificationRoute"
+          },
+          "testing": {
+            "$ref": "#/components/schemas/DossierTesting"
+          },
+          "labs": {
+            "items": {
+              "$ref": "#/components/schemas/DossierLabItem"
+            },
+            "type": "array",
+            "title": "Labs"
+          },
+          "next_actions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Next Actions"
+          },
+          "evidence_ledger": {
+            "items": {
+              "$ref": "#/components/schemas/CitableEvidenceItem"
+            },
+            "type": "array",
+            "title": "Evidence Ledger"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "trust": {
+            "$ref": "#/components/schemas/DossierTrust"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dossier_id",
+          "created_at",
+          "query_id",
+          "interpretation",
+          "regulatory",
+          "certification_route",
+          "testing",
+          "summary",
+          "trust"
+        ],
+        "title": "ComplianceDossier"
+      },
+      "ComplianceMission": {
+        "properties": {
+          "mission_id": {
+            "type": "string",
+            "title": "Mission Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MissionStatus",
+            "default": "draft"
+          },
+          "product_identity": {
+            "$ref": "#/components/schemas/ProductIdentity"
+          },
+          "step_states": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/StepProgress"
+            },
+            "type": "object",
+            "title": "Step States"
+          },
+          "active_standard_numbers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Active Standard Numbers"
+          },
+          "active_dossier_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Dossier Id"
+          },
+          "open_questions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Open Questions"
+          },
+          "unresolved_issues": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unresolved Issues"
+          },
+          "change_impact_signals": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Change Impact Signals"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mission_id",
+          "title",
+          "product_identity"
+        ],
+        "title": "ComplianceMission",
+        "description": "V8 Canonical Spec \u00a76: Persistent Compliance Mission working state.\nConverts a business question into an inspectable, persistent compliance pathway."
+      },
+      "ComplianceStep": {
+        "type": "string",
+        "enum": [
+          "product_matching",
+          "qco_compliance",
+          "certification_route",
+          "testing_requirements",
+          "lab_identification",
+          "document_review",
+          "form_preparation"
+        ],
+        "title": "ComplianceStep"
+      },
+      "ConfidenceLabel": {
+        "type": "string",
+        "enum": [
+          "verified_evidence",
+          "partially_supported",
+          "limited_evidence",
+          "no_verified_evidence"
+        ],
+        "title": "ConfidenceLabel"
+      },
+      "CreateMissionRequest": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "material": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Material"
+          },
+          "grade": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grade"
+          },
+          "capacity_rating": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capacity Rating"
+          },
+          "intended_use": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intended Use"
+          },
+          "market_context": {
+            "type": "string",
+            "title": "Market Context",
+            "default": "domestic"
+          },
+          "user_type": {
+            "type": "string",
+            "title": "User Type",
+            "default": "msme"
+          },
+          "pincode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pincode"
+          },
+          "location_city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location City"
+          },
+          "location_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location State"
+          },
+          "additional_attributes": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Additional Attributes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "product_name"
+        ],
+        "title": "CreateMissionRequest"
+      },
+      "DecisionExplainability": {
+        "properties": {
+          "why": {
+            "type": "string",
+            "title": "Why",
+            "description": "Statutory rule, attribute match, or regulatory clause causing the decision"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Ids",
+            "description": "Authoritative [S#] citation references"
+          },
+          "change_triggers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Change Triggers",
+            "description": "Attributes, amendments, or regulatory events that would cause re-evaluation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "why"
+        ],
+        "title": "DecisionExplainability",
+        "description": "V8 Canonical Spec \u00a76.2 \u2014 3-Question Explainability Model:\n1. Why? What product attribute, rule, doc, or source caused the decision?\n2. Evidence? What authoritative source supports it (citable [S#] tags)?\n3. What could change this? Which product attribute, regulatory change, or missing evidence triggers re-evaluation?"
+      },
+      "DossierCertificationRoute": {
+        "properties": {
+          "scheme_name": {
+            "type": "string",
+            "title": "Scheme Name"
+          },
+          "eligibility_result": {
+            "type": "string",
+            "title": "Eligibility Result"
+          },
+          "steps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Steps"
+          },
+          "required_documents": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Required Documents"
+          },
+          "indicative_fee": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Indicative Fee"
+          },
+          "portal_name": {
+            "type": "string",
+            "title": "Portal Name"
+          },
+          "portal_url": {
+            "type": "string",
+            "title": "Portal Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scheme_name",
+          "eligibility_result",
+          "portal_name",
+          "portal_url"
+        ],
+        "title": "DossierCertificationRoute"
+      },
+      "DossierInterpretation": {
+        "properties": {
+          "product": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product"
+          },
+          "material": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Material"
+          },
+          "intended_use": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intended Use"
+          },
+          "capacity_rating": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capacity Rating"
+          },
+          "user_type": {
+            "type": "string",
+            "title": "User Type",
+            "default": "msme"
+          },
+          "market": {
+            "type": "string",
+            "title": "Market",
+            "default": "domestic"
+          }
+        },
+        "type": "object",
+        "title": "DossierInterpretation"
+      },
+      "DossierLabItem": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "state": {
+            "type": "string",
+            "title": "State"
+          },
+          "accreditation_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accreditation Number"
+          },
+          "distance_km": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distance Km"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "city",
+          "state"
+        ],
+        "title": "DossierLabItem"
+      },
+      "DossierRegulatory": {
+        "properties": {
+          "qco_status": {
+            "type": "string",
+            "title": "Qco Status"
+          },
+          "order_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Reference"
+          },
+          "enforcement_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enforcement Date"
+          },
+          "ministry": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ministry"
+          },
+          "penal_provision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Penal Provision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "qco_status"
+        ],
+        "title": "DossierRegulatory"
+      },
+      "DossierStandardItem": {
+        "properties": {
+          "standard_id": {
+            "type": "string",
+            "title": "Standard Id"
+          },
+          "is_number": {
+            "type": "string",
+            "title": "Is Number"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "applicability": {
+            "$ref": "#/components/schemas/ApplicabilityClass"
+          },
+          "why_coverage": {
+            "type": "string",
+            "title": "Why Coverage"
+          },
+          "tier": {
+            "$ref": "#/components/schemas/KnowledgeTier"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "official_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Official Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "standard_id",
+          "is_number",
+          "title",
+          "applicability",
+          "why_coverage",
+          "tier",
+          "status"
+        ],
+        "title": "DossierStandardItem"
+      },
+      "DossierTesting": {
+        "properties": {
+          "tier_permits_testing": {
+            "type": "boolean",
+            "title": "Tier Permits Testing"
+          },
+          "notice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notice"
+          },
+          "clauses": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Clauses"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tier_permits_testing"
+        ],
+        "title": "DossierTesting"
+      },
+      "DossierTrust": {
+        "properties": {
+          "grounding_state": {
+            "$ref": "#/components/schemas/GroundingState"
+          },
+          "confidence_label": {
+            "$ref": "#/components/schemas/ConfidenceLabel"
+          },
+          "relevance_score": {
+            "type": "number",
+            "title": "Relevance Score"
+          },
+          "caveats": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Caveats"
+          }
+        },
+        "type": "object",
+        "required": [
+          "grounding_state",
+          "confidence_label",
+          "relevance_score"
+        ],
+        "title": "DossierTrust"
+      },
+      "EvidenceClass": {
+        "type": "string",
+        "enum": [
+          "official_source",
+          "user_provided",
+          "ai_interpretation"
+        ],
+        "title": "EvidenceClass"
+      },
+      "FeedbackRequest": {
+        "properties": {
+          "turn_id": {
+            "type": "string",
+            "title": "Turn Id"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "rating": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rating"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn_id",
+          "reason"
+        ],
+        "title": "FeedbackRequest"
+      },
+      "GroundingState": {
+        "type": "string",
+        "enum": [
+          "verified",
+          "supported_inference",
+          "insufficient_evidence"
+        ],
+        "title": "GroundingState"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "app_name": {
+            "type": "string",
+            "title": "App Name"
+          },
+          "generation_enabled": {
+            "type": "boolean",
+            "title": "Generation Enabled"
+          },
+          "taxonomy_valid": {
+            "type": "boolean",
+            "title": "Taxonomy Valid"
+          },
+          "relevance_floor": {
+            "type": "number",
+            "title": "Relevance Floor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "version",
+          "app_name",
+          "generation_enabled",
+          "taxonomy_valid",
+          "relevance_floor"
+        ],
+        "title": "HealthResponse"
+      },
+      "KnowledgeTier": {
+        "type": "string",
+        "enum": [
+          "A",
+          "B",
+          "C"
+        ],
+        "title": "KnowledgeTier"
+      },
+      "MissionStatus": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "evaluating",
+          "active",
+          "blocked",
+          "completed"
+        ],
+        "title": "MissionStatus"
+      },
+      "ProductIdentity": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Product trade or common name, e.g. Domestic Pressure Cooker"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "material": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Material"
+          },
+          "grade": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grade"
+          },
+          "capacity_rating": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capacity Rating"
+          },
+          "intended_use": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intended Use"
+          },
+          "market_context": {
+            "type": "string",
+            "title": "Market Context",
+            "default": "domestic"
+          },
+          "user_type": {
+            "type": "string",
+            "title": "User Type",
+            "default": "msme"
+          },
+          "pincode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pincode"
+          },
+          "location_city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location City"
+          },
+          "location_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location State"
+          },
+          "additional_attributes": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Additional Attributes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "ProductIdentity"
+      },
+      "QueryRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query",
+            "description": "User query text",
+            "example": "domestic pressure cookers stainless steel"
+          },
+          "user_type": {
+            "type": "string",
+            "title": "User Type",
+            "description": "User persona: msme, startup, large, consumer",
+            "default": "msme"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language",
+            "description": "Language code: en or hi",
+            "default": "en"
+          },
+          "market": {
+            "type": "string",
+            "title": "Market",
+            "description": "Target market: domestic or export",
+            "default": "domestic"
+          },
+          "entities": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Entities",
+            "description": "Extracted entities"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "QueryRequest"
+      },
+      "SampleUploadRequest": {
+        "properties": {
+          "sample_name": {
+            "type": "string",
+            "title": "Sample Name"
+          },
+          "doc_type": {
+            "type": "string",
+            "title": "Doc Type",
+            "default": "qco"
+          },
+          "is_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Number"
+          },
+          "committee": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Committee",
+            "default": "MED 32"
+          },
+          "sample_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sample Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sample_name"
+        ],
+        "title": "SampleUploadRequest"
+      },
+      "StepEvaluationState": {
+        "type": "string",
+        "enum": [
+          "not_evaluated",
+          "candidate",
+          "supported",
+          "unsupported",
+          "blocked_by_missing_info",
+          "superseded",
+          "expired",
+          "completed_externally"
+        ],
+        "title": "StepEvaluationState"
+      },
+      "StepProgress": {
+        "properties": {
+          "step": {
+            "$ref": "#/components/schemas/ComplianceStep"
+          },
+          "state": {
+            "$ref": "#/components/schemas/StepEvaluationState",
+            "default": "not_evaluated"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "explainability": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DecisionExplainability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "last_evaluated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Evaluated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "step"
+        ],
+        "title": "StepProgress"
+      },
+      "UpdateStepRequest": {
+        "properties": {
+          "step": {
+            "$ref": "#/components/schemas/ComplianceStep"
+          },
+          "state": {
+            "$ref": "#/components/schemas/StepEvaluationState"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "why": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Why"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Ids"
+          },
+          "change_triggers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Change Triggers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "step",
+          "state"
+        ],
+        "title": "UpdateStepRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

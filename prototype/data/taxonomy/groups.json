@@ -1,0 +1,366 @@
+{
+  "_meta": {
+    "version": "8.0",
+    "description": "BIS Product Taxonomy — Division → Committee → Product Group → Type → Variant hierarchy",
+    "self_verification": "Each product group declares its committees and known-important IS numbers. Ingestion fails if a group's committees do not contain those IS numbers.",
+    "updated": "2026-09-25",
+    "spec_ref": "§5.5 V8 Architecture"
+  },
+  "divisions": [
+    {
+      "id": "DIV-CHEM",
+      "name": "Chemicals",
+      "name_hi": "रसायन",
+      "committees": ["CHD", "PCD"],
+      "product_groups": [
+        {
+          "id": "PG-CHEM-PLASTIC",
+          "name": "Plastics & Rubber",
+          "name_hi": "प्लास्टिक और रबर",
+          "committees": ["PCD"],
+          "priority": true,
+          "known_is_numbers": ["IS 14333", "IS 7328"],
+          "product_types": ["Plastic containers", "Rubber gaskets", "PVC pipes"],
+          "synonyms": ["plastic", "rubber", "pvc", "polymer", "polypropylene", "polyethylene"]
+        }
+      ]
+    },
+    {
+      "id": "DIV-CIVIL",
+      "name": "Civil Engineering",
+      "name_hi": "सिविल इंजीनियरिंग",
+      "committees": ["CED", "FAD"],
+      "product_groups": [
+        {
+          "id": "PG-CIVIL-STEEL",
+          "name": "Steel & Construction Materials",
+          "name_hi": "स्टील और निर्माण सामग्री",
+          "committees": ["CED"],
+          "priority": true,
+          "known_is_numbers": ["IS 1786", "IS 2062", "IS 432", "IS 1608"],
+          "product_types": ["TMT bars", "Structural steel", "Wire rods"],
+          "synonyms": ["steel", "sariya", "सरिया", "tmt", "rebar", "reinforcement bar", "hsd", "high strength deformed", "structural steel", "iron rod", "lohiya", "loha", "metal bar"]
+        },
+        {
+          "id": "PG-CIVIL-CEMENT",
+          "name": "Cement & Concrete",
+          "name_hi": "सीमेंट और कंक्रीट",
+          "committees": ["CED"],
+          "priority": true,
+          "known_is_numbers": ["IS 269", "IS 8112", "IS 456"],
+          "product_types": ["OPC cement", "PPC cement", "Ready mix concrete"],
+          "synonyms": ["cement", "सीमेंट", "concrete", "opc", "ppc", "portland", "masonry cement", "white cement"]
+        },
+        {
+          "id": "PG-CIVIL-PIPE",
+          "name": "Pipes & Plumbing",
+          "name_hi": "पाइप और प्लंबिंग",
+          "committees": ["CED", "CHD"],
+          "priority": true,
+          "known_is_numbers": ["IS 4985", "IS 4736", "IS 8360"],
+          "product_types": ["uPVC pipes", "CPVC pipes", "GI pipes", "HDPE pipes"],
+          "synonyms": ["pipe", "पाइप", "plumbing", "upvc", "cpvc", "hdpe", "gi pipe", "water pipe", "sewage pipe", "drainage pipe"]
+        },
+        {
+          "id": "PG-CIVIL-PLYWOOD",
+          "name": "Plywood & Wood Products",
+          "name_hi": "प्लाईवुड और लकड़ी उत्पाद",
+          "committees": ["CED"],
+          "priority": true,
+          "known_is_numbers": ["IS 303", "IS 710", "IS 1328"],
+          "product_types": ["BWR plywood", "BWP marine plywood", "Decorative plywood"],
+          "synonyms": ["plywood", "प्लाईवुड", "ply", "wood board", "particle board", "mdf", "blockboard", "flush door", "laminated board"]
+        },
+        {
+          "id": "PG-CIVIL-FURNITURE",
+          "name": "Furniture",
+          "name_hi": "फर्नीचर",
+          "committees": ["CED"],
+          "priority": true,
+          "known_is_numbers": ["IS 1003", "IS 1659"],
+          "product_types": ["Office chairs", "Steel furniture", "School furniture"],
+          "synonyms": ["furniture", "फर्नीचर", "chair", "table", "desk", "cabinet", "almirah"]
+        }
+      ]
+    },
+    {
+      "id": "DIV-ETD",
+      "name": "Electrotechnical",
+      "name_hi": "विद्युत तकनीकी",
+      "committees": ["ETD", "LITD"],
+      "product_groups": [
+        {
+          "id": "PG-ETD-WIRES",
+          "name": "Wires & Cables",
+          "name_hi": "तार और केबल",
+          "committees": ["ETD"],
+          "priority": true,
+          "known_is_numbers": ["IS 694", "IS 1554", "IS 9968", "IS 7098"],
+          "product_types": ["PVC insulated wires", "XLPE cables", "Armoured cables", "Flexible cords"],
+          "synonyms": ["wire", "तार", "cable", "wiring", "electrical wire", "copper wire", "pvc wire", "house wire", "flex", "cord", "earthing wire"]
+        },
+        {
+          "id": "PG-ETD-SWITCH",
+          "name": "Switches & Plugs",
+          "name_hi": "स्विच और प्लग",
+          "committees": ["ETD"],
+          "priority": true,
+          "known_is_numbers": ["IS 3854", "IS 1293", "IS 13947"],
+          "product_types": ["Modular switches", "Industrial plugs", "MCBs"],
+          "synonyms": ["switch", "स्विच", "plug", "socket", "mcb", "rccb", "circuit breaker", "distribution board", "switchboard"]
+        },
+        {
+          "id": "PG-ETD-BATTERY",
+          "name": "Batteries & Energy Storage",
+          "name_hi": "बैटरी और ऊर्जा भंडारण",
+          "committees": ["ETD"],
+          "priority": true,
+          "known_is_numbers": ["IS 16270", "IS 1651", "IS 16046"],
+          "product_types": ["Lead acid batteries", "Lithium ion batteries", "Dry cell batteries"],
+          "synonyms": ["battery", "बैटरी", "cell", "accumulator", "inverter battery", "ups battery", "lithium", "li-ion", "lead acid"]
+        },
+        {
+          "id": "PG-ETD-SOLAR",
+          "name": "Solar & Renewable Energy",
+          "name_hi": "सौर और नवीकरणीय ऊर्जा",
+          "committees": ["ETD", "LITD"],
+          "priority": true,
+          "known_is_numbers": ["IS 14286", "IS 16107"],
+          "product_types": ["Solar panels", "Solar water heaters", "Charge controllers"],
+          "synonyms": ["solar", "सौर", "photovoltaic", "pv panel", "solar panel", "solar water heater", "solar pump", "renewable"]
+        },
+        {
+          "id": "PG-ETD-EV",
+          "name": "EV Charging Equipment",
+          "name_hi": "ईवी चार्जिंग उपकरण",
+          "committees": ["ETD"],
+          "priority": true,
+          "known_is_numbers": ["IS 17017"],
+          "product_types": ["EV chargers", "EVSE", "Charging connectors"],
+          "synonyms": ["ev charger", "electric vehicle charger", "evse", "charging station", "ईवी चार्जर", "electric car charger"]
+        }
+      ]
+    },
+    {
+      "id": "DIV-MED",
+      "name": "Mechanical Engineering",
+      "name_hi": "यांत्रिक इंजीनियरिंग",
+      "committees": ["MED", "PGD"],
+      "product_groups": [
+        {
+          "id": "PG-MED-COOKER",
+          "name": "Cookers & Utensils",
+          "name_hi": "कुकर और बर्तन",
+          "committees": ["MED"],
+          "priority": true,
+          "known_is_numbers": ["IS 2347", "IS 14182", "IS 15106"],
+          "product_types": ["Pressure cookers", "Stainless steel utensils", "Aluminium cookware"],
+          "synonyms": ["pressure cooker", "कुकर", "cooker", "utensil", "cookware", "kadhai", "degchi", "tiffin", "stainless steel utensil", "aluminium vessel", "प्रेशर कुकर"]
+        },
+        {
+          "id": "PG-MED-BOTTLE",
+          "name": "Bottles & Vacuum Flasks",
+          "name_hi": "बोतल और वैक्यूम फ्लास्क",
+          "committees": ["MED", "PCD"],
+          "priority": true,
+          "known_is_numbers": ["IS 17526", "IS 15410"],
+          "product_types": ["Stainless steel bottles", "Vacuum insulated flasks", "Water bottles"],
+          "synonyms": ["steel bottle", "stainless steel bottle", "water bottle", "vacuum flask", "insulated flask", "thermos", "steel flask", "बोतल", "स्टील बोतल"]
+        },
+        {
+          "id": "PG-MED-LPG",
+          "name": "LPG Appliances",
+          "name_hi": "एलपीजी उपकरण",
+          "committees": ["MED"],
+          "priority": true,
+          "known_is_numbers": ["IS 8737", "IS 4894", "IS 1745"],
+          "product_types": ["LPG cylinders", "Gas stoves", "Regulators"],
+          "synonyms": ["lpg", "gas cylinder", "gas stove", "एलपीजी", "गैस सिलिंडर", "gas regulator", "burner", "chulha", "चूल्हा", "stove"]
+        },
+        {
+          "id": "PG-MED-PUMP",
+          "name": "Pumps & Motors",
+          "name_hi": "पंप और मोटर",
+          "committees": ["MED"],
+          "priority": true,
+          "known_is_numbers": ["IS 9079", "IS 1520"],
+          "product_types": ["Centrifugal pumps", "Submersible pumps", "Monoblock pumps"],
+          "synonyms": ["pump", "पंप", "motor", "water pump", "submersible", "monoblock", "centrifugal pump", "turbine pump"]
+        }
+      ]
+    },
+    {
+      "id": "DIV-LITD",
+      "name": "Electronics & Information Technology",
+      "name_hi": "इलेक्ट्रॉनिक्स और सूचना प्रौद्योगिकी",
+      "committees": ["LITD", "ETD"],
+      "product_groups": [
+        {
+          "id": "PG-LITD-ELECTRONICS",
+          "name": "Household Electrical & Electronics",
+          "name_hi": "घरेलू विद्युत और इलेक्ट्रॉनिक्स",
+          "committees": ["LITD", "ETD"],
+          "priority": true,
+          "known_is_numbers": ["IS 302", "IS 13252", "IS 616", "IS 1150"],
+          "product_types": ["LED lamps", "Fans", "Mixers", "Refrigerators", "Air conditioners"],
+          "synonyms": ["led lamp", "एलईडी", "fan", "पंखा", "mixer", "grinder", "refrigerator", "fridge", "ac", "air conditioner", "washing machine", "iron", "press", "heater", "bulb", "tube light", "inverter", "ups"]
+        },
+        {
+          "id": "PG-LITD-IT",
+          "name": "IT & Telecom Equipment",
+          "name_hi": "आईटी और दूरसंचार उपकरण",
+          "committees": ["LITD"],
+          "priority": true,
+          "known_is_numbers": ["IS 13252", "IS 7524"],
+          "product_types": ["Laptops", "Chargers", "Power banks", "Routers"],
+          "synonyms": ["laptop", "computer", "charger", "power bank", "router", "adapter", "set top box", "cable tv", "dtv", "crs"]
+        },
+        {
+          "id": "PG-LITD-TOY",
+          "name": "Toys & Child Safety",
+          "name_hi": "खिलौने और बाल सुरक्षा",
+          "committees": ["LITD"],
+          "priority": true,
+          "known_is_numbers": ["IS 9873", "IS 15614"],
+          "product_types": ["Plastic toys", "Electronic toys", "Soft toys", "Ride-on toys"],
+          "synonyms": ["toy", "खिलौना", "plaything", "doll", "game", "puzzle", "electric toy", "toy vehicle", "stuffed toy"]
+        }
+      ]
+    },
+    {
+      "id": "DIV-TXD",
+      "name": "Textiles",
+      "name_hi": "वस्त्र",
+      "committees": ["TXD"],
+      "product_groups": [
+        {
+          "id": "PG-TXD-TEXTILE",
+          "name": "Textiles & Footwear",
+          "name_hi": "वस्त्र और जूते",
+          "committees": ["TXD"],
+          "priority": true,
+          "known_is_numbers": ["IS 1964", "IS 15298"],
+          "product_types": ["Cotton fabrics", "Synthetic fabrics", "Safety footwear"],
+          "synonyms": ["textile", "fabric", "कपड़ा", "footwear", "जूता", "shoe", "boot", "sandal", "garment", "cloth", "yarn"]
+        }
+      ]
+    },
+    {
+      "id": "DIV-FAD",
+      "name": "Food & Agriculture",
+      "name_hi": "खाद्य और कृषि",
+      "committees": ["FAD", "PGAD"],
+      "product_groups": [
+        {
+          "id": "PG-FAD-WATER",
+          "name": "Drinking Water & Beverages",
+          "name_hi": "पेय जल और पेय पदार्थ",
+          "committees": ["FAD"],
+          "priority": true,
+          "known_is_numbers": ["IS 14543", "IS 13428"],
+          "product_types": ["Packaged drinking water", "Packaged mineral water", "Packaged juices"],
+          "synonyms": ["packaged water", "drinking water", "mineral water", "पेय जल", "bisleri", "kinley", "water bottle", "packaged beverages"]
+        },
+        {
+          "id": "PG-FAD-AGRI",
+          "name": "Agricultural Products & Inputs",
+          "name_hi": "कृषि उत्पाद और इनपुट",
+          "committees": ["FAD", "PGAD"],
+          "priority": true,
+          "known_is_numbers": ["IS 7048"],
+          "product_types": ["Fertilizers", "Pesticides", "Agricultural tools", "Seeds"],
+          "synonyms": ["fertilizer", "pesticide", "agricultural", "farming", "krishi", "कृषि", "seeds", "खाद", "urea"]
+        }
+      ]
+    },
+    {
+      "id": "DIV-MTD",
+      "name": "Transport & Automotive",
+      "name_hi": "परिवहन और ऑटोमोटिव",
+      "committees": ["TED", "ETD"],
+      "product_groups": [
+        {
+          "id": "PG-MTD-HELMET",
+          "name": "Helmets & PPE",
+          "name_hi": "हेलमेट और पीपीई",
+          "committees": ["TED"],
+          "priority": true,
+          "known_is_numbers": ["IS 4151", "IS 2925"],
+          "product_types": ["Two-wheeler helmets", "Industrial safety helmets", "Face shields"],
+          "synonyms": ["helmet", "helmets", "हेलमेट", "ppe", "safety helmet", "crash helmet", "two wheeler helmet", "motorcycle helmet", "bike helmet", "hard hat", "head protection"]
+        },
+        {
+          "id": "PG-MTD-TYRE",
+          "name": "Automobiles & Tyres",
+          "name_hi": "ऑटोमोबाइल और टायर",
+          "committees": ["TED"],
+          "priority": true,
+          "known_is_numbers": ["IS 15627", "IS 2172"],
+          "product_types": ["Two-wheeler tyres", "Four-wheeler tyres", "Tubes"],
+          "synonyms": ["tyre", "tire", "टायर", "tube", "automobile", "vehicle", "car tyre", "bike tyre", "truck tyre", "bus tyre"]
+        }
+      ]
+    },
+    {
+      "id": "DIV-HMD",
+      "name": "Hallmarking",
+      "name_hi": "हॉलमार्किंग",
+      "committees": ["LMSD"],
+      "product_groups": [
+        {
+          "id": "PG-HMD-GOLD",
+          "name": "Gold & Precious Metal Jewellery",
+          "name_hi": "सोना और कीमती धातु आभूषण",
+          "committees": ["LMSD"],
+          "priority": true,
+          "known_is_numbers": ["IS 1417", "IS 2113"],
+          "product_types": ["Gold jewellery", "Silver articles", "Hallmarked items"],
+          "synonyms": ["gold", "सोना", "jewellery", "hallmark", "huid", "आभूषण", "silver", "चांदी", "ornament", "कड़ा", "chain", "ring", "necklace", "hallmarking", "bis hallmark"]
+        }
+      ]
+    },
+    {
+      "id": "DIV-FIRE",
+      "name": "Fire Safety",
+      "name_hi": "अग्नि सुरक्षा",
+      "committees": ["CED", "MED"],
+      "product_groups": [
+        {
+          "id": "PG-FIRE-EXTINGUISHER",
+          "name": "Fire Safety Equipment",
+          "name_hi": "अग्नि सुरक्षा उपकरण",
+          "committees": ["CED"],
+          "priority": true,
+          "known_is_numbers": ["IS 2171", "IS 15683", "IS 2190"],
+          "product_types": ["Fire extinguishers", "Smoke detectors", "Sprinkler systems"],
+          "synonyms": ["fire extinguisher", "अग्निशामक", "fire safety", "smoke detector", "sprinkler", "fire alarm", "fire fighting"]
+        }
+      ]
+    }
+  ],
+  "synonym_dictionary": {
+    "sariya": "HSD steel bars (IS 1786)",
+    "सरिया": "HSD steel bars (IS 1786)",
+    "tmt bar": "TMT reinforcement bars (IS 1786)",
+    "lohiya": "steel rod (IS 1786)",
+    "bisleri": "packaged drinking water (IS 14543)",
+    "kinley": "packaged drinking water (IS 14543)",
+    "primus": "pressure cooker (IS 2347)",
+    "hawkins": "pressure cooker (IS 2347)",
+    "prestige cooker": "pressure cooker (IS 2347)",
+    "crash helmet": "protective helmets for two-wheeler riders (IS 4151)",
+    "bike helmet": "protective helmets for two-wheeler riders (IS 4151)",
+    "cfl bulb": "compact fluorescent lamp",
+    "led bulb": "LED lamp (IS 16102)",
+    "mcb": "miniature circuit breaker (IS 8828)",
+    "elcb": "earth leakage circuit breaker (IS 8828)"
+  },
+  "priority_groups_pilot": [
+    "PG-ETD-ELECTRONICS", "PG-LITD-ELECTRONICS", "PG-ETD-WIRES", "PG-CIVIL-CEMENT",
+    "PG-CIVIL-STEEL", "PG-FAD-WATER", "PG-MTD-TYRE", "PG-MTD-HELMET",
+    "PG-MED-COOKER", "PG-MED-LPG", "PG-LITD-TOY", "PG-HMD-GOLD",
+    "PG-FAD-WATER", "PG-CIVIL-PIPE", "PG-CIVIL-PLYWOOD", "PG-FIRE-EXTINGUISHER",
+    "PG-ETD-SOLAR", "PG-ETD-EV", "PG-CIVIL-FURNITURE", "PG-TXD-TEXTILE",
+    "PG-MED-PUMP", "PG-FAD-AGRI", "PG-ETD-BATTERY", "PG-CHEM-PLASTIC"
+  ]
+}

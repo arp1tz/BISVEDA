@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGradBad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#180c10" />
+      <stop offset="50%" stop-color="#2a1215" />
+      <stop offset="100%" stop-color="#0f0507" />
+    </linearGradient>
+
+    <!-- Shell Gradient -->
+    <linearGradient id="shellGradBad" x1="15%" y1="10%" x2="85%" y2="90%">
+      <stop offset="0%" stop-color="#3f2022" />
+      <stop offset="25%" stop-color="#2c1417" />
+      <stop offset="65%" stop-color="#1a0c0e" />
+      <stop offset="100%" stop-color="#0a0304" />
+    </linearGradient>
+
+    <!-- Visor Gradient (Tinted) -->
+    <linearGradient id="visorGradBad" x1="0%" y1="0%" x2="100%" y2="80%">
+      <stop offset="0%" stop-color="#f43f5e" stop-opacity="0.25" />
+      <stop offset="50%" stop-color="#be123c" stop-opacity="0.30" />
+      <stop offset="100%" stop-color="#881337" stop-opacity="0.75" />
+    </linearGradient>
+
+    <filter id="redGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Studio Surface -->
+  <rect width="800" height="600" fill="url(#bgGradBad)" />
+  <ellipse cx="400" cy="510" rx="280" ry="40" fill="#000000" opacity="0.8" />
+
+  <!-- Grid lines -->
+  <path d="M50 510 L750 510 M120 480 L680 480 M200 540 L600 540" stroke="#4c1d24" stroke-width="1" opacity="0.3" stroke-dasharray="4,4" />
+
+  <!-- HELMET GROUP -->
+  <g transform="translate(10, -10)">
+    <!-- Base Padding -->
+    <path d="M 230 460 C 250 495 510 500 560 460 C 585 435 600 390 600 350 C 590 410 540 470 380 475 C 270 475 235 465 230 460 Z" fill="#140608" stroke="#3b1117" stroke-width="2" />
+    
+    <!-- Flimsy / Non-Compliant Strap (Thin black strip, plastic unbranded latch) -->
+    <path d="M 330 465 Q 350 535 390 540 Q 425 535 440 468" fill="none" stroke="#262626" stroke-width="4" stroke-linecap="round" />
+    <rect x="375" y="524" width="22" height="10" rx="2" fill="#3f3f46" stroke="#18181b" stroke-width="1" />
+
+    <!-- Helmet Outer Shell (Glossy Cherry / Crimson) -->
+    <path d="M 230 430 
+             C 180 340 185 210 280 140 
+             C 360 80 500 85 580 160 
+             C 645 220 660 330 635 410 
+             C 615 470 540 470 500 465 
+             C 450 460 420 460 380 460 
+             C 320 460 255 465 230 430 Z" 
+          fill="url(#shellGradBad)" 
+          stroke="#881337" 
+          stroke-width="2.5" />
+
+    <!-- Top Air Scoop -->
+    <path d="M 370 105 L 430 105 L 440 120 L 360 120 Z" fill="#140608" stroke="#4c1d24" stroke-width="1.5" />
+
+    <!-- Chin Guard -->
+    <path d="M 330 455 C 390 455 460 450 515 425 C 480 440 420 445 340 445 Z" fill="#0f0507" />
+
+    <!-- VISOR OPENING & EYE PORT -->
+    <path d="M 300 215 C 380 205 470 210 545 235 C 565 242 575 260 565 285 C 545 330 520 375 500 395 C 450 395 385 390 325 365 C 305 355 295 330 295 300 C 295 265 298 230 300 215 Z" fill="#050102" />
+
+    <!-- VISOR SHIELD -->
+    <path d="M 285 205 C 375 190 480 195 565 225 C 590 235 605 270 595 320 C 580 370 550 410 515 425 C 455 420 380 410 320 375 C 285 355 275 305 278 260 C 280 235 282 215 285 205 Z" fill="url(#visorGradBad)" stroke="#fb7185" stroke-width="1.2" />
+
+    <!-- Visor Pivot Mechanism -->
+    <circle cx="282" cy="275" r="16" fill="#1c090c" stroke="#4c1d24" stroke-width="2" />
+    <circle cx="585" cy="295" r="14" fill="#1c090c" stroke="#4c1d24" stroke-width="2" />
+
+    <!-- ======================================================= -->
+    <!-- MISSING / COUNTERFEIT MARK ZONE (CRITICAL REGULATORY VIOLATION) -->
+    <!-- ======================================================= -->
+    <g transform="translate(195, 345)">
+      <!-- Empty/Blank Inspection Region with Red Dashed Box -->
+      <rect x="0" y="0" width="92" height="72" rx="4" fill="#1c090c" stroke="#e11d48" stroke-width="2" stroke-dasharray="4,4" filter="url(#redGlow)" />
+      
+      <!-- Big Red Cross Icon -->
+      <line x1="30" y1="20" x2="62" y2="52" stroke="#f43f5e" stroke-width="4" stroke-linecap="round" />
+      <line x1="62" y1="20" x2="30" y2="52" stroke="#f43f5e" stroke-width="4" stroke-linecap="round" />
+
+      <text x="46" y="66" font-family="'JetBrains Mono', monospace" font-size="7" font-weight="900" fill="#fda4af" text-anchor="middle">NO ISI MARK</text>
+    </g>
+
+    <!-- Violation Callout Pointer -->
+    <g transform="translate(190, 340)">
+      <circle cx="0" cy="0" r="6" fill="#e11d48" />
+      <circle cx="0" cy="0" r="12" fill="none" stroke="#e11d48" stroke-width="2" opacity="0.8">
+        <animate attributeName="r" values="6;16;6" dur="1.5s" repeatCount="indefinite" />
+        <animate attributeName="opacity" values="1;0.2;1" dur="1.5s" repeatCount="indefinite" />
+      </circle>
+      <line x1="0" y1="0" x2="-40" y2="-40" stroke="#e11d48" stroke-width="2" stroke-dasharray="3,3" />
+      <rect x="-175" y="-62" width="140" height="26" rx="6" fill="#4c0519" stroke="#e11d48" stroke-width="1.5" />
+      <text x="-105" y="-45" font-family="system-ui, sans-serif" font-size="10" font-weight="900" fill="#ffe4e6" text-anchor="middle">⚠️ MANDATORY MARK ABSENT</text>
+    </g>
+  </g>
+
+  <!-- Camera HUD Bounding Corners (Red) -->
+  <g stroke="#e11d48" stroke-width="1.5" fill="none" opacity="0.75">
+    <path d="M 80 120 L 80 80 L 120 80" />
+    <path d="M 680 80 L 720 80 L 720 120" />
+    <path d="M 80 500 L 80 540 L 120 540" />
+    <path d="M 680 540 L 720 540 L 720 500" />
+  </g>
+
+  <!-- AI HUD Status Overlay Badge Top-Center -->
+  <g transform="translate(400, 45)">
+    <rect x="-185" y="-15" width="370" height="30" rx="15" fill="#4c0519" stroke="#e11d48" stroke-width="1.5" opacity="0.95" />
+    <circle cx="-165" cy="0" r="4" fill="#fb7185" />
+    <text x="0" y="4" font-family="system-ui, sans-serif" font-size="10.5" font-weight="bold" fill="#fff1f2" text-anchor="middle">
+      NON-COMPLIANCE DETECTED: SECTION 29 BIS ACT PENALTY
+    </text>
+  </g>
+</svg>

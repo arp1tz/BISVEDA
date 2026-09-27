@@ -1,0 +1,11 @@
+BUREAU OF INDIAN STANDARDS
+DRAFT SPECIFICATION FOR HYPERFLUX PRESSURE REGULATORS
+STANDARD CODE: IS 99999:2026
+
+1 SCOPE
+1.1 This statutory standard specifies safety and burst pressure requirements for high-pressure cryogenic industrial valves.
+
+4 TECHNICAL SPECIFICATIONS
+4.1 The regulatory valve must withstand a burst pressure of not less than 15.5 MPa.
+4.2 Test Protocol Token: AEROHYDRO_HYPERFLUX_VALVE_TEST_1790453443781
+4.3 Material must be austenitic grade conforming to Schedule IV.

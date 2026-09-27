@@ -1,0 +1,143 @@
+/**
+ * BISVEDA V9 — Stage 2: Route (lib/pipeline/route.ts)
+ * 
+ * Rules-first deterministic intent classifier.
+ * Outputs one of:
+ *  - 'identifier': exact IS / CM/L / HUID pattern (Speed Gate direct facts, no LLM)
+ *  - 'smalltalk': greetings, pleasantries (fixed template, no retrieval)
+ *  - 'gibberish': unparseable or random strings (fixed template)
+ *  - 'out_of_scope': not about products, standards, certification, testing, hallmarking
+ *  - 'needs_clarification': asking for standards/certification/labs but naming no product
+ *  - 'question': specific product or regulatory inquiry (flows to retrieval)
+ */
+
+import { NormalizedInput } from "./normalize";
+
+export type RouteOutcome =
+  | { kind: "identifier"; identifier: string; norm: string }
+  | { kind: "smalltalk"; reply: string; lang: string }
+  | { kind: "gibberish"; message: string }
+  | { kind: "out_of_scope"; topic: string; message: string }
+  | { kind: "needs_clarification"; prompt: string; options: Array<{ label: string; value: string }> }
+  | { kind: "question"; workingQuery: string };
+
+/**
+ * Checks for gibberish using vowel ratio and consonant clusters.
+ */
+function isGibberish(text: string): boolean {
+  const letters = text.replace(/[^a-zA-Z]/g, "").toLowerCase();
+  if (letters.length < 5) return false;
+  const vowels = letters.replace(/[^aeiou]/g, "").length;
+  const vowelRatio = vowels / letters.length;
+  // If fewer than 10% vowels or 6+ consecutive consonants
+  if (vowelRatio < 0.10 && letters.length > 6) return true;
+  if (/[bcdfghjklmnpqrstvwxyz]{6,}/i.test(letters)) return true;
+  return false;
+}
+
+/**
+ * Common product group options for the clarification gate.
+ */
+const CLARIFICATION_CHIPS = [
+  { label: "Two-Wheeler Helmets", value: "helmet" },
+  { label: "Domestic Pressure Cookers", value: "pressure cooker" },
+  { label: "Children's Toys", value: "toys" },
+  { label: "Packaged Drinking Water", value: "packaged drinking water" },
+  { label: "Gold Jewellery & Hallmarking", value: "gold jewellery" },
+  { label: "Steel & Construction (TMT)", value: "sariya steel" },
+];
+
+export function routeQuery(
+  input: NormalizedInput,
+  hasActiveProductInContext: boolean = false
+): RouteOutcome {
+  const q = input.normalizedText;
+  const qLower = q.toLowerCase();
+
+  // 1. Exact Identifier Match (Speed Gate)
+  // e.g. "IS 4151", "is4151:2015", "CM/L-1234567", "HUID ABC123"
+  const exactIsMatch = q.match(/^IS\s*[:\-]?\s*(\d{1,5}(?:\s*[\-:]?\s*(?:\((?:Part|Pt)\s*\d+\)|(?:Part|Pt)\s*[\-:]?\s*\d+))?)(?::\d{4})?$/i);
+  if (exactIsMatch || (input.canonicalStandards.length === 1 && q.length < 25 && !/\b(?:how|what|why|where|can|is|who|which)\b/i.test(qLower))) {
+    const std = input.canonicalStandards[0] || { id: q.toUpperCase(), norm: q.replace(/[^a-zA-Z0-9]/g, "").toUpperCase() };
+    return {
+      kind: "identifier",
+      identifier: std.id,
+      norm: std.norm,
+    };
+  }
+
+  // 2. Smalltalk & Greetings
+  const greetingsRegex = /^(?:hi|hello|hey|namaste|नमस्ते|good\s*(?:morning|afternoon|evening)|pranam|sup|hlo)(?:\b|\s|$|[!?.,])/iu;
+  if (greetingsRegex.test(qLower) && q.split(/\s+/).length <= 3) {
+    const isHindi = input.detectedLanguage === "hi";
+    return {
+      kind: "smalltalk",
+      lang: input.detectedLanguage,
+      reply: isHindi
+        ? "नमस्ते! मैं BISVEDA हूँ। आप भारतीय मानकों (Indian Standards), BIS प्रमाणीकरण (Certification) या परीक्षण प्रयोगशालाओं (Testing Labs) के बारे में पूछ सकते हैं। आप किस उत्पाद के बारे में जानना चाहते हैं?"
+        : "Hello! I am BISVEDA. I can help you find Indian Standards, check if BIS certification is mandatory, and locate recognized testing laboratories. Which product are you asking about?",
+    };
+  }
+
+  // 3. Gibberish Detection
+  if (isGibberish(q)) {
+    return {
+      kind: "gibberish",
+      message: "The entered text does not appear to be a recognizable query. Please ask about a product, standard, or BIS certification service.",
+    };
+  }
+
+  // 4. Out-of-Scope Queries (Recipes, weather, entertainment, non-standards)
+  const oosPatterns = [
+    /\b(?:frappuccino|starbucks|recipe|cook\s*pasta|bake\s*cake|pizza\s*dough)\b/i,
+    /\b(?:weather\s*(?:in|today|forecast)|temperature\s*in|will\s*it\s*rain)\b/i,
+    /\b(?:cricket\s*score|football\s*match|movie\s*ticket|stock\s*price|horoscope)\b/i,
+    /\b(?:quantum\s*teleportation|time\s*travel|warp\s*drive)\b/i,
+  ];
+  for (const r of oosPatterns) {
+    if (r.test(qLower)) {
+      return {
+        kind: "out_of_scope",
+        topic: q,
+        message: "This inquiry is outside the scope of the Bureau of Indian Standards (BIS) and Indian Standards. BISVEDA provides guidance on product standards, mandatory Quality Control Orders (QCOs), certification schemes, and recognized testing laboratories.",
+      };
+    }
+  }
+
+  // 5. Needs Clarification Trap (Fixes B3 & Ambiguous Product Disambiguation)
+  if (qLower === "helmet" || qLower === "helmets") {
+    return {
+      kind: "needs_clarification",
+      prompt: "Which type of helmet are you inquiring about?",
+      options: [
+        { label: "Motorcycle & Two-Wheeler Riders (IS 4151)", value: "motorcycle rider helmet IS 4151" },
+        { label: "Industrial & Construction Safety (IS 2925)", value: "industrial safety helmet IS 2925" },
+      ],
+    };
+  }
+
+  // Queries asking for standards/certification/licence but naming NO product, and no active product in conversation
+  const isGenericRegulatoryQuery =
+    /\b(?:applicable\s*indian\s*standards|applicable\s*standards|which\s*standards?|what\s*standards?|which\s*certification|how\s*to\s*get\s*license|apply\s*for\s*license|bis\s*certificate)\b/i.test(qLower);
+
+  const mentionsManufacturingOrGeneral =
+    /\b(?:for\s*manufacturing|for\s*production|for\s*my\s*product|do\s*i\s*need|to\s*sell|in\s*india)\b/i.test(qLower);
+
+  const hasSpecificProduct =
+    /\b(?:helmet|cooker|toy|toys|water|gold|sariya|cement|bottle|battery|power\s*bank|steel|cable|wire|pipe|shoes|textile|gas\s*stove|iron|plywood)\b/i.test(qLower) ||
+    input.canonicalStandards.length > 0;
+
+  if (isGenericRegulatoryQuery && !hasSpecificProduct && !hasActiveProductInContext) {
+    return {
+      kind: "needs_clarification",
+      prompt: "Which product are you asking about? Please select a product category below or specify your product name:",
+      options: CLARIFICATION_CHIPS,
+    };
+  }
+
+  // 6. Otherwise regular Question
+  return {
+    kind: "question",
+    workingQuery: input.workingEnglishText,
+  };
+}

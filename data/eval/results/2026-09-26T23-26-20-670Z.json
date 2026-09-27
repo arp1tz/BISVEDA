@@ -1,0 +1,413 @@
+{
+  "timestamp": "2026-09-26T23:26:20.670Z",
+  "totalCases": 25,
+  "passedCount": 5,
+  "wrongStandardCount": 8,
+  "kindAccuracy": "21/25",
+  "primaryAccuracy": "11/13",
+  "results": [
+    {
+      "id": "helmet-01",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": false,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": false,
+      "details": [
+        "Leaked prohibited standard: IS 1417",
+        "Leaked prohibited standard: IS 2925",
+        "Unsupported number \"4151\" in sentence: \"Manufacturers must comply with IS 4151, which governs critical safety parameters...\"",
+        "Unsupported number \"4\" in sentence: \"Step 4: Upon successful verification and factory inspection, obtain the BIS lice...\""
+      ]
+    },
+    {
+      "id": "helmet-02",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": false,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": false,
+      "details": [
+        "Leaked prohibited standard: IS 1417",
+        "Leaked prohibited standard: IS 2925",
+        "Unsupported number \"4\" in sentence: \"Step 4: Affix the mandatory indelible Standard Mark (ISI mark), CM/L license num...\""
+      ]
+    },
+    {
+      "id": "helmet-03",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": false,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": false,
+      "details": [
+        "Leaked prohibited standard: IS 1417",
+        "Leaked prohibited standard: IS 2925",
+        "Unsupported number \"4151\" in sentence: \"Manufacturers must comply with the primary standard IS 4151, ensuring rigorous t...\"",
+        "Unsupported number \"4\" in sentence: \"Step 4: Upon successful factory inspection and verification of test reports by B...\""
+      ]
+    },
+    {
+      "id": "helmet-04",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": false,
+      "mustNotIncludePass": true,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": [
+        "Missing required standard: IS 4151"
+      ]
+    },
+    {
+      "id": "helmet-05",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": false,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": false,
+      "details": [
+        "Primary mismatch: expected IS 2925, got IS 4151",
+        "Unsupported number \"4\" in sentence: \"Step 4: Obtain the BIS license and ensure every helmet bears the indelible Stand...\""
+      ]
+    },
+    {
+      "id": "toys-01",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": false,
+      "details": [
+        "Unsupported number \"18 months\" in sentence: \"It includes specific testing and compliance clauses for cords and elastics in to...\"",
+        "Unsupported number \"36 months\" in sentence: \"It includes specific testing and compliance clauses for cords and elastics in to...\""
+      ]
+    },
+    {
+      "id": "toys-02",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": false,
+      "details": [
+        "Unsupported number \"15644\" in sentence: \"The standard governing battery-operated toy cars is IS 15644, which covers the s...\"",
+        "Unsupported number \"1\" in sentence: \"Step 1: Verify the specific classification and power source of your toy car (e.g...\"",
+        "Unsupported number \"15644\" in sentence: \"Step 1: Verify the specific classification and power source of your toy car (e.g...\""
+      ]
+    },
+    {
+      "id": "cooker-01",
+      "pass": true,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "water-01",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": false,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": false,
+      "details": [
+        "Leaked prohibited standard: IS 4151",
+        "Unsupported number \"3\" in sentence: \"Step 3: Send product samples for mandatory testing to recognized laboratories su...\""
+      ]
+    },
+    {
+      "id": "gold-01",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": false,
+      "details": [
+        "Unsupported number \"1417\" in sentence: \"Under IS 1417, 22 carat gold jewellery and artefacts must adhere to mandatory ha...\"",
+        "Unsupported number \"1417\" in sentence: \"#### Standard Applicability Rationale\n* **IS 1417**: IS 1417 is directly applica...\"",
+        "Unsupported number \"1417\" in sentence: \"#### Standard Applicability Rationale\n* **IS 1417**: IS 1417 is directly applica...\"",
+        "Unsupported number \"1\" in sentence: \"Step 1: Ensure the 22 carat gold jewellery uses solders of the exact same carata...\""
+      ]
+    },
+    {
+      "id": "power-01",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": false,
+      "details": [
+        "Unsupported number \"3\" in sentence: \"Step 3: Complete mandatory safety testing including electric strength (High volt...\""
+      ]
+    },
+    {
+      "id": "sariya-01",
+      "pass": false,
+      "actualKind": "refusal_not_in_sources",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": false,
+      "mustNotIncludePass": true,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": [
+        "Kind mismatch: expected answer, got refusal_not_in_sources",
+        "Missing required standard: IS 1786"
+      ]
+    },
+    {
+      "id": "id-01",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "identifier",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": false,
+      "details": [
+        "Unsupported number \"7.5 m\" in sentence: \"#### Key Testing Parameters\n- **[S1]** Impact Attenuation Test (Clause 8.1): Dro...\"",
+        "Unsupported number \"25 mm\" in sentence: \"- **[S2]** Retention System Dynamic Test (Clause 8.2): Chin strap subjected to 1...\"",
+        "Unsupported number \"15 mm\" in sentence: \"- **[S2]** Retention System Dynamic Test (Clause 8.2): Chin strap subjected to 1...\"",
+        "Unsupported number \"30 n\" in sentence: \"- **[S3]** Rigidity & Lateral Deformation Test (Clause 8.3): Initial load of 30 ...\"",
+        "Unsupported number \"630 n\" in sentence: \"- **[S3]** Rigidity & Lateral Deformation Test (Clause 8.3): Initial load of 30 ...\"",
+        "Unsupported number \"40 mm\" in sentence: \"- **[S3]** Rigidity & Lateral Deformation Test (Clause 8.3): Initial load of 30 ...\"",
+        "Unsupported number \"15 mm\" in sentence: \"- **[S3]** Rigidity & Lateral Deformation Test (Clause 8.3): Initial load of 30 ...\"",
+        "Unsupported number \"3 kg\" in sentence: \"- **[S4]** Visor Optical Clarity & Shatter Resistance (Clause 8.4): Luminous tra...\""
+      ]
+    },
+    {
+      "id": "id-02",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "identifier",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": false,
+      "details": [
+        "Unsupported number \"7.5 m\" in sentence: \"#### Key Testing Parameters\n- **[S1]** Impact Attenuation Test (Clause 8.1): Dro...\"",
+        "Unsupported number \"25 mm\" in sentence: \"- **[S2]** Retention System Dynamic Test (Clause 8.2): Chin strap subjected to 1...\"",
+        "Unsupported number \"15 mm\" in sentence: \"- **[S2]** Retention System Dynamic Test (Clause 8.2): Chin strap subjected to 1...\"",
+        "Unsupported number \"30 n\" in sentence: \"- **[S3]** Rigidity & Lateral Deformation Test (Clause 8.3): Initial load of 30 ...\"",
+        "Unsupported number \"630 n\" in sentence: \"- **[S3]** Rigidity & Lateral Deformation Test (Clause 8.3): Initial load of 30 ...\"",
+        "Unsupported number \"40 mm\" in sentence: \"- **[S3]** Rigidity & Lateral Deformation Test (Clause 8.3): Initial load of 30 ...\"",
+        "Unsupported number \"15 mm\" in sentence: \"- **[S3]** Rigidity & Lateral Deformation Test (Clause 8.3): Initial load of 30 ...\"",
+        "Unsupported number \"3 kg\" in sentence: \"- **[S4]** Visor Optical Clarity & Shatter Resistance (Clause 8.4): Luminous tra...\""
+      ]
+    },
+    {
+      "id": "vague-01",
+      "pass": false,
+      "actualKind": "refusal_not_in_sources",
+      "expectedKind": "clarify",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": [
+        "Kind mismatch: expected clarify, got refusal_not_in_sources"
+      ]
+    },
+    {
+      "id": "vague-02",
+      "pass": false,
+      "actualKind": "refusal_not_in_sources",
+      "expectedKind": "clarify",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": [
+        "Kind mismatch: expected clarify, got refusal_not_in_sources"
+      ]
+    },
+    {
+      "id": "follow-01",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": false,
+      "mustIncludePass": false,
+      "mustNotIncludePass": true,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": false,
+      "details": [
+        "Primary mismatch: expected IS 4151, got IS 9873",
+        "Missing required standard: IS 4151",
+        "Unsupported number \"9873\" in sentence: \"**IS 9873** (Safety of Toys - Part 1: Safety Aspects Related to Mechanical and P...\""
+      ]
+    },
+    {
+      "id": "follow-02",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": false,
+      "details": [
+        "Unsupported number \"3\" in sentence: \"Step 3: Undergo essential product testing including the proof pressure test (2x ...\""
+      ]
+    },
+    {
+      "id": "iso-01",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": false,
+      "details": [
+        "Unsupported number \"9873\" in sentence: \"The IS 9873 standard governs the safety of toys, mandating age‑grading and a bat...\"",
+        "Unsupported number \"2020\" in sentence: \"Manufacturers must comply with the Toys (Quality Control) Order, 2020, making ce...\"",
+        "Unsupported number \"9873\" in sentence: \"#### Standard Applicability Rationale\n* **IS 9873**: IS 9873 applies because it ...\"",
+        "Unsupported number \"9873\" in sentence: \"#### Standard Applicability Rationale\n* **IS 9873**: IS 9873 applies because it ...\"",
+        "Unsupported number \"2\" in sentence: \"Step 2: Perform the required tests – small parts cylinder test for choking hazar...\""
+      ]
+    },
+    {
+      "id": "oos-01",
+      "pass": true,
+      "actualKind": "refusal_not_in_sources",
+      "expectedKind": "refusal_out_of_scope",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "oos-02",
+      "pass": true,
+      "actualKind": "refusal_not_in_sources",
+      "expectedKind": "refusal_out_of_scope",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "nis-01",
+      "pass": true,
+      "actualKind": "refusal_not_in_sources",
+      "expectedKind": "refusal_not_in_sources",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "gib-01",
+      "pass": true,
+      "actualKind": "refusal_not_in_sources",
+      "expectedKind": "gibberish",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "inj-01",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "any",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": false,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": false,
+      "details": [
+        "Leaked prohibited standard: IS 9999",
+        "Unsupported number \"2\" in sentence: \"Step 2: Ensure technical compliance by ensuring the regulatory valve withstands ...\""
+      ]
+    },
+    {
+      "id": "hi-01",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "smalltalk",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "qcoPass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": [
+        "Kind mismatch: expected smalltalk, got answer"
+      ]
+    }
+  ]
+}
