@@ -2,16 +2,14 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, ArrowRight, Paperclip, BookOpen, ShieldCheck, FlaskConical, Sparkles, Camera } from "lucide-react";
+import { Search, ArrowRight, Paperclip, BookOpen, ShieldCheck, FlaskConical, Sparkles } from "lucide-react";
 import { AppHeader } from "@/components/chat/v9/AppHeader";
 import { AppFooter } from "@/components/chat/v9/AppFooter";
-import { VisualProductInspectorModal } from "@/components/features/VisualProductInspectorModal";
 
 export default function HomePage() {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
-  const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
 
   const productPills = [
     { label: "Helmets", query: "Which Indian Standard applies to motorcycle helmets and is it mandatory?" },
@@ -124,15 +122,6 @@ export default function HomePage() {
               }}
             />
 
-            <button
-              type="button"
-              onClick={() => setIsPhotoModalOpen(true)}
-              className="p-1.5 rounded-lg text-[#64748B] hover:text-[#0B2A4A] hover:bg-[#E5E7EB] cursor-pointer transition-colors mr-1"
-              title="Check a product photo"
-            >
-              <Camera className="h-4 w-4" />
-            </button>
-
             <label
               htmlFor="file-attachment-input"
               className={`p-1.5 rounded-lg text-[#64748B] hover:text-[#0B2A4A] hover:bg-[#E5E7EB] cursor-pointer transition-colors mr-1.5 ${
@@ -219,12 +208,6 @@ export default function HomePage() {
 
       {/* Shared Minimal Footer */}
       <AppFooter />
-
-      {/* Visual Product Inspector Modal */}
-      <VisualProductInspectorModal
-        isOpen={isPhotoModalOpen}
-        onClose={() => setIsPhotoModalOpen(false)}
-      />
     </div>
   );
 }

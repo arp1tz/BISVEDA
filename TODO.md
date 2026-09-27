@@ -80,7 +80,7 @@ All are archive.org scans with an OCR layer. IS 1417 has 10 of 12 pages with no 
   - Call `parse_pdf_json.py` per PDF (reuse the `spawnSync` logic from `pdf-parser.ts`). **No fabricated fallback: throw on failure.**
   - Save to `data/kb/raw/{doc_id}.json`.
   - Strip the "Disclosure to Promote the Right To Information" cover pages and repeated headers/footers (lines that repeat on ≥50% of pages).
-- [ ] **1.3** `[Sonnet/High]` Chunk clause-aware, reusing `buildClauseSegments` / `chunkDocument` from `ingestion/pipeline.ts`:
+- [ ] **1.3** `[Sonnet/High]` Chunk clause-aware. `prototype/src/lib/ingestion/` was archived whole in P0 (its job-runner depended on the archived db/storage/local-db); reference `C:\BISVEDA_archive\prototype\src\lib\ingestion\pipeline.ts` for the general approach (`buildClauseSegments` / `chunkDocument`, lines ~196-393) but write a fresh, standalone chunker in `scripts/kb/chunk.ts` — do not restore the archived file or its imports:
   - New heading regex: `^(\d{1,2}(\.\d{1,2}){0,4})\s+[A-Z][A-Za-z]` or `^ANNEX\s+[A-Z]`. Reject top-level numbers above 40, and years.
   - Target 250–450 tokens, with overlap only inside a clause. Never split tables. Merge chunks under 80 characters into the next one.
   - Schema: `chunk_id, doc_id, standard_id, clause, clause_title, breadcrumb, page_start, page_end, text, tokens, sha256`.

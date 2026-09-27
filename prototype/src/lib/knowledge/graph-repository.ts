@@ -27,7 +27,7 @@ import {
   localGetLabsForStandard,
   localGetStandard,
   localGetAllStandards,
-} from "../local-db";
+} from "../kb/store";
 
 export class GraphRepository {
   /**

@@ -8,7 +8,7 @@
  */
 
 import { AdjudicationPackage } from "./adjudicate";
-import { ChunkRow } from "../local-db";
+import { ChunkRow } from "../kb/store";
 
 export interface Source {
   label: string;                // 'S1', 'S2', etc.

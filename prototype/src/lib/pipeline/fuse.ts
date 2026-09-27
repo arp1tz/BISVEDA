@@ -10,7 +10,7 @@
  */
 
 import { MultiStoreRetrievalResult, RetrievalHit } from "./retrieve";
-import { ChunkRow } from "../local-db";
+import { ChunkRow } from "../kb/store";
 
 /**
  * Standard Reciprocal Rank Fusion (RRF).

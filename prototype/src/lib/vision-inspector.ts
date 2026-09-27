@@ -14,7 +14,9 @@
 
 import { graphRepo } from "./knowledge/graph-repository";
 import { resolveProduct } from "./pipeline/product";
-import standardsData from "../../data/standards.json";
+// `prototype/data/standards.json` (fabricated seed data) was archived in P0.
+// P4 replaces this whole mock-inspection path; until then this stays empty.
+const standardsData: any[] = [];
 
 export interface VisualHotspot {
   id: string;

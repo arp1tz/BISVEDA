@@ -17,7 +17,7 @@ import {
   localSearchStandardsSemantic,
   localSearchStandardsTrigram,
   ChunkRow,
-} from "../local-db";
+} from "../kb/store";
 import { CanonicalIsNumber } from "./normalize";
 import { ProductResolution } from "./product";
 
