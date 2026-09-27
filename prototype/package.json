@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "eval:rag": "tsx scripts/eval-rag.ts"
+    "eval:rag": "tsx scripts/eval-rag.ts",
+    "kb:build": "tsx scripts/kb/build.ts",
+    "dir:labs": "tsx scripts/directory/labs.ts",
+    "dir:ahc": "tsx scripts/directory/ahc.ts"
   },
   "dependencies": {
     "@types/diff": "^7.0.2",

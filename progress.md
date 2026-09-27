@@ -10,7 +10,7 @@ One conversational BIS assistant whose answers are cited only from the employee-
 
 ## 📋 Iterative Feature Checklist
 - [x] P0: git snapshot + cleanup + deps prune -> Status: Complete
-- [ ] P1: KB build from PDFs + labs/AHC directories -> Status: Not Started
+- [x] P1: KB build from PDFs + labs/AHC directories -> Status: Complete
 - [ ] P2: KB store + hybrid retrieval + eval baseline -> Status: Not Started
 - [ ] P3: Conversational orchestrator + trust gate -> Status: Not Started
 - [ ] P4: Vision (helmet/toy/gold/other, ISI/CM/L/HUID/purity) -> Status: Not Started
@@ -20,7 +20,7 @@ One conversational BIS assistant whose answers are cited only from the employee-
 - [ ] P8: Eval suite green + demo script -> Status: Not Started
 
 ## 🧠 Current Context & Active State
-- **Current Task**: None (P0 done, P1 not started)
+- **Current Task**: None (P1 done, P2 not started)
 - **Latest State Blocks**:
   - P0 done: git init, snapshot commit, ~150 files/dirs moved to C:\BISVEDA_archive (V8 pages/APIs/components, legacy pipeline libs, services/, repos/, all fabricated seed JSON, scratch files). Root now: CLAUDE.md, progress.md, TODO.md, docs/, example docs/, prototype/, .env*, .gitignore.
   - Repointed 4 files (graph-repository.ts, fuse.ts, package.ts, retrieve.ts) from archived `local-db` to new stub `src/lib/kb/store.ts` (empty-result stubs, real impl in P2.1).
@@ -30,4 +30,20 @@ One conversational BIS assistant whose answers are cited only from the employee-
   - Kept `prototype/data/laboratories.json` (real BIS list, no fabricated scopes) and `prototype/data/eval/golden.jsonl` for reuse.
   - Verified: `npm install`, `npm run typecheck` (0 errors), `/` and `/chat/[id]` both return 200 in dev.
   - 2 commits: `638dd9f` snapshot, `6cc9441` P0 cleanup.
-- **Known Blockers / Bugs**: None. Note: `git` had to be installed mid-session; PATH must be refreshed per-PowerShell-call (`$env:Path = [Environment]::GetEnvironmentVariable(...)`) since it's a fresh process each time.
+  - **P1 (KB build), all code written and unit-verified against real HTTP fetches before writing parsers (not guessed):**
+    - `scripts/kb/{types,sources,parse,chunk,embed,standards,graph,build,env}.ts`. `npm run kb:build` orchestrates all of it.
+    - Registry: 9 docs (8 IS standards + Form I), duplicate IS 4151 scan excluded with a measured reason.
+    - Parse: all 9 PDFs are real digital text, 0 pages needed OCR (contradicts the earlier subagent audit's IS 1417 OCR claim — verified directly, trust this over the audit).
+    - Chunk: fresh regex-based clause chunker; measured 749 chunks across all 9 docs before embedding (is-4151:75, is-2925:63, is-15644:58, is-9873-1:244, is-9873-3:78, is-1417:25, is-1418:53, is-15820:150, form-i:3).
+    - Embed: hit Gemini free-tier per-minute quota (429) at ~100 calls with concurrency 5 on the first attempt. Fixed: sequential embedding with 700ms pacing + 20s backoff specifically on 429. Currently re-running in the background (~15-20 min expected; ~100 chunks were already cached from the first attempt so it resumes past those).
+    - `scripts/directory/labs.ts` (`dir:labs`): **completed and verified.** Design pivot from the original plan — instead of crawling `/home_lab_scope/{id}/` per lab id, discovered (via raw `Invoke-WebRequest`, not WebFetch-tool guessing) that `https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no={num}` is a global reverse lookup: one request per KB standard's base IS number returns every lab nationwide with that standard in scope. 7 requests total. Output: 29 labs across IS 4151(7) IS 2925(9) IS 15644(16) IS 9873 Pt1(9) Pt3(4) IS 1417(1); 0 for IS 1418/IS 15820 (correct — those aren't standards a lab gets "recognised" against). Joined to kept `prototype/data/laboratories.json` by OSL code for city/state/lat/lng.
+    - `scripts/directory/ahc.ts` (`dir:ahc`): design pivot — Manak Online's AHC list has no pagination, one fetch returns ~1,650 rows. Geocodes by unique (district,state) pair via Nominatim (not per-record). **Completed: 1651 AHCs, 1512 operative, 1490 geocoded, 161 listed without coordinates (never guessed).**
+    - HTML parsing note for both scrapers: strip `<!--...-->` comments first, then take positionally-known leading cells + the *last two* real `<td>` cells per row (Validity/Remark) — verified by hand against raw fetched HTML before writing regex, not guessed.
+  - **P1 final measured numbers:** 8 standards, 760 chunks (0 missing embeddings), 320 graph nodes / 343 edges (includes lab TESTS edges and ahc_region HALLMARKS edges). Full breakdown and the 2 known content-quality limitations (IS 1417 2-column interleaving on p.10; IS 15644/IS 9873 Pt.1 corrupted-font clause numbers on some pages, honestly falling back to clause "0" rather than a fabricated number) are in TODO.md's P1 done-when block — read that before touching `scripts/kb/chunk.ts` or `standards.ts` again.
+  - Fixed 2 real bugs mid-build: chunk-merge direction was backward instead of forward (`chunk.ts`); Gemini free-tier embedding quota (~100 req/min) needed sequential pacing instead of concurrency-5 (`embed.ts`/`build.ts`).
+  - `npm run kb:build`, `npm run dir:labs`, `npm run dir:ahc` are all idempotent and safe to re-run (cached).
+- **Known Blockers / Bugs**:
+  - `git` had to be installed mid-session; PATH must be refreshed per-PowerShell-call (`$env:Path = [Environment]::GetEnvironmentVariable(...)`) since it's a fresh process each time.
+  - Background PowerShell tasks piped through `Select-Object -Last N` buffer ALL output until the process exits — the `.output` file stays empty the whole time it's running. Don't try to poll progress on these; just wait for the completion notification.
+  - Gemini embedding free tier: ~100 requests/minute. `embed.ts`/`build.ts` now pace for this; if `GEMINI_API_KEY` changes tier, the 700ms delay in `build.ts`'s `embedAll()` can be reduced.
+  - Two content-quality limitations in the source PDFs themselves (not bugs in our code) — see TODO.md P1 for detail: IS 1417 p.10 has genuine 2-column text interleaving; IS 15644 (and a few IS 9873 Pt.1 pages) have a corrupted embedded font that turns some clause numbers into wrong characters, so that content sits under clause "0" instead of a real clause id.

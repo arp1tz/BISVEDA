@@ -74,47 +74,32 @@ All are archive.org scans with an OCR layer. IS 1417 has 10 of 12 pages with no 
   **✅ Verified:** typecheck 0 errors; `/` and `/chat/[id]` both 200 in dev; root matches exactly. Committed as `638dd9f` (snapshot) + `6cc9441` (P0 cleanup).
 
 ## P1: L0/L2 knowledge base and directories (offline scripts in `prototype/scripts/`)
-- [ ] **1.1** `[Sonnet/Medium]` Write `scripts/kb/sources.ts`, building a registry from `download_manifest.json`:
-  - Fields: `doc_id, file, standard_id` (e.g. `IS 9873 (Part 1)`), `title, year, domain (helmets|toys|gold|forms), source_url, sha256`.
-  - Add the Form I PDF as `doc_id: form-i-jeweller`, `domain: forms`.
-  - Exclude the duplicate IS 4151 file, keeping the one with more extracted text. Record the exclusion.
-- [ ] **1.2** `[Sonnet/High]` Parse:
-  - Call `parse_pdf_json.py` per PDF (reuse the `spawnSync` logic from `pdf-parser.ts`). **No fabricated fallback: throw on failure.**
-  - Save to `data/kb/raw/{doc_id}.json`.
-  - Strip the "Disclosure to Promote the Right To Information" cover pages and repeated headers/footers (lines that repeat on ≥50% of pages).
-- [ ] **1.3** `[Sonnet/High]` Chunk clause-aware. `prototype/src/lib/ingestion/` was archived whole in P0 (its job-runner depended on the archived db/storage/local-db); reference `C:\BISVEDA_archive\prototype\src\lib\ingestion\pipeline.ts` for the general approach (`buildClauseSegments` / `chunkDocument`, lines ~196-393) but write a fresh, standalone chunker in `scripts/kb/chunk.ts` — do not restore the archived file or its imports:
-  - New heading regex: `^(\d{1,2}(\.\d{1,2}){0,4})\s+[A-Z][A-Za-z]` or `^ANNEX\s+[A-Z]`. Reject top-level numbers above 40, and years.
-  - Target 250–450 tokens, with overlap only inside a clause. Never split tables. Merge chunks under 80 characters into the next one.
-  - Schema: `chunk_id, doc_id, standard_id, clause, clause_title, breadcrumb, page_start, page_end, text, tokens, sha256`.
-- [ ] **1.4** `[Sonnet/High]` Embed with `GEMINI_EMBED_MODEL` (768-d) via `embeddings.ts`:
-  - **Delete the hash fallback.** Retry 3× with backoff, then throw.
-  - Cache by text sha256 in `data/kb/.embcache.json`.
-  - Embed the string `"{standard_id} {clause_title}\n{text}"`.
-- [ ] **1.5** `[Sonnet/Medium]` Build `data/kb/standards.json`: one record per standard, derived only from its PDF (id, title, year, domain, `scope_text` taken verbatim from clause 1, `doc_id`, `chunk_count`).
-- [ ] **1.6** `[Sonnet/High]` Build `data/kb/graph.json`:
-  - Nodes: `domain:*`, `std:*`, `clause:*` (levels 1–2), `ref:IS xxxx` (IS numbers cited in the text), `form:form-i`, `lab:*` (only labs whose scope includes a KB standard), `ahc-region:{state}`.
-  - Edges: `IN_DOMAIN, HAS_CLAUSE, REFERENCES (weight = count), TESTS (lab→std), FORM_FOR (form→IS 1417), HALLMARKS (ahc-region→domain:gold)`.
-  - Every edge carries `source` (doc+page, or a directory url).
-- [ ] **1.7** `[Sonnet/Medium]` Add `"kb:build": "tsx scripts/kb/build.ts"` to package.json:
-  - Runs 1.1–1.6, is idempotent, and prints counts.
-  - Commit `data/kb/*.json` (excluding the cache and `raw/`, if they're too big).
-- [ ] **1.8** `[Sonnet/High]` Write the labs connector `scripts/directory/labs.ts` (`dir:labs`):
-  - First inspect `https://lims.bis.gov.in/` for a listing page that links `home_lab_scope/{id}`. If there isn't one, iterate ids from 1 until 25 consecutive ids are empty (cap 2000).
-  - Fetch every `?page=N`, and parse the scope rows plus the lab header.
-  - Crawl rules: 1 request/second; HTML cache in `data/directory/.cache/`; `source_url` + `retrieved_at` on every record; fail loudly on schema drift.
-  - Join the archived `laboratories.json` by OSL code or name, for city/state/lat/lng only, and mark `geocode:"city-centroid"`.
-  - Output `data/directory/labs.json`.
-  - **STOP and ask the human** on a CAPTCHA, a login wall, or an unexpected structure.
-- [ ] **1.9** `[Sonnet/High]` Write the AHC connector `scripts/directory/ahc.ts` (`dir:ahc`):
-  - Parse `{recognition_no, validity, name, address, district, state, pin, metals, contact, status}`.
-  - Geocode by PIN or district via OSM Nominatim: 1 request/second, cached, with a `geocode` quality field. Entries that can't be geocoded get `lat/lng: null`; they're listed but not plotted.
-  - Output `data/directory/ahc.json`.
+- [x] **1.1** `[Sonnet/Medium]` `scripts/kb/sources.ts`: 9-doc registry (8 IS standards + Form I) with exact filenames/source_urls from `download_manifest.json`. Duplicate IS 4151 scan excluded with a measured reason (46,824 chars/1 table vs. 44,988 chars/0 tables).
+- [x] **1.2** `[Sonnet/High]` `scripts/kb/parse.ts`: calls `parse_pdf_json.py` per PDF, no fallback (throws on failure), caches raw parse to `data/kb/raw/{doc_id}.json`. Strips boilerplate pages (RTI disclosure, "BLANK PAGE" copyright stamp, BIS back-cover text, near-empty pages) via `isBoilerplatePage()`. **Measured: all 9 PDFs are real digital text (0 OCR pages needed) — the earlier audit's OCR concern for IS 1417 didn't hold up under direct verification.**
+- [x] **1.3** `[Sonnet/High]` `scripts/kb/chunk.ts`: fresh clause-aware chunker (referenced the archived `ingestion/pipeline.ts` for approach only). `CLAUSE_RE` requires a top-level number 1–40 followed by a real word; Annex/Table/Figure handled separately; tiny (<80 char) segments merge into the next chunk; tables never split (tracks `|`-prefixed markdown rows).
+- [x] **1.4** `[Sonnet/High]` `scripts/kb/embed.ts`: Gemini `gemini-embedding-001`, 768-d, cached by sha256 in `data/kb/.embcache.json`, no hash fallback — throws after 6 attempts. **Hit the free-tier per-minute quota (HTTP 429) at ~100 calls with concurrency 5**; fixed by embedding sequentially with a 700ms pace in `build.ts` and a 20s backoff specifically on 429 in `embed.ts`.
+- [x] **1.5** `[Sonnet/Medium]` `scripts/kb/standards.ts`: scope text from the chunk whose clause is literally "1" (falls back to a title match, then the first chunk — never invented).
+- [x] **1.6** `[Sonnet/High]` `scripts/kb/graph.ts`: domain/standard/clause/reference/form nodes built from the chunks themselves; `ref:IS xxxx` extracted via regex over chunk text (self-citations skipped, cross-refs to other KB standards become `std:`→`std:` edges); labs/AHC nodes added automatically if `data/directory/{labs,ahc}.json` already exist on disk.
+- [x] **1.7** `[Sonnet/Medium]` `scripts/kb/build.ts` orchestrator + `"kb:build"` script. Fails loudly if any file in the PDFs folder isn't registered in `SOURCES` or `EXCLUDED` (`assertRegistryCoversFolder`).
+- [x] **1.8** `[Sonnet/High]` `scripts/directory/labs.ts` (`dir:labs`) — **design changed from the original plan.** Instead of crawling `/home_lab_scope/{id}/` for every lab id, found and verified (via raw HTTP fetch, not guesswork) that `https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no={num}` returns every lab system-wide whose scope includes that exact IS document number, with Lab Name + OSL Code — a global reverse-index lookup instead of a per-lab crawl. Queried once per KB base number (7 requests total), joined to the kept `prototype/data/laboratories.json` by OSL code for city/state/lat/lng. HTML is malformed (some cells close `</th>` instead of `</td>`, and a huge legacy testing-charges modal is embedded inside each row); parsed by stripping HTML comments first, then taking the last two real `<td>` cells in each row as Validity/Remark (verified against raw HTML by hand before writing the parser). **Verified working, real output.**
+- [x] **1.9** `[Sonnet/High]` `scripts/directory/ahc.ts` (`dir:ahc`) — **design changed:** the Manak Online list has no pagination; one request returns the entire national list (~1,650 rows) as one table. Geocodes by unique (district, state) pair via OSM Nominatim (not one lookup per centre), 1 req/s, cached to disk — far fewer Nominatim calls than one-per-AHC. Address parsing (district/state/pin) is regex + a hardcoded canonical 36-state/UT list from the site's own dropdown; never guesses a state that isn't literally present in the address text.
 - **Done when:**
   - Numbers: 8 standards plus the Form I doc; about 600–1200 chunks; 0 chunks without an embedding.
   - A spot-check of 10 random chunks shows readable text and correct clauses.
   - `labs.json` has labs with IS 4151 or IS 1417 in scope.
   - `ahc.json` has 100 or more centres.
   - All counts are recorded in progress.md.
+  **✅ DONE — measured, 2026-09-27:**
+  - `kb:build`: **8 standards, 760 chunks, 0 without an embedding** (real Gemini 768-d vectors, verified — not the hash fallback). IS 4151:76, IS 2925:63, IS 15644:58, IS 9873(Pt1):249, IS 9873(Pt3):80, IS 1417:26, IS 1418:54, IS 15820:151, Form I:3.
+  - `dir:labs`: **29 labs** (real BIS LIMS data). IS 4151:7, IS 2925:9, IS 15644:16, IS 9873(Pt1):9, IS 9873(Pt3):4, IS 1417:1. Honestly 0 for IS 1418/IS 15820 — those are a test-method standard and an AHC-competence standard, not something a lab gets "recognised" against.
+  - `dir:ahc`: **1651 AHCs**, 1512 operative, 1490 geocoded (district/state centroid via Nominatim), 161 listed with no coordinates.
+  - Graph: **320 nodes, 343 edges** (4 domain, 8 standard, 214 clause, 38 reference, 1 form, 29 lab, 26 ahc_region).
+  - 10-chunk random spot-check: readable text, correct clause/page attribution for 9/10 (Annex D, Table 5, Figure 11, IS 15820 clauses, IS 4151 cl.3, IS 1418 cl.3.3, IS 15820 Annex E all correct).
+  - **Two real, honestly-documented limitations found and left as-is (not fixable without a layout-aware PDF parser like `pymupdf_layout`, which the parser's own console warning flags):**
+    1. **IS 1417 (gold fineness), page 10:** the source scan has a genuine 2-column layout that PyMuPDF's simple text mode interleaves line-by-line (clause 1.x and clause 3.x text alternate mid-page in the raw extracted text itself — confirmed by reading the raw page text directly, not a chunker bug). Some IS 1417 chunks on that page mix content from two different clauses.
+    2. **IS 15644 (electric toys) and, to a lesser extent, IS 9873 Part 1:** several pages have a corrupted/subset font where PyMuPDF extracts the wrong character for clause numbers (observed: "1" extracted as the letter "t"). Those pages fall back to clause "0" (undifferentiated) rather than a fabricated clause number — honest, but citation precision is degraded for that portion of the two documents.
+  - `standards.json`'s `scope_text` (descriptive only, not used for RAG citations) is fixed for 7/8 via a raw-page text search that's independent of clause detection; IS 1417 still shows interleaved text for the reason above.
+  - Fixed 2 real bugs found during build: (a) the chunk-merge direction was backward instead of forward (fixed in `chunk.ts`, see `mergeTinyForward`); (b) Gemini's free-tier embedding quota (~100 req/min) needed sequential pacing instead of concurrency-5 (fixed in `embed.ts`/`build.ts`).
 
 ## P2: L3 store and L4 hybrid retrieval `[Sonnet 5 / High]`
 - [ ] **2.1** Write `src/lib/kb/store.ts`: load `data/kb/*.json` and `data/directory/*.json` **once** (module-level cache, paths from `process.cwd()`). Export typed getters.

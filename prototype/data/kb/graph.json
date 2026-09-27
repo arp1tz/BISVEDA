@@ -1,0 +1,4718 @@
+{
+  "nodes": [
+    {
+      "id": "domain:helmets",
+      "type": "domain",
+      "label": "helmets"
+    },
+    {
+      "id": "domain:toys",
+      "type": "domain",
+      "label": "toys"
+    },
+    {
+      "id": "domain:gold",
+      "type": "domain",
+      "label": "gold"
+    },
+    {
+      "id": "domain:forms",
+      "type": "domain",
+      "label": "forms"
+    },
+    {
+      "id": "std:IS 4151",
+      "type": "standard",
+      "label": "IS 4151",
+      "props": {
+        "title": "Protective Helmets for Motorcycle Riders — Specification (Third Revision)",
+        "year": 1993,
+        "chunk_count": 76
+      }
+    },
+    {
+      "id": "std:IS 2925",
+      "type": "standard",
+      "label": "IS 2925",
+      "props": {
+        "title": "Specification for Industrial Safety Helmets (Second Revision)",
+        "year": 1984,
+        "chunk_count": 63
+      }
+    },
+    {
+      "id": "std:IS 15644",
+      "type": "standard",
+      "label": "IS 15644",
+      "props": {
+        "title": "Safety of Electric Toys",
+        "year": 2006,
+        "chunk_count": 58
+      }
+    },
+    {
+      "id": "std:IS 9873 (Part 1)",
+      "type": "standard",
+      "label": "IS 9873 (Part 1)",
+      "props": {
+        "title": "Safety Requirements for Toys, Part 1: Safety Aspects Related to Mechanical and Physical Properties",
+        "year": 2012,
+        "chunk_count": 249
+      }
+    },
+    {
+      "id": "std:IS 9873 (Part 3)",
+      "type": "standard",
+      "label": "IS 9873 (Part 3)",
+      "props": {
+        "title": "Safety Requirements for Toys, Part 3: Migration of Certain Elements",
+        "year": 1999,
+        "chunk_count": 80
+      }
+    },
+    {
+      "id": "std:IS 1417",
+      "type": "standard",
+      "label": "IS 1417",
+      "props": {
+        "title": "Gold and Gold Alloys, Jewellery/Artefacts — Fineness and Marking",
+        "year": 1999,
+        "chunk_count": 26
+      }
+    },
+    {
+      "id": "std:IS 1418",
+      "type": "standard",
+      "label": "IS 1418",
+      "props": {
+        "title": "Determination of Gold in Gold Bullion, Gold Alloys and Gold Jewellery/Artefacts — Cupellation (Fire Assay) Method",
+        "year": 2009,
+        "chunk_count": 54
+      }
+    },
+    {
+      "id": "std:IS 15820",
+      "type": "standard",
+      "label": "IS 15820",
+      "props": {
+        "title": "General Requirement for Competence of Assaying and Hallmarking Centres",
+        "year": 2009,
+        "chunk_count": 151
+      }
+    },
+    {
+      "id": "clause:IS 4151#0",
+      "type": "clause",
+      "label": "0 Protective Helmets for Motorcycle Riders — Specification (Third Revision)",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 3
+      }
+    },
+    {
+      "id": "clause:IS 4151#1",
+      "type": "clause",
+      "label": "1 SCOPE",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 4151#1.2",
+      "type": "clause",
+      "label": "1.2 The helmets covered by this standard are",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 4151#2",
+      "type": "clause",
+      "label": "2 REFERENCES",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 4151#3",
+      "type": "clause",
+      "label": "3 TERMINOLOGY",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 4151#3.1",
+      "type": "clause",
+      "label": "3.1 Motor Cycle",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 4151#3.2",
+      "type": "clause",
+      "label": "3.2 ProtectIve Helmet",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 4151#3.3",
+      "type": "clause",
+      "label": "3.3 SIMU",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 4151#3.5",
+      "type": "clause",
+      "label": "3.5 Comfort Pad\".,",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 4151#3.7",
+      "type": "clause",
+      "label": "3.7 Peak",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 4151#3.9",
+      "type": "clause",
+      "label": "3.9 Visor",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 4151#4.1",
+      "type": "clause",
+      "label": "4.1 ShU",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 4151#4.4",
+      "type": "clause",
+      "label": "4.4 Retcatio. SJltem",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 4151#4.5",
+      "type": "clause",
+      "label": "4.5 Metal Parts",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 4151#3.10",
+      "type": "clause",
+      "label": "3.10 Goggles",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 4151#4.6",
+      "type": "clause",
+      "label": "4.6 Visor",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 4151#3.13",
+      "type": "clause",
+      "label": "3.13 Central Vertical Axis",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 4151#3.14",
+      "type": "clause",
+      "label": "3.14 Refereace Plalile",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 4151#5",
+      "type": "clause",
+      "label": "5 SIZES",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 4151#6",
+      "type": "clause",
+      "label": "6 CONSfRUCTIONAL REQUIIlEM~TS",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 4151#6.2",
+      "type": "clause",
+      "label": "6.2 Shell",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 9
+      }
+    },
+    {
+      "id": "clause:IS 4151#6.3",
+      "type": "clause",
+      "label": "6.3 Protecthe Paddlog",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 9
+      }
+    },
+    {
+      "id": "clause:IS 4151#6.4",
+      "type": "clause",
+      "label": "6.4 RetentioB System",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 9
+      }
+    },
+    {
+      "id": "clause:IS 4151#6.6",
+      "type": "clause",
+      "label": "6.6 Visor",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 11
+      }
+    },
+    {
+      "id": "clause:IS 4151#7",
+      "type": "clause",
+      "label": "7 WORKMANSHiP AND FINISH",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 11
+      }
+    },
+    {
+      "id": "clause:IS 4151#8",
+      "type": "clause",
+      "label": "8 MASS",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 11
+      }
+    },
+    {
+      "id": "clause:IS 4151#9.2",
+      "type": "clause",
+      "label": "9.2 IleIIItuee-to-JelMtratioll Teat",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 13
+      }
+    },
+    {
+      "id": "clause:IS 4151#15",
+      "type": "clause",
+      "label": "15 DUD distant from each other and from any",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 13
+      }
+    },
+    {
+      "id": "clause:IS 4151#9.3",
+      "type": "clause",
+      "label": "9.3 JUaWity Teat",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 13
+      }
+    },
+    {
+      "id": "clause:IS 4151#9.8",
+      "type": "clause",
+      "label": "9.8 FlexibUlty of Peak",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 14
+      }
+    },
+    {
+      "id": "clause:IS 4151#9.5",
+      "type": "clause",
+      "label": "9.5 Audibility Test",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 14
+      }
+    },
+    {
+      "id": "clause:IS 4151#9.6",
+      "type": "clause",
+      "label": "9.6 Retention Test of Helmet",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 14
+      }
+    },
+    {
+      "id": "clause:IS 4151#10",
+      "type": "clause",
+      "label": "10 SAMPLING AND CRITERIA FOR",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 14
+      }
+    },
+    {
+      "id": "clause:IS 4151#11",
+      "type": "clause",
+      "label": "11 INSTRUCTIONS",
+      "props": {
+        "standard_id": "IS 4151",
+        "page": 14
+      }
+    },
+    {
+      "id": "clause:IS 2925#0",
+      "type": "clause",
+      "label": "0 Specification for Industrial Safety Helmets (Second Revision)",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 3
+      }
+    },
+    {
+      "id": "clause:IS 2925#1",
+      "type": "clause",
+      "label": "1 SCOPE",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 5
+      }
+    },
+    {
+      "id": "clause:IS 2925#2",
+      "type": "clause",
+      "label": "2 TERMINOLOGY",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 5
+      }
+    },
+    {
+      "id": "clause:IS 2925#2.2",
+      "type": "clause",
+      "label": "2.2 Chinstrap -",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 5
+      }
+    },
+    {
+      "id": "clause:IS 2925#2.3",
+      "type": "clause",
+      "label": "2.3 Harness -",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 5
+      }
+    },
+    {
+      "id": "clause:IS 2925#2.4",
+      "type": "clause",
+      "label": "2.4 Peak -",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 2925#2.6",
+      "type": "clause",
+      "label": "2.6 Ventilation Holes _. Holes provided in the shell",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 2925#3",
+      "type": "clause",
+      "label": "3 MATERIAL",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 2925#3.2",
+      "type": "clause",
+      "label": "3.2 Harness -- The criteria for the selection of material",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 2925#3.3",
+      "type": "clause",
+      "label": "3.3 Metal Parts -",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 2925#4",
+      "type": "clause",
+      "label": "4 SIZES",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 2925#5",
+      "type": "clause",
+      "label": "5 CONSTRUCTION",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 2925#5.2",
+      "type": "clause",
+      "label": "5.2 Harness",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 2925#5.3",
+      "type": "clause",
+      "label": "5.3 Chin Strap or Nape Strap -",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 2925#5.5",
+      "type": "clause",
+      "label": "5.5 Cable Clip (Where Required) -",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 2925#6",
+      "type": "clause",
+      "label": "6 WORKMANSHIP AND FINISH",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 2925#7",
+      "type": "clause",
+      "label": "7 MASS",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 9
+      }
+    },
+    {
+      "id": "clause:IS 2925#8",
+      "type": "clause",
+      "label": "8 PERFORl\\1ANCE REQUIREMENTS",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 9
+      }
+    },
+    {
+      "id": "clause:IS 2925#8.2",
+      "type": "clause",
+      "label": "8.2 Penetration Resistance -",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 9
+      }
+    },
+    {
+      "id": "clause:IS 2925#8.3",
+      "type": "clause",
+      "label": "8.3 Flammability Resistance -",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 9
+      }
+    },
+    {
+      "id": "clause:IS 2925#8.4",
+      "type": "clause",
+      "label": "8.4 Electrical Resistance -",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 9
+      }
+    },
+    {
+      "id": "clause:IS 2925#8.5",
+      "type": "clause",
+      "label": "8.5 Water Absorption -",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 9
+      }
+    },
+    {
+      "id": "clause:IS 2925#8.6",
+      "type": "clause",
+      "label": "8.6 Heat Resistance -",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 9
+      }
+    },
+    {
+      "id": "clause:IS 2925#9",
+      "type": "clause",
+      "label": "9 SAMPLING AND CRITERIA FOR CONFORMITY",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 10
+      }
+    },
+    {
+      "id": "clause:IS 2925#10",
+      "type": "clause",
+      "label": "10 MARKING",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 10
+      }
+    },
+    {
+      "id": "clause:IS 2925#11.1",
+      "type": "clause",
+      "label": "11.1 Each helmet shall be clearly and indelibly marked",
+      "props": {
+        "standard_id": "IS 2925",
+        "page": 10
+      }
+    },
+    {
+      "id": "clause:IS 15644#0",
+      "type": "clause",
+      "label": "0 Safety of Electric Toys",
+      "props": {
+        "standard_id": "IS 15644",
+        "page": 4
+      }
+    },
+    {
+      "id": "clause:IS 15644#1.8",
+      "type": "clause",
+      "label": "1.8 Clearances",
+      "props": {
+        "standard_id": "IS 15644",
+        "page": 28
+      }
+    },
+    {
+      "id": "clause:IS 15644#9",
+      "type": "clause",
+      "label": "9 Bahadur",
+      "props": {
+        "standard_id": "IS 15644",
+        "page": 38
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#0",
+      "type": "clause",
+      "label": "0 Safety Requirements for Toys, Part 1: Safety Aspects Related to Mechanical and Physical Properties",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 4
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.1",
+      "type": "clause",
+      "label": "4.1 Normal use",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 20
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.2",
+      "type": "clause",
+      "label": "4.2 Reasonably foreseeable abuse",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 21
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.3",
+      "type": "clause",
+      "label": "4.3 Material",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 21
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.4",
+      "type": "clause",
+      "label": "4.4 Small parts",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 21
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.5",
+      "type": "clause",
+      "label": "4.5 Shape, size and strength of certain toys",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 22
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.7",
+      "type": "clause",
+      "label": "4.7 Points",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 28
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.8",
+      "type": "clause",
+      "label": "4.8 Projections",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 28
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.9",
+      "type": "clause",
+      "label": "4.9 Metal wires and rods",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 29
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.10",
+      "type": "clause",
+      "label": "4.10 Plastic film or plastic bags in packaging and in toys",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 29
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.12",
+      "type": "clause",
+      "label": "4.12 Folding mechanisms",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 31
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.13",
+      "type": "clause",
+      "label": "4.13 Holes, clearances and accessibility of mechanisms",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 33
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.14",
+      "type": "clause",
+      "label": "4.14 Springs",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 35
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.15",
+      "type": "clause",
+      "label": "4.15 Stability and overload requirements",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 35
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.16",
+      "type": "clause",
+      "label": "4.16 Enclosures",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 36
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.17",
+      "type": "clause",
+      "label": "4.17 Simulated protective equipment, such as helmets, hats and goggles",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 38
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.18",
+      "type": "clause",
+      "label": "4.18 Projectile toys",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 38
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.19",
+      "type": "clause",
+      "label": "4.19 Aquatic toys",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 39
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.20",
+      "type": "clause",
+      "label": "4.20 Braking",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 40
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.21",
+      "type": "clause",
+      "label": "4.21 Toy bicycles",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 40
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.23",
+      "type": "clause",
+      "label": "4.23 Toys containing a heat source",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 41
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.24",
+      "type": "clause",
+      "label": "4.24 Liquid-filled toys",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 42
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.25",
+      "type": "clause",
+      "label": "4.25 Mouth-actuated toys",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 42
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.26",
+      "type": "clause",
+      "label": "4.26 Toy roller skates, toy inline skates and toy skateboards",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 42
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.27",
+      "type": "clause",
+      "label": "4.27 Percussion caps",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 43
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.28",
+      "type": "clause",
+      "label": "4.28 Acoustic requirements",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 43
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#4.29",
+      "type": "clause",
+      "label": "4.29 Toy scooters",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 43
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.1",
+      "type": "clause",
+      "label": "5.1 General",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 45
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.2",
+      "type": "clause",
+      "label": "5.2 Small parts test",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 46
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.5",
+      "type": "clause",
+      "label": "5.5 Test for pompoms",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 48
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.6",
+      "type": "clause",
+      "label": "5.6 Test for pre-school play figures",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 48
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.7",
+      "type": "clause",
+      "label": "5.7 Accessibility of a part or component",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 48
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.8",
+      "type": "clause",
+      "label": "5.8 Sharp-edge test",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 50
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.9",
+      "type": "clause",
+      "label": "5.9 Sharp-point test",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 52
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.10",
+      "type": "clause",
+      "label": "5.10 Determination of thickness of plastic film and sheeting",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 54
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.11",
+      "type": "clause",
+      "label": "5.11 Test for cords",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 54
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.12",
+      "type": "clause",
+      "label": "5.12 Stability and overload tests",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 55
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.13",
+      "type": "clause",
+      "label": "5.13 Test for closures and toy chest lids",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 57
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.14",
+      "type": "clause",
+      "label": "5.14 Impact test for toys that cover the face",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 57
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.15",
+      "type": "clause",
+      "label": "5.15 Kinetic energy of projectiles, bows and arrows",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 58
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.16",
+      "type": "clause",
+      "label": "5.16 Free-wheeling facility and brake performance test",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 59
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.17",
+      "type": "clause",
+      "label": "5.17 Determination of speed of electrically driven ride-on toys",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 60
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.18",
+      "type": "clause",
+      "label": "5.18 Determination of temperature increases",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 61
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.19",
+      "type": "clause",
+      "label": "5.19 Leakage of liquid-filled toys",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 61
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.20",
+      "type": "clause",
+      "label": "5.20 Durability of mouth-actuated toys",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 61
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.21",
+      "type": "clause",
+      "label": "5.21 Expanding materials",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 61
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.22",
+      "type": "clause",
+      "label": "5.22 Folding or sliding mechanisms",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 62
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.23",
+      "type": "clause",
+      "label": "5.23 Washable toys",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 63
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.24",
+      "type": "clause",
+      "label": "5.24 Reasonably foreseeable abuse tests",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 63
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.26",
+      "type": "clause",
+      "label": "5.26 Static strength for toy scooters",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 74
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 1)#5.30",
+      "type": "clause",
+      "label": "5.30 Resistance to separation of handlebar",
+      "props": {
+        "standard_id": "IS 9873 (Part 1)",
+        "page": 79
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 3)#0",
+      "type": "clause",
+      "label": "0 Safety Requirements for Toys, Part 3: Migration of Certain Elements",
+      "props": {
+        "standard_id": "IS 9873 (Part 3)",
+        "page": 4
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 3)#11",
+      "type": "clause",
+      "label": "11 Maximum acceptable levels of  phthalates",
+      "props": {
+        "standard_id": "IS 9873 (Part 3)",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 3)#11.1",
+      "type": "clause",
+      "label": "11.1 Method of test for determination of phthalates in toys",
+      "props": {
+        "standard_id": "IS 9873 (Part 3)",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 3)#1",
+      "type": "clause",
+      "label": "1 Scope",
+      "props": {
+        "standard_id": "IS 9873 (Part 3)",
+        "page": 17
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 3)#2",
+      "type": "clause",
+      "label": "2 Normative references",
+      "props": {
+        "standard_id": "IS 9873 (Part 3)",
+        "page": 18
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 3)#3",
+      "type": "clause",
+      "label": "3 Definitions",
+      "props": {
+        "standard_id": "IS 9873 (Part 3)",
+        "page": 18
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 3)#4",
+      "type": "clause",
+      "label": "4 Maximum acceptable levels",
+      "props": {
+        "standard_id": "IS 9873 (Part 3)",
+        "page": 18
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 3)#5",
+      "type": "clause",
+      "label": "5 Principle",
+      "props": {
+        "standard_id": "IS 9873 (Part 3)",
+        "page": 19
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 3)#6",
+      "type": "clause",
+      "label": "6 Reagents and apparatus",
+      "props": {
+        "standard_id": "IS 9873 (Part 3)",
+        "page": 19
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 3)#6.2",
+      "type": "clause",
+      "label": "6.2 Apparatus",
+      "props": {
+        "standard_id": "IS 9873 (Part 3)",
+        "page": 20
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 3)#7",
+      "type": "clause",
+      "label": "7 Selection of test portions",
+      "props": {
+        "standard_id": "IS 9873 (Part 3)",
+        "page": 20
+      }
+    },
+    {
+      "id": "clause:IS 9873 (Part 3)#8",
+      "type": "clause",
+      "label": "8 Preparation and extraction of test portions",
+      "props": {
+        "standard_id": "IS 9873 (Part 3)",
+        "page": 21
+      }
+    },
+    {
+      "id": "clause:IS 1417#0",
+      "type": "clause",
+      "label": "0 Gold and Gold Alloys, Jewellery/Artefacts — Fineness and Marking",
+      "props": {
+        "standard_id": "IS 1417",
+        "page": 4
+      }
+    },
+    {
+      "id": "clause:IS 1417#4",
+      "type": "clause",
+      "label": "4 Presence of rutheniun, iridium and cadmium in gold and gold alloys shall be detected by",
+      "props": {
+        "standard_id": "IS 1417",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 1417#6.2",
+      "type": "clause",
+      "label": "6.2 Gold jewellery/artefacts on which marking should not be applied are as",
+      "props": {
+        "standard_id": "IS 1417",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 1417#1",
+      "type": "clause",
+      "label": "1 SCOPE",
+      "props": {
+        "standard_id": "IS 1417",
+        "page": 10
+      }
+    },
+    {
+      "id": "clause:IS 1417#3.4",
+      "type": "clause",
+      "label": "3.4 Fine Gold",
+      "props": {
+        "standard_id": "IS 1417",
+        "page": 10
+      }
+    },
+    {
+      "id": "clause:IS 1417#3.5",
+      "type": "clause",
+      "label": "3.5 Gold",
+      "props": {
+        "standard_id": "IS 1417",
+        "page": 10
+      }
+    },
+    {
+      "id": "clause:IS 1417#3.6",
+      "type": "clause",
+      "label": "3.6 Gold Alloy",
+      "props": {
+        "standard_id": "IS 1417",
+        "page": 10
+      }
+    },
+    {
+      "id": "clause:IS 1417#3.7",
+      "type": "clause",
+      "label": "3.7 Standard Gold",
+      "props": {
+        "standard_id": "IS 1417",
+        "page": 10
+      }
+    },
+    {
+      "id": "clause:IS 1417#3",
+      "type": "clause",
+      "label": "3 TERMINOLOGY",
+      "props": {
+        "standard_id": "IS 1417",
+        "page": 10
+      }
+    },
+    {
+      "id": "clause:IS 1417#3.1",
+      "type": "clause",
+      "label": "3.1 Assaying",
+      "props": {
+        "standard_id": "IS 1417",
+        "page": 10
+      }
+    },
+    {
+      "id": "clause:IS 1417#2",
+      "type": "clause",
+      "label": "2 For jewellery/artefacts of23 carat, the gold solder of22 grade",
+      "props": {
+        "standard_id": "IS 1417",
+        "page": 10
+      }
+    },
+    {
+      "id": "clause:IS 1417#3.2",
+      "type": "clause",
+      "label": "3.2 Carat",
+      "props": {
+        "standard_id": "IS 1417",
+        "page": 10
+      }
+    },
+    {
+      "id": "clause:IS 1417#5.1",
+      "type": "clause",
+      "label": "5.1 The fine or standard gold used for the manufacture",
+      "props": {
+        "standard_id": "IS 1417",
+        "page": 10
+      }
+    },
+    {
+      "id": "clause:IS 1417#5.2",
+      "type": "clause",
+      "label": "5.2 Solders used for the manufacture of gold jewellery/",
+      "props": {
+        "standard_id": "IS 1417",
+        "page": 11
+      }
+    },
+    {
+      "id": "clause:IS 1417#5.4",
+      "type": "clause",
+      "label": "5.4 Assaying",
+      "props": {
+        "standard_id": "IS 1417",
+        "page": 11
+      }
+    },
+    {
+      "id": "clause:IS 1417#5.5",
+      "type": "clause",
+      "label": "5.5 Tolerances",
+      "props": {
+        "standard_id": "IS 1417",
+        "page": 11
+      }
+    },
+    {
+      "id": "clause:IS 1417#6",
+      "type": "clause",
+      "label": "6 MARKING",
+      "props": {
+        "standard_id": "IS 1417",
+        "page": 11
+      }
+    },
+    {
+      "id": "clause:IS 1418#0",
+      "type": "clause",
+      "label": "0 Determination of Gold in Gold Bullion, Gold Alloys and Gold Jewellery/Artefacts — Cupellation (Fire Assay) Method",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 4
+      }
+    },
+    {
+      "id": "clause:IS 1418#2",
+      "type": "clause",
+      "label": "2 REFERENCES",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 1418#3",
+      "type": "clause",
+      "label": "3 TERMlNOLOGY",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 1418#3.1",
+      "type": "clause",
+      "label": "3.1 Bullion -",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 1418#3.2",
+      "type": "clause",
+      "label": "3.2 Cupellation -",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 1418#3.3",
+      "type": "clause",
+      "label": "3.3 Fine Gold -",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 1418#3.4",
+      "type": "clause",
+      "label": "3.4 Inquartation -",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 1418#3.5",
+      "type": "clause",
+      "label": "3.5 Parting -",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 1418#4",
+      "type": "clause",
+      "label": "4 PRINCIPLE",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 1418#5",
+      "type": "clause",
+      "label": "5 SAMPLING",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 1418#6",
+      "type": "clause",
+      "label": "6 REAGENTS",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 1418#6.2",
+      "type": "clause",
+      "label": "6.2 BorAX (NazB.O,). anhydrous.",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 1418#6.7",
+      "type": "clause",
+      "label": "6.7 Palladium",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 1418#6.8",
+      "type": "clause",
+      "label": "6.8 Parting Acid No.1",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 1418#6.9",
+      "type": "clause",
+      "label": "6.9 Parting Acid No.2",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 1418#6.10",
+      "type": "clause",
+      "label": "6.10 Silver",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 1418#7",
+      "type": "clause",
+      "label": "7 ASSAY BALANCE",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 1418#7.2",
+      "type": "clause",
+      "label": "7.2 Assay Cleaning Brush",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 1418#7.4",
+      "type": "clause",
+      "label": "7.4 Cupels",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 1418#7.5",
+      "type": "clause",
+      "label": "7.5 Cupel/ation Furnace",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 1418#7.6",
+      "type": "clause",
+      "label": "7.6 Hammer and Anvil",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 1418#7.8",
+      "type": "clause",
+      "label": "7.8 Parting Tray",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 1418#7.11",
+      "type": "clause",
+      "label": "7.11 Tongs and Forceps",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 1418#7.12",
+      "type": "clause",
+      "label": "7.12 Trays",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 1418#8",
+      "type": "clause",
+      "label": "8 PROCEDURE FOR ASSAYING GOLD IN GOLD",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 1418#8.2",
+      "type": "clause",
+      "label": "8.2 Preparation of the Assay-Piece",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 1418#8.4",
+      "type": "clause",
+      "label": "8.4 Cupel/ation",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 1418#8.5",
+      "type": "clause",
+      "label": "8.5 Preparing the Assay-Piece for Parting",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 9
+      }
+    },
+    {
+      "id": "clause:IS 1418#8.6",
+      "type": "clause",
+      "label": "8.6 Proof Assays",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 9
+      }
+    },
+    {
+      "id": "clause:IS 1418#8.7",
+      "type": "clause",
+      "label": "8.7 Expression of Results",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 9
+      }
+    },
+    {
+      "id": "clause:IS 1418#9",
+      "type": "clause",
+      "label": "9 PROCEDURE FOR ASSAYINC COLD IN COLD",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 9
+      }
+    },
+    {
+      "id": "clause:IS 1418#9.2",
+      "type": "clause",
+      "label": "9.2 White Gold Alloy Containing Nickel",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 10
+      }
+    },
+    {
+      "id": "clause:IS 1418#9.3",
+      "type": "clause",
+      "label": "9.3 White Gold Alloys Containing Palladium (Nickel",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 10
+      }
+    },
+    {
+      "id": "clause:IS 1418#9.4",
+      "type": "clause",
+      "label": "9.4 Gold Alloys Incorporating More than 40 Percent",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 10
+      }
+    },
+    {
+      "id": "clause:IS 1418#9.5",
+      "type": "clause",
+      "label": "9.5 AlloysContaining 990 (\"-) and AboveGold",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 10
+      }
+    },
+    {
+      "id": "clause:IS 1418#10",
+      "type": "clause",
+      "label": "10 EXPRESSION OF RESULTS",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 11
+      }
+    },
+    {
+      "id": "clause:IS 1418#10.2",
+      "type": "clause",
+      "label": "10.2 Repeatability",
+      "props": {
+        "standard_id": "IS 1418",
+        "page": 11
+      }
+    },
+    {
+      "id": "clause:IS 15820#0",
+      "type": "clause",
+      "label": "0 General Requirement for Competence of Assaying and Hallmarking Centres",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 4
+      }
+    },
+    {
+      "id": "clause:IS 15820#1",
+      "type": "clause",
+      "label": "1 SCOPE",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 15820#2",
+      "type": "clause",
+      "label": "2 REFERENCES",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 15820#4",
+      "type": "clause",
+      "label": "4 MANAGEMENT REQUIREMENTS",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 15820#3",
+      "type": "clause",
+      "label": "3 TERMINOLOGY",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 15820#3.1",
+      "type": "clause",
+      "label": "3.1 Hallmarking -",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 15820#3.2",
+      "type": "clause",
+      "label": "3.2 Fineness -",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 15820#3.3",
+      "type": "clause",
+      "label": "3.3 Assaying -",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 15820#3.4",
+      "type": "clause",
+      "label": "3.4 Assaying and Hallmarking Centre -",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 15820#4.1",
+      "type": "clause",
+      "label": "4.1 Organization",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 6
+      }
+    },
+    {
+      "id": "clause:IS 15820#4.2",
+      "type": "clause",
+      "label": "4.2 Management System",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 15820#4.3",
+      "type": "clause",
+      "label": "4.3 Document Control",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 7
+      }
+    },
+    {
+      "id": "clause:IS 15820#4.4",
+      "type": "clause",
+      "label": "4.4 Review of Requests/Contracts",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 15820#4.5",
+      "type": "clause",
+      "label": "4.5 Subcontracting of Tests",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 15820#4.6",
+      "type": "clause",
+      "label": "4.6 Purchasing Sen-ices and Supplies",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 15820#4.7",
+      "type": "clause",
+      "label": "4.7 Service to the Customer",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 8
+      }
+    },
+    {
+      "id": "clause:IS 15820#4.8",
+      "type": "clause",
+      "label": "4.8 Complaints",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 9
+      }
+    },
+    {
+      "id": "clause:IS 15820#4.9",
+      "type": "clause",
+      "label": "4.9 Control of Non-conforming Testing Work",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 9
+      }
+    },
+    {
+      "id": "clause:IS 15820#4.10",
+      "type": "clause",
+      "label": "4.10 Improvement",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 9
+      }
+    },
+    {
+      "id": "clause:IS 15820#4.11",
+      "type": "clause",
+      "label": "4.11 Corrective Action",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 9
+      }
+    },
+    {
+      "id": "clause:IS 15820#4.12",
+      "type": "clause",
+      "label": "4.12 Preventive Action",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 9
+      }
+    },
+    {
+      "id": "clause:IS 15820#4.13",
+      "type": "clause",
+      "label": "4.13 Control of Records",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 9
+      }
+    },
+    {
+      "id": "clause:IS 15820#4.14",
+      "type": "clause",
+      "label": "4.14 Internal Audits",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 10
+      }
+    },
+    {
+      "id": "clause:IS 15820#4.15",
+      "type": "clause",
+      "label": "4.15 Management Review",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 10
+      }
+    },
+    {
+      "id": "clause:IS 15820#5",
+      "type": "clause",
+      "label": "5 TECHNICAL REQUIREMENTS",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 10
+      }
+    },
+    {
+      "id": "clause:IS 15820#5.2",
+      "type": "clause",
+      "label": "5.2 Personnel",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 11
+      }
+    },
+    {
+      "id": "clause:IS 15820#5.3",
+      "type": "clause",
+      "label": "5.3 Accommodation and Environmental Conditions",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 11
+      }
+    },
+    {
+      "id": "clause:IS 15820#5.5",
+      "type": "clause",
+      "label": "5.5 Equipment",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 12
+      }
+    },
+    {
+      "id": "clause:IS 15820#5.6",
+      "type": "clause",
+      "label": "5.6 Measurement Traceability",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 13
+      }
+    },
+    {
+      "id": "clause:IS 15820#5.7",
+      "type": "clause",
+      "label": "5.7 Sampling",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 13
+      }
+    },
+    {
+      "id": "clause:IS 15820#5.8",
+      "type": "clause",
+      "label": "5.8 Handling or Test Items",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 13
+      }
+    },
+    {
+      "id": "clause:IS 15820#5.9",
+      "type": "clause",
+      "label": "5.9 Assuring the Quality or Test Results",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 13
+      }
+    },
+    {
+      "id": "clause:IS 15820#5.10",
+      "type": "clause",
+      "label": "5.10 Reporting the Results",
+      "props": {
+        "standard_id": "IS 15820",
+        "page": 13
+      }
+    },
+    {
+      "id": "clause:FORM-I#0",
+      "type": "clause",
+      "label": "0 Form I — Application for Grant of Certificate of Registration to Jewellers for Sale of Hallmarked Articles",
+      "props": {
+        "standard_id": "FORM-I",
+        "page": 1
+      }
+    },
+    {
+      "id": "ref:IS 7692",
+      "type": "reference",
+      "label": "IS 7692"
+    },
+    {
+      "id": "ref:IS 41",
+      "type": "reference",
+      "label": "IS 41"
+    },
+    {
+      "id": "ref:IS 9844",
+      "type": "reference",
+      "label": "IS 9844"
+    },
+    {
+      "id": "ref:IS 9973",
+      "type": "reference",
+      "label": "IS 9973"
+    },
+    {
+      "id": "ref:IS 1692",
+      "type": "reference",
+      "label": "IS 1692"
+    },
+    {
+      "id": "ref:IS 9695",
+      "type": "reference",
+      "label": "IS 9695"
+    },
+    {
+      "id": "ref:IS 9779",
+      "type": "reference",
+      "label": "IS 9779"
+    },
+    {
+      "id": "ref:IS 1884",
+      "type": "reference",
+      "label": "IS 1884"
+    },
+    {
+      "id": "ref:IS 8144",
+      "type": "reference",
+      "label": "IS 8144"
+    },
+    {
+      "id": "ref:IS 11675",
+      "type": "reference",
+      "label": "IS 11675"
+    },
+    {
+      "id": "ref:IS 15063",
+      "type": "reference",
+      "label": "IS 15063"
+    },
+    {
+      "id": "ref:IS 12063",
+      "type": "reference",
+      "label": "IS 12063"
+    },
+    {
+      "id": "ref:IS 1100",
+      "type": "reference",
+      "label": "IS 1100"
+    },
+    {
+      "id": "ref:IS 3017",
+      "type": "reference",
+      "label": "IS 3017"
+    },
+    {
+      "id": "ref:IS 4165",
+      "type": "reference",
+      "label": "IS 4165"
+    },
+    {
+      "id": "ref:IS 30",
+      "type": "reference",
+      "label": "IS 30"
+    },
+    {
+      "id": "ref:IS 3000",
+      "type": "reference",
+      "label": "IS 3000"
+    },
+    {
+      "id": "ref:IS 13360",
+      "type": "reference",
+      "label": "IS 13360"
+    },
+    {
+      "id": "ref:IS 1586",
+      "type": "reference",
+      "label": "IS 1586"
+    },
+    {
+      "id": "ref:IS 22",
+      "type": "reference",
+      "label": "IS 22"
+    },
+    {
+      "id": "ref:IS 27",
+      "type": "reference",
+      "label": "IS 27"
+    },
+    {
+      "id": "ref:IS 150",
+      "type": "reference",
+      "label": "IS 150"
+    },
+    {
+      "id": "ref:IS 400",
+      "type": "reference",
+      "label": "IS 400"
+    },
+    {
+      "id": "ref:IS 64",
+      "type": "reference",
+      "label": "IS 64"
+    },
+    {
+      "id": "ref:IS 50",
+      "type": "reference",
+      "label": "IS 50"
+    },
+    {
+      "id": "ref:IS 1070",
+      "type": "reference",
+      "label": "IS 1070"
+    },
+    {
+      "id": "ref:IS 120",
+      "type": "reference",
+      "label": "IS 120"
+    },
+    {
+      "id": "ref:IS 90",
+      "type": "reference",
+      "label": "IS 90"
+    },
+    {
+      "id": "ref:IS 8873",
+      "type": "reference",
+      "label": "IS 8873"
+    },
+    {
+      "id": "ref:IS 9873",
+      "type": "reference",
+      "label": "IS 9873"
+    },
+    {
+      "id": "ref:IS 8844",
+      "type": "reference",
+      "label": "IS 8844"
+    },
+    {
+      "id": "ref:IS 2790",
+      "type": "reference",
+      "label": "IS 2790"
+    },
+    {
+      "id": "ref:IS 3095",
+      "type": "reference",
+      "label": "IS 3095"
+    },
+    {
+      "id": "ref:IS 14",
+      "type": "reference",
+      "label": "IS 14"
+    },
+    {
+      "id": "ref:IS 2112",
+      "type": "reference",
+      "label": "IS 2112"
+    },
+    {
+      "id": "ref:IS 2113",
+      "type": "reference",
+      "label": "IS 2113"
+    },
+    {
+      "id": "ref:IS 21",
+      "type": "reference",
+      "label": "IS 21"
+    },
+    {
+      "id": "ref:IS 1076",
+      "type": "reference",
+      "label": "IS 1076"
+    },
+    {
+      "id": "form:form-i-jeweller",
+      "type": "form",
+      "label": "Form I — Application for Grant of Certificate of Registration to Jewellers for Sale of Hallmarked Articles"
+    },
+    {
+      "id": "lab:8176606",
+      "type": "lab",
+      "label": "Advance Firetec and Research Lab Pvt Ltd.",
+      "props": {
+        "city": "New Delhi",
+        "state": "Delhi"
+      }
+    },
+    {
+      "id": "lab:8185306",
+      "type": "lab",
+      "label": "ALPHA TEST HOUSE PVT LTD",
+      "props": {
+        "city": "Bahadurgarh",
+        "state": "Haryana"
+      }
+    },
+    {
+      "id": "lab:8165026",
+      "type": "lab",
+      "label": "Atharva Laboratories Pvt Ltd",
+      "props": {
+        "city": "Noida",
+        "state": "Uttar Pradesh"
+      }
+    },
+    {
+      "id": "lab:8134206",
+      "type": "lab",
+      "label": "Atharva Laboratories. Noida",
+      "props": {
+        "city": null,
+        "state": "Uttar Pradesh"
+      }
+    },
+    {
+      "id": "lab:9168306",
+      "type": "lab",
+      "label": "Bharat Test House Pvt Ltd",
+      "props": {
+        "city": "Sonepat",
+        "state": "Haryana"
+      }
+    },
+    {
+      "id": "lab:9135626",
+      "type": "lab",
+      "label": "Bharat Test House Pvt Ltd, Rai",
+      "props": {
+        "city": "Sonepat",
+        "state": "Haryana"
+      }
+    },
+    {
+      "id": "lab:None",
+      "type": "lab",
+      "label": "BIS, Central Laboratory (CL)",
+      "props": {}
+    },
+    {
+      "id": "lab:8127706",
+      "type": "lab",
+      "label": "Bureau Veritas Consumer Products Services(I) P. Ltd",
+      "props": {
+        "city": "NOIDA",
+        "state": "Uttar Pradesh"
+      }
+    },
+    {
+      "id": "lab:9102534",
+      "type": "lab",
+      "label": "Central Institute of Petrochemicals Engineering & Technology",
+      "props": {
+        "city": "Lucknow",
+        "state": "Uttar Pradesh"
+      }
+    },
+    {
+      "id": "lab:8139626",
+      "type": "lab",
+      "label": "Conformity Testing Labs Pvt Ltd",
+      "props": {
+        "city": "New Delhi",
+        "state": "Delhi"
+      }
+    },
+    {
+      "id": "lab:8166106",
+      "type": "lab",
+      "label": "Cotecna Inspection India Private Limited",
+      "props": {
+        "city": "Gurugram",
+        "state": "Haryana"
+      }
+    },
+    {
+      "id": "lab:8131406",
+      "type": "lab",
+      "label": "Delhi Test House, Azadpur",
+      "props": {
+        "city": "Delhi",
+        "state": "Delhi"
+      }
+    },
+    {
+      "id": "lab:9179506",
+      "type": "lab",
+      "label": "Delta Testing and Research Laboratories Private Limited",
+      "props": {
+        "city": "Delhi",
+        "state": "Delhi"
+      }
+    },
+    {
+      "id": "lab:8186836",
+      "type": "lab",
+      "label": "Delta Testing and Research Laboratories Private Limited (Unit II)",
+      "props": {
+        "city": "North West",
+        "state": "Delhi"
+      }
+    },
+    {
+      "id": "lab:9179706",
+      "type": "lab",
+      "label": "Eko Pro Engineers Pvt. Ltd. Ghaziabad",
+      "props": {
+        "city": null,
+        "state": "Uttar Pradesh"
+      }
+    },
+    {
+      "id": "lab:8141526",
+      "type": "lab",
+      "label": "EMC Testing and Compliance LLP",
+      "props": {
+        "city": "Gurugram",
+        "state": "Haryana"
+      }
+    },
+    {
+      "id": "lab:8187006",
+      "type": "lab",
+      "label": "Eurofins Consumer Product Testing India Private Limited",
+      "props": {
+        "city": "Noida",
+        "state": "Uttar Pradesh"
+      }
+    },
+    {
+      "id": "lab:7126926",
+      "type": "lab",
+      "label": "Hi Physix Laboratory India Pvt. Ltd. Pune",
+      "props": {
+        "city": null,
+        "state": "Maharashtra"
+      }
+    },
+    {
+      "id": "lab:8166336",
+      "type": "lab",
+      "label": "Intertek India Pvt Ltd",
+      "props": {
+        "city": "Gurgaon",
+        "state": "Haryana"
+      }
+    },
+    {
+      "id": "lab:8176806",
+      "type": "lab",
+      "label": "Pioneer Testing Laboratory Private Limited",
+      "props": {
+        "city": "New Delhi",
+        "state": "Delhi"
+      }
+    },
+    {
+      "id": "lab:7174106",
+      "type": "lab",
+      "label": "Precision Laboratories LLP",
+      "props": {
+        "city": "Ahmedabad",
+        "state": "Gujarat"
+      }
+    },
+    {
+      "id": "lab:8199006",
+      "type": "lab",
+      "label": "PRESTO LABORATORIES PRIVATE LIMITED",
+      "props": {}
+    },
+    {
+      "id": "lab:8184706",
+      "type": "lab",
+      "label": "Samridhi Test House Pvt. Ltd. North Delhi",
+      "props": {
+        "city": null,
+        "state": "Delhi"
+      }
+    },
+    {
+      "id": "lab:8136216",
+      "type": "lab",
+      "label": "SGS India Pvt Ltd",
+      "props": {
+        "city": "Gurgaon",
+        "state": "Haryana"
+      }
+    },
+    {
+      "id": "lab:8171606",
+      "type": "lab",
+      "label": "Stellar Test House",
+      "props": {
+        "city": "Noida",
+        "state": "Uttar Pradesh"
+      }
+    },
+    {
+      "id": "lab:8138306",
+      "type": "lab",
+      "label": "Testtex India Laboratories Private Limited",
+      "props": {
+        "city": "Noida",
+        "state": "Uttar Pradesh"
+      }
+    },
+    {
+      "id": "lab:8167106",
+      "type": "lab",
+      "label": "TUV Rheinland (India) Pvt Ltd",
+      "props": {
+        "city": "Gurgaon",
+        "state": "Haryana"
+      }
+    },
+    {
+      "id": "lab:8127226",
+      "type": "lab",
+      "label": "UL India Pvt Ltd",
+      "props": {
+        "city": "Gurgaon",
+        "state": "Haryana"
+      }
+    },
+    {
+      "id": "lab:8168906",
+      "type": "lab",
+      "label": "URS Products & Testing Pvt Ltd",
+      "props": {
+        "city": "NOIDA",
+        "state": "Uttar Pradesh"
+      }
+    },
+    {
+      "id": "ahc-region:DELHI",
+      "type": "ahc_region",
+      "label": "AHCs — DELHI"
+    },
+    {
+      "id": "ahc-region:RAJASTHAN",
+      "type": "ahc_region",
+      "label": "AHCs — RAJASTHAN"
+    },
+    {
+      "id": "ahc-region:MADHYA PRADESH",
+      "type": "ahc_region",
+      "label": "AHCs — MADHYA PRADESH"
+    },
+    {
+      "id": "ahc-region:UTTAR PRADESH",
+      "type": "ahc_region",
+      "label": "AHCs — UTTAR PRADESH"
+    },
+    {
+      "id": "ahc-region:HARYANA",
+      "type": "ahc_region",
+      "label": "AHCs — HARYANA"
+    },
+    {
+      "id": "ahc-region:CHHATTISGARH",
+      "type": "ahc_region",
+      "label": "AHCs — CHHATTISGARH"
+    },
+    {
+      "id": "ahc-region:WEST BENGAL",
+      "type": "ahc_region",
+      "label": "AHCs — WEST BENGAL"
+    },
+    {
+      "id": "ahc-region:ODISHA",
+      "type": "ahc_region",
+      "label": "AHCs — ODISHA"
+    },
+    {
+      "id": "ahc-region:BIHAR",
+      "type": "ahc_region",
+      "label": "AHCs — BIHAR"
+    },
+    {
+      "id": "ahc-region:JHARKHAND",
+      "type": "ahc_region",
+      "label": "AHCs — JHARKHAND"
+    },
+    {
+      "id": "ahc-region:TRIPURA",
+      "type": "ahc_region",
+      "label": "AHCs — TRIPURA"
+    },
+    {
+      "id": "ahc-region:ASSAM",
+      "type": "ahc_region",
+      "label": "AHCs — ASSAM"
+    },
+    {
+      "id": "ahc-region:PUNJAB",
+      "type": "ahc_region",
+      "label": "AHCs — PUNJAB"
+    },
+    {
+      "id": "ahc-region:JAMMU & KASHMIR",
+      "type": "ahc_region",
+      "label": "AHCs — JAMMU & KASHMIR"
+    },
+    {
+      "id": "ahc-region:CHANDIGARH",
+      "type": "ahc_region",
+      "label": "AHCs — CHANDIGARH"
+    },
+    {
+      "id": "ahc-region:UTTARAKHAND",
+      "type": "ahc_region",
+      "label": "AHCs — UTTARAKHAND"
+    },
+    {
+      "id": "ahc-region:HIMACHAL PRADESH",
+      "type": "ahc_region",
+      "label": "AHCs — HIMACHAL PRADESH"
+    },
+    {
+      "id": "ahc-region:GOA",
+      "type": "ahc_region",
+      "label": "AHCs — GOA"
+    },
+    {
+      "id": "ahc-region:TELANGANA",
+      "type": "ahc_region",
+      "label": "AHCs — TELANGANA"
+    },
+    {
+      "id": "ahc-region:ANDHRA PRADESH",
+      "type": "ahc_region",
+      "label": "AHCs — ANDHRA PRADESH"
+    },
+    {
+      "id": "ahc-region:KARNATAKA",
+      "type": "ahc_region",
+      "label": "AHCs — KARNATAKA"
+    },
+    {
+      "id": "ahc-region:KERALA",
+      "type": "ahc_region",
+      "label": "AHCs — KERALA"
+    },
+    {
+      "id": "ahc-region:TAMIL NADU",
+      "type": "ahc_region",
+      "label": "AHCs — TAMIL NADU"
+    },
+    {
+      "id": "ahc-region:PONDICHERY",
+      "type": "ahc_region",
+      "label": "AHCs — PONDICHERY"
+    },
+    {
+      "id": "ahc-region:GUJARAT",
+      "type": "ahc_region",
+      "label": "AHCs — GUJARAT"
+    },
+    {
+      "id": "ahc-region:MAHARASHTRA",
+      "type": "ahc_region",
+      "label": "AHCs — MAHARASHTRA"
+    }
+  ],
+  "edges": [
+    {
+      "src": "std:IS 4151",
+      "dst": "domain:helmets",
+      "type": "IN_DOMAIN",
+      "source": "https://archive.org/download/gov.law.is.4151.1993/is.4151.1993.pdf"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "domain:helmets",
+      "type": "IN_DOMAIN",
+      "source": "https://archive.org/download/gov.law.is.2925.1984/is.2925.1984.pdf"
+    },
+    {
+      "src": "std:IS 15644",
+      "dst": "domain:toys",
+      "type": "IN_DOMAIN",
+      "source": "https://archive.org/download/gov.in.is.15644.2006/is.15644.2006.pdf"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "domain:toys",
+      "type": "IN_DOMAIN",
+      "source": "https://archive.org/download/gov.in.is.9873.1.2012/is.9873.1.2012.pdf"
+    },
+    {
+      "src": "std:IS 9873 (Part 3)",
+      "dst": "domain:toys",
+      "type": "IN_DOMAIN",
+      "source": "https://archive.org/download/gov.in.is.9873.3.1999/is.9873.3.1999.pdf"
+    },
+    {
+      "src": "std:IS 1417",
+      "dst": "domain:gold",
+      "type": "IN_DOMAIN",
+      "source": "https://archive.org/download/gov.in.is.1417.1999/is.1417.1999.pdf"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "domain:gold",
+      "type": "IN_DOMAIN",
+      "source": "https://archive.org/download/gov.in.is.1418.2009/is.1418.2009.pdf"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "domain:gold",
+      "type": "IN_DOMAIN",
+      "source": "https://archive.org/download/gov.in.is.15820.2009/is.15820.2009.pdf"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#0",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.3"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#1",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.7"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#1.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.7"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#2",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.7"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#3",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.7"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#3.1",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.7"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#3.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.7"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#3.3",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.7"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#3.5",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.7"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#3.7",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.8"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#3.9",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.8"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#4.1",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.8"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#4.4",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.8"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#4.5",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.8"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#3.10",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.8"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#4.6",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.8"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#3.13",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.8"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#3.14",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.8"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#5",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.8"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#6",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.8"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#6.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.9"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#6.3",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.9"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#6.4",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.9"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#6.6",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.11"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#7",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.11"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#8",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.11"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#9.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.13"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#15",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.13"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#9.3",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.13"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#9.8",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.14"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#9.5",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.14"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#9.6",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.14"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#10",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.14"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "clause:IS 4151#11",
+      "type": "HAS_CLAUSE",
+      "source": "is-4151 p.14"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#0",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.3"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#1",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.5"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#2",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.5"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#2.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.5"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#2.3",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.5"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#2.4",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.6"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#2.6",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.6"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#3",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.6"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#3.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.6"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#3.3",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.6"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#4",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.6"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#5",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.6"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#5.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.7"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#5.3",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.7"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#5.5",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.8"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#6",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.8"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#7",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.9"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#8",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.9"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#8.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.9"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#8.3",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.9"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#8.4",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.9"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#8.5",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.9"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#8.6",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.9"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#9",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.10"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#10",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.10"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "clause:IS 2925#11.1",
+      "type": "HAS_CLAUSE",
+      "source": "is-2925 p.10"
+    },
+    {
+      "src": "std:IS 15644",
+      "dst": "clause:IS 15644#0",
+      "type": "HAS_CLAUSE",
+      "source": "is-15644 p.4"
+    },
+    {
+      "src": "std:IS 15644",
+      "dst": "clause:IS 15644#1.8",
+      "type": "HAS_CLAUSE",
+      "source": "is-15644 p.28"
+    },
+    {
+      "src": "std:IS 15644",
+      "dst": "clause:IS 15644#9",
+      "type": "HAS_CLAUSE",
+      "source": "is-15644 p.38"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#0",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.4"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.1",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.20"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.21"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.3",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.21"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.4",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.21"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.5",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.22"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.7",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.28"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.8",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.28"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.9",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.29"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.10",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.29"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.12",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.31"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.13",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.33"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.14",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.35"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.15",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.35"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.16",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.36"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.17",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.38"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.18",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.38"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.19",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.39"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.20",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.40"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.21",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.40"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.23",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.41"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.24",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.42"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.25",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.42"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.26",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.42"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.27",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.43"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.28",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.43"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#4.29",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.43"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.1",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.45"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.46"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.5",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.48"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.6",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.48"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.7",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.48"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.8",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.50"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.9",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.52"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.10",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.54"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.11",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.54"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.12",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.55"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.13",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.57"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.14",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.57"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.15",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.58"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.16",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.59"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.17",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.60"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.18",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.61"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.19",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.61"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.20",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.61"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.21",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.61"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.22",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.62"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.23",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.63"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.24",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.63"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.26",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.74"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "clause:IS 9873 (Part 1)#5.30",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-1 p.79"
+    },
+    {
+      "src": "std:IS 9873 (Part 3)",
+      "dst": "clause:IS 9873 (Part 3)#0",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-3 p.4"
+    },
+    {
+      "src": "std:IS 9873 (Part 3)",
+      "dst": "clause:IS 9873 (Part 3)#11",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-3 p.7"
+    },
+    {
+      "src": "std:IS 9873 (Part 3)",
+      "dst": "clause:IS 9873 (Part 3)#11.1",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-3 p.7"
+    },
+    {
+      "src": "std:IS 9873 (Part 3)",
+      "dst": "clause:IS 9873 (Part 3)#1",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-3 p.17"
+    },
+    {
+      "src": "std:IS 9873 (Part 3)",
+      "dst": "clause:IS 9873 (Part 3)#2",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-3 p.18"
+    },
+    {
+      "src": "std:IS 9873 (Part 3)",
+      "dst": "clause:IS 9873 (Part 3)#3",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-3 p.18"
+    },
+    {
+      "src": "std:IS 9873 (Part 3)",
+      "dst": "clause:IS 9873 (Part 3)#4",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-3 p.18"
+    },
+    {
+      "src": "std:IS 9873 (Part 3)",
+      "dst": "clause:IS 9873 (Part 3)#5",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-3 p.19"
+    },
+    {
+      "src": "std:IS 9873 (Part 3)",
+      "dst": "clause:IS 9873 (Part 3)#6",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-3 p.19"
+    },
+    {
+      "src": "std:IS 9873 (Part 3)",
+      "dst": "clause:IS 9873 (Part 3)#6.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-3 p.20"
+    },
+    {
+      "src": "std:IS 9873 (Part 3)",
+      "dst": "clause:IS 9873 (Part 3)#7",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-3 p.20"
+    },
+    {
+      "src": "std:IS 9873 (Part 3)",
+      "dst": "clause:IS 9873 (Part 3)#8",
+      "type": "HAS_CLAUSE",
+      "source": "is-9873-3 p.21"
+    },
+    {
+      "src": "std:IS 1417",
+      "dst": "clause:IS 1417#0",
+      "type": "HAS_CLAUSE",
+      "source": "is-1417 p.4"
+    },
+    {
+      "src": "std:IS 1417",
+      "dst": "clause:IS 1417#4",
+      "type": "HAS_CLAUSE",
+      "source": "is-1417 p.6"
+    },
+    {
+      "src": "std:IS 1417",
+      "dst": "clause:IS 1417#6.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-1417 p.8"
+    },
+    {
+      "src": "std:IS 1417",
+      "dst": "clause:IS 1417#1",
+      "type": "HAS_CLAUSE",
+      "source": "is-1417 p.10"
+    },
+    {
+      "src": "std:IS 1417",
+      "dst": "clause:IS 1417#3.4",
+      "type": "HAS_CLAUSE",
+      "source": "is-1417 p.10"
+    },
+    {
+      "src": "std:IS 1417",
+      "dst": "clause:IS 1417#3.5",
+      "type": "HAS_CLAUSE",
+      "source": "is-1417 p.10"
+    },
+    {
+      "src": "std:IS 1417",
+      "dst": "clause:IS 1417#3.6",
+      "type": "HAS_CLAUSE",
+      "source": "is-1417 p.10"
+    },
+    {
+      "src": "std:IS 1417",
+      "dst": "clause:IS 1417#3.7",
+      "type": "HAS_CLAUSE",
+      "source": "is-1417 p.10"
+    },
+    {
+      "src": "std:IS 1417",
+      "dst": "clause:IS 1417#3",
+      "type": "HAS_CLAUSE",
+      "source": "is-1417 p.10"
+    },
+    {
+      "src": "std:IS 1417",
+      "dst": "clause:IS 1417#3.1",
+      "type": "HAS_CLAUSE",
+      "source": "is-1417 p.10"
+    },
+    {
+      "src": "std:IS 1417",
+      "dst": "clause:IS 1417#2",
+      "type": "HAS_CLAUSE",
+      "source": "is-1417 p.10"
+    },
+    {
+      "src": "std:IS 1417",
+      "dst": "clause:IS 1417#3.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-1417 p.10"
+    },
+    {
+      "src": "std:IS 1417",
+      "dst": "clause:IS 1417#5.1",
+      "type": "HAS_CLAUSE",
+      "source": "is-1417 p.10"
+    },
+    {
+      "src": "std:IS 1417",
+      "dst": "clause:IS 1417#5.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-1417 p.11"
+    },
+    {
+      "src": "std:IS 1417",
+      "dst": "clause:IS 1417#5.4",
+      "type": "HAS_CLAUSE",
+      "source": "is-1417 p.11"
+    },
+    {
+      "src": "std:IS 1417",
+      "dst": "clause:IS 1417#5.5",
+      "type": "HAS_CLAUSE",
+      "source": "is-1417 p.11"
+    },
+    {
+      "src": "std:IS 1417",
+      "dst": "clause:IS 1417#6",
+      "type": "HAS_CLAUSE",
+      "source": "is-1417 p.11"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#0",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.4"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#2",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.6"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#3",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.6"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#3.1",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.6"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#3.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.6"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#3.3",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.6"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#3.4",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.6"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#3.5",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.6"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#4",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.6"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#5",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.6"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#6",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.7"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#6.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.7"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#6.7",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.7"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#6.8",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.7"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#6.9",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.7"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#6.10",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.7"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#7",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.7"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#7.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.7"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#7.4",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.7"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#7.5",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.8"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#7.6",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.8"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#7.8",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.8"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#7.11",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.8"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#7.12",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.8"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#8",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.8"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#8.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.8"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#8.4",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.8"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#8.5",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.9"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#8.6",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.9"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#8.7",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.9"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#9",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.9"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#9.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.10"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#9.3",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.10"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#9.4",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.10"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#9.5",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.10"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#10",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.11"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "clause:IS 1418#10.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-1418 p.11"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#0",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.4"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#1",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.6"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#2",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.6"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#4",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.6"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#3",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.6"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#3.1",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.6"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#3.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.6"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#3.3",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.6"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#3.4",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.6"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#4.1",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.6"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#4.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.7"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#4.3",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.7"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#4.4",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.8"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#4.5",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.8"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#4.6",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.8"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#4.7",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.8"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#4.8",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.9"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#4.9",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.9"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#4.10",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.9"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#4.11",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.9"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#4.12",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.9"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#4.13",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.9"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#4.14",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.10"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#4.15",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.10"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#5",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.10"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#5.2",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.11"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#5.3",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.11"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#5.5",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.12"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#5.6",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.13"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#5.7",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.13"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#5.8",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.13"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#5.9",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.13"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "clause:IS 15820#5.10",
+      "type": "HAS_CLAUSE",
+      "source": "is-15820 p.13"
+    },
+    {
+      "src": "std:FORM-I",
+      "dst": "clause:FORM-I#0",
+      "type": "HAS_CLAUSE",
+      "source": "form-i-jeweller p.1"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "ref:IS 7692",
+      "type": "REFERENCES",
+      "weight": 7,
+      "source": "is-4151 p.3"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "ref:IS 41",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-4151 p.3"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "ref:IS 9844",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-4151 p.8"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "ref:IS 9973",
+      "type": "REFERENCES",
+      "weight": 2,
+      "source": "is-4151 p.8"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "ref:IS 1692",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-4151 p.9"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "ref:IS 9695",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-4151 p.14"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "ref:IS 9779",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-4151 p.19"
+    },
+    {
+      "src": "std:IS 4151",
+      "dst": "ref:IS 1884",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-4151 p.19"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "ref:IS 7692",
+      "type": "REFERENCES",
+      "weight": 6,
+      "source": "is-2925 p.5"
+    },
+    {
+      "src": "std:IS 2925",
+      "dst": "ref:IS 9695",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-2925 p.10"
+    },
+    {
+      "src": "std:IS 15644",
+      "dst": "ref:IS 8144",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-15644 p.4"
+    },
+    {
+      "src": "std:IS 15644",
+      "dst": "ref:IS 11675",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-15644 p.4"
+    },
+    {
+      "src": "std:IS 15644",
+      "dst": "ref:IS 15063",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-15644 p.4"
+    },
+    {
+      "src": "std:IS 15644",
+      "dst": "ref:IS 12063",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-15644 p.4"
+    },
+    {
+      "src": "std:IS 15644",
+      "dst": "ref:IS 1100",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-15644 p.4"
+    },
+    {
+      "src": "std:IS 15644",
+      "dst": "ref:IS 3017",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-15644 p.4"
+    },
+    {
+      "src": "std:IS 15644",
+      "dst": "ref:IS 4165",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-15644 p.4"
+    },
+    {
+      "src": "std:IS 15644",
+      "dst": "ref:IS 30",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-15644 p.28"
+    },
+    {
+      "src": "std:IS 15644",
+      "dst": "ref:IS 3000",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-15644 p.28"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "ref:IS 13360",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-9873-1 p.4"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "ref:IS 1586",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-9873-1 p.4"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "ref:IS 22",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-9873-1 p.29"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "ref:IS 27",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-9873-1 p.35"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "ref:IS 150",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-9873-1 p.60"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "ref:IS 400",
+      "type": "REFERENCES",
+      "weight": 2,
+      "source": "is-9873-1 p.77"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "ref:IS 64",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-9873-1 p.96"
+    },
+    {
+      "src": "std:IS 9873 (Part 1)",
+      "dst": "ref:IS 50",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-9873-1 p.96"
+    },
+    {
+      "src": "std:IS 9873 (Part 3)",
+      "dst": "std:IS 9873 (Part 1)",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-9873-3 p.4"
+    },
+    {
+      "src": "std:IS 9873 (Part 3)",
+      "dst": "ref:IS 1070",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-9873-3 p.4"
+    },
+    {
+      "src": "std:IS 9873 (Part 3)",
+      "dst": "ref:IS 30",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-9873-3 p.19"
+    },
+    {
+      "src": "std:IS 9873 (Part 3)",
+      "dst": "ref:IS 120",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-9873-3 p.19"
+    },
+    {
+      "src": "std:IS 9873 (Part 3)",
+      "dst": "ref:IS 90",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-9873-3 p.19"
+    },
+    {
+      "src": "std:IS 9873 (Part 3)",
+      "dst": "ref:IS 8873",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-9873-3 p.29"
+    },
+    {
+      "src": "std:IS 9873 (Part 3)",
+      "dst": "ref:IS 9873",
+      "type": "REFERENCES",
+      "weight": 2,
+      "source": "is-9873-3 p.31"
+    },
+    {
+      "src": "std:IS 1417",
+      "dst": "ref:IS 8844",
+      "type": "REFERENCES",
+      "weight": 2,
+      "source": "is-1417 p.4"
+    },
+    {
+      "src": "std:IS 1417",
+      "dst": "ref:IS 2790",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-1417 p.4"
+    },
+    {
+      "src": "std:IS 1417",
+      "dst": "ref:IS 3095",
+      "type": "REFERENCES",
+      "weight": 2,
+      "source": "is-1417 p.6"
+    },
+    {
+      "src": "std:IS 1417",
+      "dst": "std:IS 1418",
+      "type": "REFERENCES",
+      "weight": 2,
+      "source": "is-1417 p.11"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "ref:IS 14",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-1418 p.4"
+    },
+    {
+      "src": "std:IS 1418",
+      "dst": "ref:IS 1070",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-1418 p.7"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "std:IS 1417",
+      "type": "REFERENCES",
+      "weight": 7,
+      "source": "is-15820 p.4"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "ref:IS 2112",
+      "type": "REFERENCES",
+      "weight": 4,
+      "source": "is-15820 p.4"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "std:IS 1418",
+      "type": "REFERENCES",
+      "weight": 13,
+      "source": "is-15820 p.6"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "ref:IS 2113",
+      "type": "REFERENCES",
+      "weight": 20,
+      "source": "is-15820 p.6"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "ref:IS 21",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-15820 p.8"
+    },
+    {
+      "src": "std:IS 15820",
+      "dst": "ref:IS 1076",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "is-15820 p.13"
+    },
+    {
+      "src": "std:FORM-I",
+      "dst": "std:IS 1417",
+      "type": "REFERENCES",
+      "weight": 3,
+      "source": "form-i-jeweller p.1"
+    },
+    {
+      "src": "std:FORM-I",
+      "dst": "ref:IS 2112",
+      "type": "REFERENCES",
+      "weight": 1,
+      "source": "form-i-jeweller p.1"
+    },
+    {
+      "src": "form:form-i-jeweller",
+      "dst": "std:IS 1417",
+      "type": "FORM_FOR",
+      "source": "form-i-jeweller"
+    },
+    {
+      "src": "lab:8176606",
+      "dst": "std:IS 2925",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=2925"
+    },
+    {
+      "src": "lab:8185306",
+      "dst": "std:IS 15644",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644"
+    },
+    {
+      "src": "lab:8185306",
+      "dst": "std:IS 9873 (Part 1)",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644"
+    },
+    {
+      "src": "lab:8165026",
+      "dst": "std:IS 9873 (Part 3)",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=9873"
+    },
+    {
+      "src": "lab:8134206",
+      "dst": "std:IS 2925",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=2925"
+    },
+    {
+      "src": "lab:8134206",
+      "dst": "std:IS 9873 (Part 3)",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=2925"
+    },
+    {
+      "src": "lab:9168306",
+      "dst": "std:IS 4151",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151"
+    },
+    {
+      "src": "lab:9168306",
+      "dst": "std:IS 2925",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151"
+    },
+    {
+      "src": "lab:9135626",
+      "dst": "std:IS 15644",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644"
+    },
+    {
+      "src": "lab:9135626",
+      "dst": "std:IS 9873 (Part 1)",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644"
+    },
+    {
+      "src": "lab:None",
+      "dst": "std:IS 4151",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151"
+    },
+    {
+      "src": "lab:None",
+      "dst": "std:IS 2925",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151"
+    },
+    {
+      "src": "lab:None",
+      "dst": "std:IS 15644",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151"
+    },
+    {
+      "src": "lab:None",
+      "dst": "std:IS 9873 (Part 1)",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151"
+    },
+    {
+      "src": "lab:None",
+      "dst": "std:IS 9873 (Part 3)",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151"
+    },
+    {
+      "src": "lab:None",
+      "dst": "std:IS 1417",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151"
+    },
+    {
+      "src": "lab:8127706",
+      "dst": "std:IS 15644",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644"
+    },
+    {
+      "src": "lab:9102534",
+      "dst": "std:IS 2925",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=2925"
+    },
+    {
+      "src": "lab:8139626",
+      "dst": "std:IS 15644",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644"
+    },
+    {
+      "src": "lab:8166106",
+      "dst": "std:IS 15644",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644"
+    },
+    {
+      "src": "lab:8131406",
+      "dst": "std:IS 15644",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644"
+    },
+    {
+      "src": "lab:8131406",
+      "dst": "std:IS 9873 (Part 1)",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644"
+    },
+    {
+      "src": "lab:9179506",
+      "dst": "std:IS 4151",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151"
+    },
+    {
+      "src": "lab:8186836",
+      "dst": "std:IS 2925",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=2925"
+    },
+    {
+      "src": "lab:9179706",
+      "dst": "std:IS 15644",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644"
+    },
+    {
+      "src": "lab:8141526",
+      "dst": "std:IS 15644",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644"
+    },
+    {
+      "src": "lab:8141526",
+      "dst": "std:IS 9873 (Part 1)",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644"
+    },
+    {
+      "src": "lab:8187006",
+      "dst": "std:IS 9873 (Part 1)",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=9873"
+    },
+    {
+      "src": "lab:7126926",
+      "dst": "std:IS 15644",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644"
+    },
+    {
+      "src": "lab:8166336",
+      "dst": "std:IS 9873 (Part 1)",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=9873"
+    },
+    {
+      "src": "lab:8176806",
+      "dst": "std:IS 4151",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151"
+    },
+    {
+      "src": "lab:8176806",
+      "dst": "std:IS 2925",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151"
+    },
+    {
+      "src": "lab:7174106",
+      "dst": "std:IS 15644",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644"
+    },
+    {
+      "src": "lab:7174106",
+      "dst": "std:IS 9873 (Part 1)",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644"
+    },
+    {
+      "src": "lab:8199006",
+      "dst": "std:IS 4151",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151"
+    },
+    {
+      "src": "lab:8199006",
+      "dst": "std:IS 2925",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151"
+    },
+    {
+      "src": "lab:8184706",
+      "dst": "std:IS 4151",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151"
+    },
+    {
+      "src": "lab:8184706",
+      "dst": "std:IS 2925",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151"
+    },
+    {
+      "src": "lab:8136216",
+      "dst": "std:IS 15644",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644"
+    },
+    {
+      "src": "lab:8171606",
+      "dst": "std:IS 9873 (Part 3)",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=9873"
+    },
+    {
+      "src": "lab:8138306",
+      "dst": "std:IS 4151",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151"
+    },
+    {
+      "src": "lab:8138306",
+      "dst": "std:IS 15644",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151"
+    },
+    {
+      "src": "lab:8138306",
+      "dst": "std:IS 9873 (Part 1)",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151"
+    },
+    {
+      "src": "lab:8167106",
+      "dst": "std:IS 15644",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644"
+    },
+    {
+      "src": "lab:8127226",
+      "dst": "std:IS 15644",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644"
+    },
+    {
+      "src": "lab:8168906",
+      "dst": "std:IS 15644",
+      "type": "TESTS",
+      "source": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644"
+    },
+    {
+      "src": "ahc-region:DELHI",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:RAJASTHAN",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:MADHYA PRADESH",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:UTTAR PRADESH",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:HARYANA",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:CHHATTISGARH",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:WEST BENGAL",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:ODISHA",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:BIHAR",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:JHARKHAND",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:TRIPURA",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:ASSAM",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:PUNJAB",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:JAMMU & KASHMIR",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:CHANDIGARH",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:UTTARAKHAND",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:HIMACHAL PRADESH",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:GOA",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:TELANGANA",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:ANDHRA PRADESH",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:KARNATAKA",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:KERALA",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:TAMIL NADU",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:PONDICHERY",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:GUJARAT",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    },
+    {
+      "src": "ahc-region:MAHARASHTRA",
+      "dst": "domain:gold",
+      "type": "HALLMARKS",
+      "source": "Manak Online AHC list"
+    }
+  ]
+}

@@ -1,0 +1,1065 @@
+[
+  {
+    "id": "8176606",
+    "name": "Advance Firetec and Research Lab Pvt Ltd.",
+    "city": "New Delhi",
+    "state": "Delhi",
+    "lat": 28.6138954,
+    "lng": 77.2090057,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2027-03-03",
+    "standards_in_scope": [
+      "IS 2925"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 2925",
+        "is_number_raw": "IS 2925 (1984)",
+        "product": "Specification for industrial safety helmets (Second Revision)",
+        "grade": "All sizes",
+        "validity_raw": "03 Mar, 2030",
+        "remark": "- -"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=2925",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "8185306",
+    "name": "ALPHA TEST HOUSE PVT LTD",
+    "city": "Bahadurgarh",
+    "state": "Haryana",
+    "lat": 28.6933239,
+    "lng": 76.9332373,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2028-05-06",
+    "standards_in_scope": [
+      "IS 15644",
+      "IS 9873 (Part 1)"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 15644",
+        "is_number_raw": "IS 15644 (2006)",
+        "product": "Safety of electric toys",
+        "grade": "ALL",
+        "validity_raw": "08 May, 2028",
+        "remark": "- Included w.e.f. 09.07.2025, For IS 15644:2006 only."
+      },
+      {
+        "standard_id": "IS 9873 (Part 1)",
+        "is_number_raw": "IS 9873 : Part 1 (2025)",
+        "product": "SAFETY OF TOYS PART 1: SAFETY ASPECTS RELATED TO MECHANICAL AND PHYSICAL PROPERTIES (Fifth Revision)",
+        "grade": "-",
+        "validity_raw": "08 May, 2028",
+        "remark": "- Included w.e.f 01.04.2026"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "8165026",
+    "name": "Atharva Laboratories Pvt Ltd",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "lat": 28.5706333,
+    "lng": 77.3272147,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2029-02-23",
+    "standards_in_scope": [
+      "IS 9873 (Part 3)"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 9873 (Part 3)",
+        "is_number_raw": "IS 9873 : Part 3 (2020)",
+        "product": "Safety of Toys Part 3 Migration of Certain Elements ( Third Revision )",
+        "grade": "-",
+        "validity_raw": "-",
+        "remark": "- Included w.e.f 22.09.2026"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=9873",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "8134206",
+    "name": "Atharva Laboratories. Noida",
+    "city": null,
+    "state": "Uttar Pradesh",
+    "lat": 27.1303344,
+    "lng": 80.859666,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2028-07-21",
+    "standards_in_scope": [
+      "IS 2925",
+      "IS 9873 (Part 3)"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 2925",
+        "is_number_raw": "IS 2925 (1984)",
+        "product": "Specification for industrial safety helmets (Second Revision)",
+        "grade": "-",
+        "validity_raw": "21 Jul, 2028",
+        "remark": "- -"
+      },
+      {
+        "standard_id": "IS 2925",
+        "is_number_raw": "IS 2925 (1984)",
+        "product": "Specification for industrial safety helmets (Second Revision)",
+        "grade": "-",
+        "validity_raw": "21 Jul, 2028",
+        "remark": "- -"
+      },
+      {
+        "standard_id": "IS 9873 (Part 3)",
+        "is_number_raw": "IS 9873 : Part 3 (2020)",
+        "product": "Safety of Toys Part 3 Migration of Certain Elements ( Third Revision )",
+        "grade": "-",
+        "validity_raw": "21 Jul, 2028",
+        "remark": "- Included w.e.f. 17.06.2026"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=2925",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "9168306",
+    "name": "Bharat Test House Pvt Ltd",
+    "city": "Sonepat",
+    "state": "Haryana",
+    "lat": 28.9895406,
+    "lng": 77.1510394,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2027-07-26",
+    "standards_in_scope": [
+      "IS 4151",
+      "IS 2925"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 4151",
+        "is_number_raw": "IS 4151 (2015)",
+        "product": "Protective helmets for motorcycle riders - Specification",
+        "grade": "Protective helmets for motorcycle riders",
+        "validity_raw": "-",
+        "remark": "- -"
+      },
+      {
+        "standard_id": "IS 2925",
+        "is_number_raw": "IS 2925 (1984)",
+        "product": "Specification for industrial safety helmets (Second Revision)",
+        "grade": "-",
+        "validity_raw": "-",
+        "remark": "- Included w.e.f 09.04.2025"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "9135626",
+    "name": "Bharat Test House Pvt Ltd, Rai",
+    "city": "Sonepat",
+    "state": "Haryana",
+    "lat": 28.9895406,
+    "lng": 77.1510394,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2029-03-19",
+    "standards_in_scope": [
+      "IS 15644",
+      "IS 9873 (Part 1)"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 15644",
+        "is_number_raw": "IS 15644 (2006)",
+        "product": "Safety of electric toys",
+        "grade": "-",
+        "validity_raw": "19 Mar, 2029",
+        "remark": "- -"
+      },
+      {
+        "standard_id": "IS 9873 (Part 1)",
+        "is_number_raw": "IS 9873 : Part 1 (2025)",
+        "product": "SAFETY OF TOYS PART 1: SAFETY ASPECTS RELATED TO MECHANICAL AND PHYSICAL PROPERTIES (Fifth Revision)",
+        "grade": "All Toys",
+        "validity_raw": "19 Mar, 2029",
+        "remark": "- included w.e.f 11.06.2026"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "None",
+    "name": "BIS, Central Laboratory (CL)",
+    "geocode": "none",
+    "standards_in_scope": [
+      "IS 4151",
+      "IS 2925",
+      "IS 15644",
+      "IS 9873 (Part 1)",
+      "IS 9873 (Part 3)",
+      "IS 1417"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 4151",
+        "is_number_raw": "IS 4151 (2015)",
+        "product": "Protective helmets for motorcycle riders - Specification",
+        "grade": "-",
+        "validity_raw": "-",
+        "remark": "- Quanity required for Complete Testing: 15 nos. of Helmets, Additional 3 Meters Chin strap and 2 nos. of Additional Buckle"
+      },
+      {
+        "standard_id": "IS 2925",
+        "is_number_raw": "IS 2925 (1984)",
+        "product": "Specification for industrial safety helmets (Second Revision)",
+        "grade": "-",
+        "validity_raw": "-",
+        "remark": "- 10 pieces of helmet for complete testing."
+      },
+      {
+        "standard_id": "IS 2925",
+        "is_number_raw": "IS 2925 (1984)",
+        "product": "Specification for industrial safety helmets (Second Revision)",
+        "grade": "-",
+        "validity_raw": "-",
+        "remark": "- -"
+      },
+      {
+        "standard_id": "IS 15644",
+        "is_number_raw": "IS 15644 (2006)",
+        "product": "Safety of electric toys",
+        "grade": "-",
+        "validity_raw": "-",
+        "remark": "- Complete upto toy size 34x22x22 inch and except toys incorporating lasers and light-emitting diodes (Annex E) and Component as per Cl 16."
+      },
+      {
+        "standard_id": "IS 15644",
+        "is_number_raw": "IS 15644 (2006)",
+        "product": "Safety of electric toys",
+        "grade": "Safety Of Electric Toys",
+        "validity_raw": "-",
+        "remark": "- excluding toys incorporating lasers and light-emitting diodes (Annex E),Cl.16 Components"
+      },
+      {
+        "standard_id": "IS 15644",
+        "is_number_raw": "IS 15644 (2006)",
+        "product": "Safety of electric toys",
+        "grade": "Electric Toys excluding wheeled ride-on toys & Annex E",
+        "validity_raw": "-",
+        "remark": "- Complete testing facility excluding Cl. 16 Component, Cl. 20 Radiation, toxicity and similar hazards, Annex C Automatic controls and switches and Annex E Toys incorporating lasers and light-emitting diodes. Testing facility for Wheeled ride-on toys is not available."
+      },
+      {
+        "standard_id": "IS 15644",
+        "is_number_raw": "IS 15644 (2006)",
+        "product": "Safety of electric toys",
+        "grade": "-",
+        "validity_raw": "-",
+        "remark": "- The following test facilities for clauses are not available: 1. Component (Clause 16) 2. Clause 14.15 3. Clause 20"
+      },
+      {
+        "standard_id": "IS 15644",
+        "is_number_raw": "IS 15644 (2006)",
+        "product": "Safety of electric toys",
+        "grade": "-",
+        "validity_raw": "-",
+        "remark": "- 3 piece"
+      },
+      {
+        "standard_id": "IS 15644",
+        "is_number_raw": "IS 15644 (2006)",
+        "product": "Safety of electric toys",
+        "grade": "-",
+        "validity_raw": "-",
+        "remark": "- 5 nos Excluding Excluding wheeled ride-on toys, Toys incorporating lasers and light-emitting diodes (Annex E)"
+      },
+      {
+        "standard_id": "IS 9873 (Part 1)",
+        "is_number_raw": "IS 9873 : Part 1 (2025)",
+        "product": "SAFETY OF TOYS PART 1: SAFETY ASPECTS RELATED TO MECHANICAL AND PHYSICAL PROPERTIES (Fifth Revision)",
+        "grade": "-",
+        "validity_raw": "-",
+        "remark": "- Complete testing facility is available for the end product except the following tests: Cl. 5.21 Expanding Materials, Cl4.23 Speed limitation of electrically driven ride-on toys ,Cl5.11.4.2 Head probe push test, Cl.5.25.2.1 Close-to-the-ear toys, Cl.5.25.2.2 Floor, tabletop and crib toys, Cl.5.25.2.3 Hand-held toys other than rattles, Cl.5.25.2.45 Pull or push toys, Cl.5.25.2.6 Cap firing toys"
+      },
+      {
+        "standard_id": "IS 9873 (Part 3)",
+        "is_number_raw": "IS 9873 : Part 3 (2020)",
+        "product": "Safety of Toys Part 3 Migration of Certain Elements ( Third Revision )",
+        "grade": "-",
+        "validity_raw": "-",
+        "remark": "- For testing samples as per IS 9873 Part 3, a separate sample may be provided in addition to mechanical testing as per IS 9873 Part 1. Chemical testing if required, shall explicitly be mentioned on the test request."
+      },
+      {
+        "standard_id": "IS 9873 (Part 1)",
+        "is_number_raw": "IS 9873 : Part 1 (2019)",
+        "product": "Safety of toys: Part 1 safety aspects related to mechanical and physical properties (Fourth Revision)",
+        "grade": "-",
+        "validity_raw": "-",
+        "remark": "- Tests for Safety of toys: Part 3 migration of certain elements (Second Revision) as per IS 9873 : Part 3 (2017) are available Except for following tests: 5.6 Test for Pre-school play figures 5.11.2 Length of cords and electrical cables 5.11.5 Self-retracting cords 5.13 Test for closures and toy chest lids 5.24.3 Tip-over test for large and bulky toys 5.24.6 Tension test 5.25 Determination of sound pressure levels 5.27 Dynamic strength for toy scooters 5.31 Tension test for magnets 5.32 Magnetic flux index Quantity: 3-10 based on the sample"
+      },
+      {
+        "standard_id": "IS 9873 (Part 1)",
+        "is_number_raw": "IS 9873 : Part 1 (2025)",
+        "product": "SAFETY OF TOYS PART 1: SAFETY ASPECTS RELATED TO MECHANICAL AND PHYSICAL PROPERTIES (Fifth Revision)",
+        "grade": "-",
+        "validity_raw": "-",
+        "remark": "- Tests for Safety of toys: Part 3 migration of certain elements (Second Revision) as per IS 9873 : Part 3 (2017) are available Except for following tests: 5.6 Test for Pre-school play figures 5.11.2 Length of cords and electrical cables 5.11.5 Self-retracting cords 5.13 Test for closures and toy chest lids 5.24.3 Tip-over test for large and bulky toys 5.24.6 Tension test 5.25 Determination of sound pressure levels 5.27 Dynamic strength for toy scooters 5.31 Tension test for magnets 5.32 Magnetic flux index Quantity: 3-10 based on the sample"
+      },
+      {
+        "standard_id": "IS 9873 (Part 1)",
+        "is_number_raw": "IS 9873 : Part 1 (2025)",
+        "product": "SAFETY OF TOYS PART 1: SAFETY ASPECTS RELATED TO MECHANICAL AND PHYSICAL PROPERTIES (Fifth Revision)",
+        "grade": "-",
+        "validity_raw": "-",
+        "remark": "- Complete Test Facility except Acoustic testing"
+      },
+      {
+        "standard_id": "IS 1417",
+        "is_number_raw": "IS 1417 (2016)",
+        "product": "Gold and gold alloys, jewellery/ artefacts - Fineness and marking - Specification (Fourth Revision)",
+        "grade": "Yellow Gold Alloy Jewellery- 9K (375), 14K (585), 18K (750), 20K (833), 22K (916), 23K (958)",
+        "validity_raw": "-",
+        "remark": "- Minimum sample quantity required: For 9K gold - 1.5 gram and for other grades 1 gram."
+      },
+      {
+        "standard_id": "IS 1417",
+        "is_number_raw": "IS 1417 (2016)",
+        "product": "Gold and gold alloys, jewellery/ artefacts - Fineness and marking - Specification (Fourth Revision)",
+        "grade": "Test facility available for 9K, 14K, 18K, 20K, 22K , 23K and 995 ppt",
+        "validity_raw": "-",
+        "remark": "- Test facilities for white gold alloys containing palladium and for gold fineness of 999 ‰ are presently not available."
+      },
+      {
+        "standard_id": "IS 1417",
+        "is_number_raw": "IS 1417 (2016)",
+        "product": "Gold and gold alloys, jewellery/ artefacts - Fineness and marking - Specification (Fourth Revision)",
+        "grade": "Yellow Gold Alloy Jewellery- 9K (375), 14K (585), 18K (750), 20K (833), 22K (916), 23K (958)",
+        "validity_raw": "-",
+        "remark": "- Min 1.5 g sample for 9K gold jewellery without any stone/lacquer etc; Min. 1g sample for other grades of jewellery without any stone/lacquer etc (Testing charges 1800/-)"
+      },
+      {
+        "standard_id": "IS 1417",
+        "is_number_raw": "IS 1417 (2016)",
+        "product": "Gold and gold alloys, jewellery/ artefacts - Fineness and marking - Specification (Fourth Revision)",
+        "grade": "Yellow Gold Alloy Jewellery- 9K (375), 14K (585), 18K (750), 20K (833), 22K (916), 23K (958)",
+        "validity_raw": "-",
+        "remark": "- Min 1.5 g sample for 9K gold jewellery without any stone/lacquer etc; Min. 1g sample for other grades of jewellery without any stone/lacquer etc (Testing charges 1800/-)"
+      },
+      {
+        "standard_id": "IS 1417",
+        "is_number_raw": "IS 1417 (2016)",
+        "product": "Gold and gold alloys, jewellery/ artefacts - Fineness and marking - Specification (Fourth Revision)",
+        "grade": "Yellow Gold Alloy Jewellery - 9K (375), 14K (585), 18K (750), 20K (833), 22K (916), 23K (958)",
+        "validity_raw": "-",
+        "remark": "- Minimum sample quantity required: For 9K gold - 1.5 gram and for other grades 1 gram."
+      },
+      {
+        "standard_id": "IS 1417",
+        "is_number_raw": "IS 1417 (2016)",
+        "product": "Gold and gold alloys, jewellery/ artefacts - Fineness and marking - Specification (Fourth Revision)",
+        "grade": "Yellow Gold Alloy Jewellery - (9K375, 14K585, 18K750, 20K833, 22K916, 23K958) and Gold Alloy/ Bullion (24KS995, 24KF999)",
+        "validity_raw": "-",
+        "remark": "- Min 1.5 g sample for 9K gold jwellery without any stone/lacquer etc; Min. 1g sample for other grades of jewellery without any stone/lacquer etc; Min 2.5 g sample for bullion sampled in accordance with IS 1418 cutting method Cl 5.1.2"
+      },
+      {
+        "standard_id": "IS 1417",
+        "is_number_raw": "IS 1417 (2016)",
+        "product": "Gold and gold alloys, jewellery/ artefacts - Fineness and marking - Specification (Fourth Revision)",
+        "grade": "-",
+        "validity_raw": "-",
+        "remark": "- -"
+      },
+      {
+        "standard_id": "IS 1417",
+        "is_number_raw": "IS 1417 (2016)",
+        "product": "Gold and gold alloys, jewellery/ artefacts - Fineness and marking - Specification (Fourth Revision)",
+        "grade": "Yellow Gold Alloy Jewellery- 9K (375), 14K (585), 18K (750), 20K (833), 22K (916), 23K (958), 995 and 999",
+        "validity_raw": "-",
+        "remark": "- Min 1.5 g sample for 9K gold jewellery without any stone/lacquer etc; Min. 1g sample for other grades of jewellery without any stone/lacquer etc"
+      },
+      {
+        "standard_id": "IS 1417",
+        "is_number_raw": "IS 1417 (2016)",
+        "product": "Gold and gold alloys, jewellery/ artefacts - Fineness and marking - Specification (Fourth Revision)",
+        "grade": "9K375, 14K585, 18K750, 20K833, 22K916, 23K958) and Gold Alloy/ Bullion (24KS995, 24KF999)",
+        "validity_raw": "-",
+        "remark": "- Yellow Gold Alloy Jewellery - (9K375, 14K585, 18K750, 20K833, 22K916, 23K958) and Gold Alloy/ Bullion (24KS995, 24KF999) Min sample quantity for 9K - 1.5 gram and for other grade as per guidelines."
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "8127706",
+    "name": "Bureau Veritas Consumer Products Services(I) P. Ltd",
+    "city": "NOIDA",
+    "state": "Uttar Pradesh",
+    "lat": 28.5706333,
+    "lng": 77.3272147,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2026-12-31",
+    "standards_in_scope": [
+      "IS 15644"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 15644",
+        "is_number_raw": "IS 15644 (2006)",
+        "product": "Safety of electric toys",
+        "grade": "-",
+        "validity_raw": "31 Dec, 2029",
+        "remark": "- Included w.e.f. 29-09-2020. Exclusion: radiation, toxicity & similr hazards (cl.20), toys incorporating lasers and light-emitting diodes (annex E)"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "9102534",
+    "name": "Central Institute of Petrochemicals Engineering & Technology",
+    "city": "Lucknow",
+    "state": "Uttar Pradesh",
+    "lat": 26.8381,
+    "lng": 80.9346001,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2026-12-31",
+    "standards_in_scope": [
+      "IS 2925"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 2925",
+        "is_number_raw": "IS 2925 (1984)",
+        "product": "Specification for industrial safety helmets (Second Revision)",
+        "grade": "All",
+        "validity_raw": "31 Dec, 2026",
+        "remark": "- -"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=2925",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "8139626",
+    "name": "Conformity Testing Labs Pvt Ltd",
+    "city": "New Delhi",
+    "state": "Delhi",
+    "lat": 28.6138954,
+    "lng": 77.2090057,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2027-04-05",
+    "standards_in_scope": [
+      "IS 15644"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 15644",
+        "is_number_raw": "IS 15644 (2006)",
+        "product": "Safety of electric toys",
+        "grade": "-",
+        "validity_raw": "05 Apr, 2027",
+        "remark": "- -"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "8166106",
+    "name": "Cotecna Inspection India Private Limited",
+    "city": "Gurugram",
+    "state": "Haryana",
+    "lat": 28.4646148,
+    "lng": 77.0299194,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2026-10-28",
+    "standards_in_scope": [
+      "IS 15644"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 15644",
+        "is_number_raw": "IS 15644 (2006)",
+        "product": "Safety of electric toys",
+        "grade": "Safety of Electric Toys",
+        "validity_raw": "-",
+        "remark": "- -"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "8131406",
+    "name": "Delhi Test House, Azadpur",
+    "city": "Delhi",
+    "state": "Delhi",
+    "lat": 28.6664535,
+    "lng": 77.2169781,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2027-06-17",
+    "standards_in_scope": [
+      "IS 15644",
+      "IS 9873 (Part 1)"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 15644",
+        "is_number_raw": "IS 15644 (2006)",
+        "product": "Safety of electric toys",
+        "grade": "-",
+        "validity_raw": "17 Jun, 2027",
+        "remark": "- Included w.e.f. 15-10-2020"
+      },
+      {
+        "standard_id": "IS 9873 (Part 1)",
+        "is_number_raw": "IS 9873 : Part 1 (2025)",
+        "product": "SAFETY OF TOYS PART 1: SAFETY ASPECTS RELATED TO MECHANICAL AND PHYSICAL PROPERTIES (Fifth Revision)",
+        "grade": "-",
+        "validity_raw": "17 Jun, 2027",
+        "remark": "- Included w.e.f 24.03.2026"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "9179506",
+    "name": "Delta Testing and Research Laboratories Private Limited",
+    "city": "Delhi",
+    "state": "Delhi",
+    "lat": 28.6664535,
+    "lng": 77.2169781,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2027-08-21",
+    "standards_in_scope": [
+      "IS 4151"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 4151",
+        "is_number_raw": "IS 4151 (2015)",
+        "product": "Protective helmets for motorcycle riders - Specification",
+        "grade": "All Grade / Type / Size / Designation",
+        "validity_raw": "21 Aug, 2027",
+        "remark": "- -"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "8186836",
+    "name": "Delta Testing and Research Laboratories Private Limited (Unit II)",
+    "city": "North West",
+    "state": "Delhi",
+    "lat": 28.7118315,
+    "lng": 77.1238141,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2028-07-23",
+    "standards_in_scope": [
+      "IS 2925"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 2925",
+        "is_number_raw": "IS 2925 (1984)",
+        "product": "Specification for industrial safety helmets (Second Revision)",
+        "grade": "All Grade / Type / Size / Designation",
+        "validity_raw": "24 Jul, 2028",
+        "remark": "- -"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=2925",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "9179706",
+    "name": "Eko Pro Engineers Pvt. Ltd. Ghaziabad",
+    "city": null,
+    "state": "Uttar Pradesh",
+    "lat": 27.1303344,
+    "lng": 80.859666,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2027-08-26",
+    "standards_in_scope": [
+      "IS 15644"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 15644",
+        "is_number_raw": "IS 15644 (2006)",
+        "product": "Safety of electric toys",
+        "grade": "-",
+        "validity_raw": "-",
+        "remark": "- -"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "8141526",
+    "name": "EMC Testing and Compliance LLP",
+    "city": "Gurugram",
+    "state": "Haryana",
+    "lat": 28.4646148,
+    "lng": 77.0299194,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2027-07-19",
+    "standards_in_scope": [
+      "IS 15644",
+      "IS 9873 (Part 1)"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 15644",
+        "is_number_raw": "IS 15644 (2006)",
+        "product": "Safety of electric toys",
+        "grade": "-",
+        "validity_raw": "19 Jul, 2027",
+        "remark": "- -"
+      },
+      {
+        "standard_id": "IS 9873 (Part 1)",
+        "is_number_raw": "IS 9873 : Part 1 (2025)",
+        "product": "SAFETY OF TOYS PART 1: SAFETY ASPECTS RELATED TO MECHANICAL AND PHYSICAL PROPERTIES (Fifth Revision)",
+        "grade": "-",
+        "validity_raw": "19 Jul, 2027",
+        "remark": "- Included w.e.f.01.04.2026"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "8187006",
+    "name": "Eurofins Consumer Product Testing India Private Limited",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "lat": 28.5706333,
+    "lng": 77.3272147,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2028-07-28",
+    "standards_in_scope": [
+      "IS 9873 (Part 1)"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 9873 (Part 1)",
+        "is_number_raw": "IS 9873 : Part 1 (2025)",
+        "product": "SAFETY OF TOYS PART 1: SAFETY ASPECTS RELATED TO MECHANICAL AND PHYSICAL PROPERTIES (Fifth Revision)",
+        "grade": "-",
+        "validity_raw": "28 Jul, 2028",
+        "remark": "- Included w.e.f 11.08.2026"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=9873",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "7126926",
+    "name": "Hi Physix Laboratory India Pvt. Ltd. Pune",
+    "city": null,
+    "state": "Maharashtra",
+    "lat": 19.5670323,
+    "lng": 76.4164557,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2028-06-20",
+    "standards_in_scope": [
+      "IS 15644"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 15644",
+        "is_number_raw": "IS 15644 (2006)",
+        "product": "Safety of electric toys",
+        "grade": "-",
+        "validity_raw": "20 Jun, 2028",
+        "remark": "- Excluding following tests: Components (Cl. 16) and Radiation, toxicity and similar hazards (Cl. 20"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "8166336",
+    "name": "Intertek India Pvt Ltd",
+    "city": "Gurgaon",
+    "state": "Haryana",
+    "lat": 28.4646148,
+    "lng": 77.0299194,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2026-11-05",
+    "standards_in_scope": [
+      "IS 9873 (Part 1)"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 9873 (Part 1)",
+        "is_number_raw": "IS 9873 : Part 1 (2025)",
+        "product": "SAFETY OF TOYS PART 1: SAFETY ASPECTS RELATED TO MECHANICAL AND PHYSICAL PROPERTIES (Fifth Revision)",
+        "grade": "SAFETY OF TOYS",
+        "validity_raw": "-",
+        "remark": "- Included w.e.f-18.09.2026"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=9873",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "8176806",
+    "name": "Pioneer Testing Laboratory Private Limited",
+    "city": "New Delhi",
+    "state": "Delhi",
+    "lat": 28.6138954,
+    "lng": 77.2090057,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2027-03-10",
+    "standards_in_scope": [
+      "IS 4151",
+      "IS 2925"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 4151",
+        "is_number_raw": "IS 4151 (2015)",
+        "product": "Protective helmets for motorcycle riders - Specification",
+        "grade": "All Type",
+        "validity_raw": "10 Mar, 2030",
+        "remark": "- -"
+      },
+      {
+        "standard_id": "IS 2925",
+        "is_number_raw": "IS 2925 (1984)",
+        "product": "Specification for industrial safety helmets (Second Revision)",
+        "grade": "All",
+        "validity_raw": "10 Mar, 2030",
+        "remark": "- Included w.e.f 20.05.2025"
+      },
+      {
+        "standard_id": "IS 2925",
+        "is_number_raw": "IS 2925 (1984)",
+        "product": "Specification for industrial safety helmets (Second Revision)",
+        "grade": "All Type",
+        "validity_raw": "10 Mar, 2030",
+        "remark": "- -"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "7174106",
+    "name": "Precision Laboratories LLP",
+    "city": "Ahmedabad",
+    "state": "Gujarat",
+    "lat": 23.0215374,
+    "lng": 72.5800568,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2026-10-31",
+    "standards_in_scope": [
+      "IS 15644",
+      "IS 9873 (Part 1)"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 15644",
+        "is_number_raw": "IS 15644 (2006)",
+        "product": "Safety of electric toys",
+        "grade": "-",
+        "validity_raw": "31 Oct, 2029",
+        "remark": "- -"
+      },
+      {
+        "standard_id": "IS 9873 (Part 1)",
+        "is_number_raw": "IS 9873 : Part 1 (2025)",
+        "product": "SAFETY OF TOYS PART 1: SAFETY ASPECTS RELATED TO MECHANICAL AND PHYSICAL PROPERTIES (Fifth Revision)",
+        "grade": "-",
+        "validity_raw": "31 Oct, 2029",
+        "remark": "- w.e.f. 06.08.2026"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "8199006",
+    "name": "PRESTO LABORATORIES PRIVATE LIMITED",
+    "geocode": "none",
+    "standards_in_scope": [
+      "IS 4151",
+      "IS 2925"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 4151",
+        "is_number_raw": "IS 4151 (2015)",
+        "product": "Protective helmets for motorcycle riders - Specification",
+        "grade": "All",
+        "validity_raw": "21 Aug, 2029",
+        "remark": "- -"
+      },
+      {
+        "standard_id": "IS 2925",
+        "is_number_raw": "IS 2925 (1984)",
+        "product": "Specification for industrial safety helmets (Second Revision)",
+        "grade": "ALL",
+        "validity_raw": "21 Aug, 2029",
+        "remark": "- -"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "8184706",
+    "name": "Samridhi Test House Pvt. Ltd. North Delhi",
+    "city": null,
+    "state": "Delhi",
+    "lat": 28.6328027,
+    "lng": 77.2197713,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2028-04-08",
+    "standards_in_scope": [
+      "IS 4151",
+      "IS 2925"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 4151",
+        "is_number_raw": "IS 4151 (2015)",
+        "product": "Protective helmets for motorcycle riders - Specification",
+        "grade": "-",
+        "validity_raw": "-",
+        "remark": "- -"
+      },
+      {
+        "standard_id": "IS 2925",
+        "is_number_raw": "IS 2925 (1984)",
+        "product": "Specification for industrial safety helmets (Second Revision)",
+        "grade": "-",
+        "validity_raw": "-",
+        "remark": "- -"
+      },
+      {
+        "standard_id": "IS 2925",
+        "is_number_raw": "IS 2925 (1984)",
+        "product": "Specification for industrial safety helmets (Second Revision)",
+        "grade": "-",
+        "validity_raw": "-",
+        "remark": "- -"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "8136216",
+    "name": "SGS India Pvt Ltd",
+    "city": "Gurgaon",
+    "state": "Haryana",
+    "lat": 28.4646148,
+    "lng": 77.0299194,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2026-12-31",
+    "standards_in_scope": [
+      "IS 15644"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 15644",
+        "is_number_raw": "IS 15644 (2006)",
+        "product": "Safety of electric toys",
+        "grade": "All Type of Electrical Toys",
+        "validity_raw": "31 Dec, 2029",
+        "remark": "- Excluding Radiation, toxicity & similar hazards (Cl.20)"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "8171606",
+    "name": "Stellar Test House",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "lat": 28.5706333,
+    "lng": 77.3272147,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2025-09-26",
+    "standards_in_scope": [
+      "IS 9873 (Part 3)"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 9873 (Part 3)",
+        "is_number_raw": "IS 9873 : Part 3 (2017)",
+        "product": "Safety of toys: Part 3 migration of certain elements (Second Revision)",
+        "grade": "-",
+        "validity_raw": "26 Sep, 2028",
+        "remark": "- Included w.e.f 18.08.2026"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=9873",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "8138306",
+    "name": "Testtex India Laboratories Private Limited",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "lat": 28.5706333,
+    "lng": 77.3272147,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2026-12-31",
+    "standards_in_scope": [
+      "IS 4151",
+      "IS 15644",
+      "IS 9873 (Part 1)"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 4151",
+        "is_number_raw": "IS 4151 (1993.0)",
+        "product": "Protective helmets for motorcycle riders - Specification",
+        "grade": "All",
+        "validity_raw": "31 Dec, 2029",
+        "remark": "- -"
+      },
+      {
+        "standard_id": "IS 4151",
+        "is_number_raw": "IS 4151 (2015)",
+        "product": "Protective helmets for motorcycle riders - Specification",
+        "grade": "All",
+        "validity_raw": "31 Dec, 2029",
+        "remark": "- REVISED VERSION of IS 4151:2015 Included w.e.f. 02.07.2019."
+      },
+      {
+        "standard_id": "IS 15644",
+        "is_number_raw": "IS 15644 (2006)",
+        "product": "Safety of electric toys",
+        "grade": "All",
+        "validity_raw": "31 Dec, 2029",
+        "remark": "- -"
+      },
+      {
+        "standard_id": "IS 9873 (Part 1)",
+        "is_number_raw": "IS 9873 : Part 1 (2025)",
+        "product": "SAFETY OF TOYS PART 1: SAFETY ASPECTS RELATED TO MECHANICAL AND PHYSICAL PROPERTIES (Fifth Revision)",
+        "grade": "All",
+        "validity_raw": "31 Dec, 2029",
+        "remark": "- Included w.e.f. 16.06.2026"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=4151",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "8167106",
+    "name": "TUV Rheinland (India) Pvt Ltd",
+    "city": "Gurgaon",
+    "state": "Haryana",
+    "lat": 28.4646148,
+    "lng": 77.0299194,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2027-01-19",
+    "standards_in_scope": [
+      "IS 15644"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 15644",
+        "is_number_raw": "IS 15644 (2006)",
+        "product": "Safety of electric toys",
+        "grade": "-",
+        "validity_raw": "-",
+        "remark": "- Excluding: Cl. 20.0 (Radiation, toxicity and similar hazards) and Cl. 16 (Components)"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "8127226",
+    "name": "UL India Pvt Ltd",
+    "city": "Gurgaon",
+    "state": "Haryana",
+    "lat": 28.4646148,
+    "lng": 77.0299194,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2028-08-07",
+    "standards_in_scope": [
+      "IS 15644"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 15644",
+        "is_number_raw": "IS 15644 (2006)",
+        "product": "Safety of electric toys",
+        "grade": "ALL TYPE",
+        "validity_raw": "07 Aug, 2028",
+        "remark": "- Excluding: Cl.16 Components. Except Annex-E: Toys incorporating lasers and LED"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  },
+  {
+    "id": "8168906",
+    "name": "URS Products & Testing Pvt Ltd",
+    "city": "NOIDA",
+    "state": "Uttar Pradesh",
+    "lat": 28.5706333,
+    "lng": 77.3272147,
+    "geocode": "city-centroid",
+    "current_status": "Active",
+    "recognition_valid_upto": "2027-09-26",
+    "standards_in_scope": [
+      "IS 15644"
+    ],
+    "scope": [
+      {
+        "standard_id": "IS 15644",
+        "is_number_raw": "IS 15644 (2006)",
+        "product": "Safety of electric toys",
+        "grade": "all",
+        "validity_raw": "-",
+        "remark": "- -"
+      }
+    ],
+    "source_url": "https://lims.bis.gov.in/home/search_is_number/?is_number__doc_no=15644",
+    "retrieved_at": "2026-09-27T17:15:36.983Z"
+  }
+]
