@@ -28,6 +28,7 @@ import { findAhc } from "../tools/ahc";
 import { processHallmarkOrMark } from "../tools/hallmark";
 import { stepFormI, parseFormInputsFromText } from "../tools/form_i";
 import { matchCanonicalFaq } from "./speedgate";
+import { isEnglish, tStatic, translateTo, translateMany } from "../i18n";
 
 export type { BisvedaResponse, StageEvent, PipelineStage };
 export { STAGE_LABELS, buildFollowUps };
@@ -62,7 +63,13 @@ function summarizeHistoryForLLM(history: ConversationTurn[] = [], maxTurns = 3):
   return out;
 }
 
-function refusalNotInSources(conversationId: string, language: string, extra?: string): BisvedaResponse {
+async function refusalNotInSources(conversationId: string, language: string, extra?: string): Promise<BisvedaResponse> {
+  const [notFound, covers, catalogue, helpline] = await Promise.all([
+    tStatic("not_in_sources", language),
+    tStatic("covers", language),
+    translateTo("Search the official BIS Standards Catalogue", language),
+    translateTo("National Consumer Helpline", language),
+  ]);
   return {
     conversation_id: conversationId,
     kind: "refusal",
@@ -72,12 +79,10 @@ function refusalNotInSources(conversationId: string, language: string, extra?: s
     sources: [],
     refusal: {
       reason: "not_in_sources",
-      message:
-        (extra ? `${extra} ` : "") +
-        `We couldn't find this in the documents we hold. Our knowledge base currently covers: ${knownStandardsList()}.`,
+      message: (extra ? `${extra} ` : "") + `${notFound} ${covers} ${knownStandardsList()}.`,
       next_steps: [
-        { text: "Search the official BIS Standards Catalogue", url: "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails" },
-        { text: "National Consumer Helpline", url: "https://consumerhelpline.gov.in/" },
+        { text: catalogue, url: "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails" },
+        { text: helpline, url: "https://consumerhelpline.gov.in/" },
       ],
     },
     follow_ups: [],
@@ -120,7 +125,32 @@ async function answerForStandard(
   };
 }
 
+/**
+ * Public entry point. Runs the pipeline, then makes sure the parts that are built from
+ * English templates (follow-up chips, refusal next-step links) come back in the user's
+ * language. Answer text is already written in the user's language by each branch.
+ */
 export async function runPipeline(options: PipelineOptions): Promise<BisvedaResponse> {
+  const res = await runPipelineInner(options);
+  if (isEnglish(res.language)) return res;
+  try {
+    const [followUps, stepTexts] = await Promise.all([
+      translateMany(res.follow_ups || [], res.language),
+      translateMany((res.refusal?.next_steps || []).map((s) => s.text), res.language),
+    ]);
+    return {
+      ...res,
+      follow_ups: followUps,
+      refusal: res.refusal
+        ? { ...res.refusal, next_steps: res.refusal.next_steps.map((s, i) => ({ ...s, text: stepTexts[i] || s.text })) }
+        : res.refusal,
+    };
+  } catch {
+    return res;
+  }
+}
+
+async function runPipelineInner(options: PipelineOptions): Promise<BisvedaResponse> {
   const conversationId = options.conversation_id || options.sessionId || `conv-${Date.now()}`;
   const emit = (stage: PipelineStage, status: "active" | "done", duration_ms?: number) => {
     options.onStageEvent?.({ stage, label: STAGE_LABELS[stage], status, duration_ms });
@@ -327,25 +357,23 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
   });
   emit("understand", "done", Date.now() - t0);
 
-  const normalized = normalizeQuery(effectiveQuery);
+  const normalized = normalizeQuery(understood.english_query || effectiveQuery);
+  // English working text (the translation for non-English turns) — all deterministic matching runs on this.
+  const q = understood.english_query || effectiveQuery;
+  const both = `${effectiveQuery} ${q}`.toLowerCase();
 
   // ── Helpline Trigger ("call helpline", "talk on call", "call me") ──────────
   const isHelplineTrigger =
     /\b(?:call\s*helpline|voice\s*call|talk\s*on\s*call|call\s*me|helpline\s*number|phone\s*helpline|call\s*bisveda|helpline\s*call)\b/i.test(
-      effectiveQuery.toLowerCase()
+      both
     );
 
   if (isHelplineTrigger) {
-    const isHindi = understood.language === "hi" || /kall|karo|batao|number/i.test(effectiveQuery);
     helplineCard = {
       status: "prompt",
-      message: isHindi
-        ? "आप BISVEDA वॉयस हेल्पलाइन से सीधे फोन पर बात कर सकते हैं।"
-        : "Connect directly with the official BISVEDA Voice Helpline over phone.",
+      message: await tStatic("helpline_prompt", understood.language),
     };
-    const answerText = isHindi
-      ? `### 📞 BISVEDA वॉयस हेल्पलाइन सहायता\n\nआप भारतीय मानकों, ISI मार्क सत्यापन, QCO अनिवार्यताओं अथवा परीक्षण प्रयोगशालाओं के संबंध में सीधे फोन कॉल पर हमारे AI वॉयस सहायक से बात कर सकते हैं।\n\nकृपया नीचे अपना **10-अंकीय मोबाइल नंबर** दर्ज करें — आपको कुछ ही क्षणों में कॉल प्राप्त होगी।`
-      : `### 📞 BISVEDA Voice Helpline Assistance\n\nYou can speak directly with our AI voice assistant over telephone regarding Indian Standards, ISI mark verification, QCO requirements, or testing laboratories.\n\nPlease enter your **10-digit mobile number** below — you will receive a call shortly.`;
+    const answerText = await tStatic("helpline_text", understood.language);
 
     return {
       conversation_id: conversationId,
@@ -355,22 +383,19 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
       text: answerText,
       sources: [],
       cards: buildCards(),
-      follow_ups: isHindi
-        ? ["दोपहिया हेलमेट के लिए कौन सा मानक है?", "सोने का HUID कैसे जांचें?"]
-        : ["Which standard applies to motorcycle helmets?", "How to check gold HUID?"],
+      follow_ups: ["Which standard applies to motorcycle helmets?", "How to check gold HUID?"],
     };
   }
 
-  // ── General Enquiry / Capability Query ("tum kya kar sakte ho", "what can you do", "help") ──
+  // ── General Enquiry / Capability Query ("tum kya kar sakte ho", "tu ka karu shaktos", "what can you do", "help") ──
   const isGeneralCapabilityQuery =
-    /\b(?:tum\s*kya\s*kar\s*sakte\s*ho|aap\s*kya\s*kar\s*sakte\s*hain|kya\s*kar\s*sakte\s*ho|what\s*can\s*you\s*do|how\s*can\s*you\s*help|who\s*are\s*you|what\s*is\s*bisveda|help\s*me|capabilities|features|options)\b/i.test(
-      effectiveQuery.toLowerCase()
-    ) || (understood.intent === "smalltalk" && /kya|sakte|help|features|who/i.test(effectiveQuery));
+    /\b(?:tum\s*kya\s*kar\s*sakte\s*ho|aap\s*kya\s*kar\s*sakte\s*hain|kya\s*kar\s*sakte\s*ho|(?:tu|tumhi|tum|aap)\s+(?:ka|kay|kya)\s+(?:karu|kar)\s+(?:shakt\w+|sakt\w+)|what\s*can\s*you\s*do|what\s*do\s*you\s*do|how\s*can\s*you\s*help|who\s*are\s*you|what\s*is\s*bisveda|help\s*me|capabilities|features|options)\b/i.test(
+      both
+    ) || (understood.intent === "smalltalk" && /\b(?:help|features|who\s+are|what\s+can|what\s+do\s+you)\b/i.test(q));
 
   if (isGeneralCapabilityQuery) {
-    const isHindi = understood.language === "hi" || /kya|karo|kaun|batao|sakta|sakte|namaste/i.test(effectiveQuery);
     const rawAnswer = await generateGeneralQueryAnswer({
-      question: effectiveQuery,
+      question: q,
       language: understood.language,
       historyText,
     });
@@ -384,9 +409,7 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
       text: trustReport.text,
       sources: [],
       cards: buildCards(),
-      follow_ups: isHindi
-        ? ["दोपहिया हेलमेट के लिए कौन सा मानक है?", "सोने की शुद्धता और हॉलमार्किंग कैसे जांचें?", "निकटतम BIS परीक्षण लैब खोजें"]
-        : ["Which standard applies to motorcycle helmets?", "What are the gold hallmarking grades?", "Where is the nearest BIS testing lab?"],
+      follow_ups: ["Which standard applies to motorcycle helmets?", "What are the gold hallmarking grades?", "Where is the nearest BIS testing lab?"],
     };
   }
 
@@ -397,10 +420,15 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
     understood.intent !== "out_of_scope" &&
     understood.intent !== "form_i"
   ) {
-    const canonicalFaqMatch = matchCanonicalFaq(effectiveQuery, understood.language, conversationId);
+    const canonicalFaqMatch = matchCanonicalFaq(q, understood.language, conversationId);
     if (canonicalFaqMatch) {
+      // FAQ answers are hand-verified English text; for other languages translate it (numbers are guarded in translateTo).
+      const faqText = isEnglish(understood.language)
+        ? canonicalFaqMatch.text
+        : await translateTo(canonicalFaqMatch.text, understood.language);
       return {
         ...canonicalFaqMatch,
+        text: faqText,
         cards: { ...buildCards(), ...(canonicalFaqMatch.cards || {}) },
       };
     }
@@ -409,9 +437,9 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
   // ── Branch: identifier (exact IS/CM-L/HUID pattern) ──────────────────────
   if (understood.intent === "identifier") {
     const stdId = understood.standards[0];
-    const resp = stdId ? await answerForStandard(conversationId, effectiveQuery, stdId, understood.language, historyText, userProvidedText) : null;
+    const resp = stdId ? await answerForStandard(conversationId, q, stdId, understood.language, historyText, userProvidedText) : null;
     if (resp) return { ...resp, cards: buildCards() };
-    return refusalNotInSources(conversationId, understood.language, `"${stdId}" is not one of the standards we hold.`);
+    return await refusalNotInSources(conversationId, understood.language, `"${stdId}" is not one of the standards we hold.`);
   }
 
   // ── Branch: smalltalk / gibberish / out_of_scope ─────────────────────────
@@ -419,10 +447,9 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
     let replyText = understood.fastReply || "";
 
     if (understood.intent === "smalltalk") {
-      const isHindi = understood.language === "hi" || /kya|karo|kaun|batao|sakta|sakte|namaste/i.test(effectiveQuery);
       if (!replyText || replyText.trim().length < 15) {
         const rawAnswer = await generateGeneralQueryAnswer({
-          question: effectiveQuery,
+          question: q,
           language: understood.language,
           historyText,
         });
@@ -437,17 +464,13 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
         text: replyText,
         sources: [],
         cards: buildCards(),
-        follow_ups: isHindi
-          ? ["दोपहिया हेलमेट के लिए कौन सा मानक है?", "सोने की शुद्धता और हॉलमार्किंग कैसे जांचें?", "निकटतम BIS परीक्षण लैब खोजें"]
-          : ["Which standard applies to motorcycle helmets?", "What are the gold hallmarking grades?", "Where is the nearest BIS testing lab?"],
+        follow_ups: ["Which standard applies to motorcycle helmets?", "What are the gold hallmarking grades?", "Where is the nearest BIS testing lab?"],
       };
     }
 
     const refusalMsg =
       replyText ||
-      (understood.intent === "gibberish"
-        ? "The entered text does not appear to be a recognizable query. Please ask about an Indian Standard, product, or certification service."
-        : "This inquiry is outside what BISVEDA covers. BISVEDA provides guidance on product standards, mandatory Quality Control Orders (QCOs), certification schemes, and recognized testing laboratories.");
+      (await tStatic(understood.intent === "gibberish" ? "gibberish" : "out_of_scope", understood.language));
 
     return {
       conversation_id: conversationId,
@@ -501,7 +524,8 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
       retrieved_note: labsResult.retrievedNote,
     };
 
-    let answerText = labsResult.textPrefix;
+    const labsPrefix = await translateTo(labsResult.textPrefix, understood.language);
+    let answerText = labsPrefix;
     let sources: Source[] = [];
     let standardsList = targetStd
       ? [{ id: targetStd, title: getStandardById(targetStd)?.title || targetStd, class: "applies", why: "Standard in scope for lab testing." }]
@@ -528,7 +552,7 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
           });
           const trust = runTrustGate(generated.text, pkg);
           if (!trust.allDropped && trust.text) {
-            answerText = `${labsResult.textPrefix}\n\n${trust.text}`;
+            answerText = `${labsPrefix}\n\n${trust.text}`;
             sources = pkg.sources;
             standardsList = pkg.standards;
           }
@@ -539,7 +563,10 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
     }
 
     if (labsResult.labs.length === 0) {
-      answerText = `No active BIS-recognised laboratories listing ${targetStd || "this product"} in scope were found${understood.city ? ` near ${understood.city}` : ""}.`;
+      answerText = await translateTo(
+        `No active BIS-recognised laboratories listing ${targetStd || "this product"} in scope were found${understood.city ? ` near ${understood.city}` : ""}.`,
+        understood.language
+      );
     }
 
     const allCards = {
@@ -571,15 +598,18 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
       ahcs: ahcResult.ahcs,
     };
 
-    let answerText = `${ahcResult.textPrefix}\n\n`;
+    let answerText = `${await translateTo(ahcResult.textPrefix, understood.language)}\n\n`;
     if (ahcResult.ahcs.length > 0) {
       answerText += ahcResult.ahcs
         .slice(0, 5)
         .map((a, i) => `${i + 1}. **${a.name}** — ${a.district || ""}, ${a.state || ""} (Status: ${a.status})`)
         .join("\n");
-      answerText += `\n\n_${ahcResult.retrievedNote}_`;
+      answerText += `\n\n_${await translateTo(ahcResult.retrievedNote, understood.language)}_`;
     } else {
-      answerText = `No Operative Assaying and Hallmarking Centres (AHCs) were found in the current directory${understood.city ? ` near ${understood.city}` : ""}.`;
+      answerText = await translateTo(
+        `No Operative Assaying and Hallmarking Centres (AHCs) were found in the current directory${understood.city ? ` near ${understood.city}` : ""}.`,
+        understood.language
+      );
     }
 
     const allCards = {
@@ -602,7 +632,7 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
   // ── Branch: hallmark / mark_check (P5.3) ─────────────────────────────────
   if (understood.intent === "hallmark" || understood.intent === "mark_check") {
     const markResult = processHallmarkOrMark({
-      query: effectiveQuery,
+      query: q === effectiveQuery ? effectiveQuery : `${effectiveQuery} ${q}`,
       purityRaw: imageCard?.purity_mark,
       huidRaw: imageCard?.huid,
       cmlRaw: imageCard?.cml_number,
@@ -612,7 +642,8 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
       if (markResult.hallmarkCard) hallmarkCard = markResult.hallmarkCard;
       if (markResult.markCard) markCard = markResult.markCard;
 
-      let answerText = markResult.text;
+      const markText = await translateTo(markResult.text, understood.language);
+      let answerText = markText;
       let sources: Source[] = [];
       let standardsList: BisvedaResponse["standards"] = undefined;
 
@@ -620,14 +651,14 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
       const stdObj = getStandardById(stdToRetrieve);
       if (stdObj) {
         try {
-          const rawRetrieval = await retrieveMultiStore(effectiveQuery, [{ id: stdObj.id } as any], [stdObj.id]);
+          const rawRetrieval = await retrieveMultiStore(q, [{ id: stdObj.id } as any], [stdObj.id]);
           const fused = fuseRetrievalResults(rawRetrieval, 60);
           const adjudicated = adjudicateCandidates(fused, rawRetrieval);
           if (adjudicated.primaryStandard) {
             const pkg = buildEvidencePackage(adjudicated, fused.rankedChunks);
             if (pkg.sources.length > 0) {
               const generated = await generateAnswer({
-                question: effectiveQuery,
+                question: q,
                 pkg,
                 language: understood.language,
                 historyText,
@@ -635,7 +666,7 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
               });
               const trust = runTrustGate(generated.text, pkg);
               if (!trust.allDropped && trust.text) {
-                answerText = `${markResult.text}\n\n${trust.text}`;
+                answerText = `${markText}\n\n${trust.text}`;
                 sources = pkg.sources;
                 standardsList = pkg.standards;
               }
@@ -671,7 +702,7 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
     let sources: Source[] = [];
     let standardsList: BisvedaResponse["standards"] = undefined;
     try {
-      const rawRetrieval = await retrieveMultiStore(effectiveQuery, [{ id: "Form I" } as any], ["form-i-jeweller"]);
+      const rawRetrieval = await retrieveMultiStore(q, [{ id: "Form I" } as any], ["form-i-jeweller"]);
       const fused = fuseRetrievalResults(rawRetrieval, 60);
       const adjudicated = adjudicateCandidates(fused, rawRetrieval);
       if (adjudicated.primaryStandard) {
@@ -688,7 +719,7 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
       kind: stepResult.isComplete ? "answer" : "form_question",
       language: understood.language,
       grounding: sources.length > 0 ? "verified" : "none",
-      text: stepResult.text,
+      text: await translateTo(stepResult.text, understood.language),
       standards: standardsList,
       sources,
       cards: buildCards(),
@@ -704,14 +735,32 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
   const standardsFromUnderstand = understood.standards.filter((id) => getStandardById(id));
   const canonicalForRetrieval = standardsFromUnderstand.length > 0 ? standardsFromUnderstand.map((id) => ({ id } as any)) : normalized.canonicalStandards;
 
-  const rawRetrieval = await retrieveMultiStore(understood.standalone_query || effectiveQuery, canonicalForRetrieval, context.activeStandards);
-  const fused = fuseRetrievalResults(rawRetrieval, 60);
+  // The LLM's rewritten question can score lower than the user's own words (or vice versa), so try each
+  // English variant in turn and stop at the first that clears the relevance floor.
+  const queryVariants = Array.from(
+    new Set([understood.standalone_query, understood.english_query, effectiveQuery].map((s) => (s || "").trim()).filter(Boolean))
+  );
+  let retrievalQuery = queryVariants[0] || effectiveQuery;
+  let rawRetrieval = await retrieveMultiStore(retrievalQuery, canonicalForRetrieval, context.activeStandards);
+  let fused = fuseRetrievalResults(rawRetrieval, 60);
+  let floorCheck = checkRelevanceFloor(fused, rawRetrieval);
+  for (const variant of queryVariants.slice(1)) {
+    if (floorCheck.passed) break;
+    const rr = await retrieveMultiStore(variant, canonicalForRetrieval, context.activeStandards);
+    const ff = fuseRetrievalResults(rr, 60);
+    const fc = checkRelevanceFloor(ff, rr);
+    if (fc.passed) {
+      retrievalQuery = variant;
+      rawRetrieval = rr;
+      fused = ff;
+      floorCheck = fc;
+    }
+  }
   emit("search", "done", Date.now() - tSearch);
 
-  const floorCheck = checkRelevanceFloor(fused, rawRetrieval);
   if (!floorCheck.passed) {
     return {
-      ...refusalNotInSources(conversationId, understood.language),
+      ...(await refusalNotInSources(conversationId, understood.language)),
       cards: buildCards(),
     };
   }
@@ -722,18 +771,18 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
   emit("check", "done", Date.now() - tCheck);
 
   if (!adjudicated.primaryStandard) {
-    return { ...refusalNotInSources(conversationId, understood.language), cards: buildCards() };
+    return { ...(await refusalNotInSources(conversationId, understood.language)), cards: buildCards() };
   }
 
   const pkg = buildEvidencePackage(adjudicated, fused.rankedChunks);
   if (pkg.sources.length === 0) {
-    return { ...refusalNotInSources(conversationId, understood.language), cards: buildCards() };
+    return { ...(await refusalNotInSources(conversationId, understood.language)), cards: buildCards() };
   }
 
   emit("write", "active");
   const tWrite = Date.now();
   const generated = await generateAnswer({
-    question: understood.standalone_query || effectiveQuery,
+    question: retrievalQuery,
     pkg,
     language: understood.language,
     historyText,
@@ -743,7 +792,7 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
   emit("write", "done", Date.now() - tWrite);
 
   if (trust.allDropped) {
-    return { ...refusalNotInSources(conversationId, understood.language), cards: buildCards() };
+    return { ...(await refusalNotInSources(conversationId, understood.language)), cards: buildCards() };
   }
 
   return {

@@ -15,6 +15,7 @@
  */
 
 import { EvidencePackage, Source } from "./package";
+import { toAsciiDigits } from "./normalize";
 
 /** Collapses all Unicode space variants (regular, non-breaking, narrow no-break, etc.) to a plain space. LLM output sometimes uses typographic spaces (e.g. U+202F before a unit) that don't byte-match the source text's plain spaces. */
 function normalizeSpaces(s: string): string {
@@ -42,7 +43,8 @@ interface LineCheck {
 }
 
 function checkLine(line: string, pkg: EvidencePackage, sourceMap: Map<string, Source>): LineCheck {
-  const normalized = normalizeCitationBrackets(line).trim();
+  // Digits from any script (e.g. Devanagari ४१५१) are checked as ASCII, so a non-English answer can't slip a figure past the gate.
+  const normalized = toAsciiDigits(normalizeCitationBrackets(line)).trim();
   if (!normalized) return { valid: true, sanitized: "", needsCitation: false };
 
   const citationMatches = normalized.match(/\[S\d+\]/g) || [];
@@ -156,7 +158,7 @@ export function runTrustGateForGeneralQuery(rawText: string, language?: string):
     };
   }
 
-  const normalizedBrackets = normalizeCitationBrackets(rawText);
+  const normalizedBrackets = toAsciiDigits(normalizeCitationBrackets(rawText));
   const lines = normalizedBrackets.split("\n");
   const kept: string[] = [];
   const dropped: Array<{ line: string; reason: string }> = [];

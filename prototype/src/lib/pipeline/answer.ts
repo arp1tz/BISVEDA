@@ -9,6 +9,7 @@
  */
 
 import { groqChat } from "../llm";
+import { languageInstruction, baseLanguage } from "../i18n";
 import { EvidencePackage } from "./package";
 
 export interface AnswerResult {
@@ -25,7 +26,7 @@ Rules:
 2. After every sentence that states a fact from evidence, add its label, like [S1] or [S1][S3].
 3. Copy every number, unit, date, and IS number exactly as written in the evidence. Never compute, round, or convert.
 4. Never mention a standard whose id isn't in the evidence.
-5. Reply in the same language as the question. Keep IS numbers and [S#] labels unchanged regardless of language.
+5. Reply in the language and script named in the user message (the question may have been translated to English for searching — still answer in the named language). Keep IS numbers, digits (use 0-9), and [S#] labels unchanged regardless of language.
 6. Write like a helpful person talking to another person: short sentences, no legal jargon, no headers, at most ~180 words. Markdown bullets are fine for lists.
 7. If conversation history is provided, use it for continuity (don't repeat context the user already has) but only cite from <evidence>, never from history.
 
@@ -61,7 +62,7 @@ export async function generateAnswer(input: GenerateAnswerInput): Promise<Answer
     if (input.userProvidedText) parts.push(`<user_provided>\n${input.userProvidedText}\n</user_provided>`);
     parts.push(buildEvidenceBlock(input.pkg));
 
-    const userContent = `Question (answer in this language: ${input.language}): ${input.question}\n\n${parts.join("\n\n")}`;
+    const userContent = `Answer language: ${languageInstruction(input.language)}\nQuestion: ${input.question}\n\n${parts.join("\n\n")}`;
 
     const text = await groqChat(
       [
@@ -85,17 +86,23 @@ export async function generateAnswer(input: GenerateAnswerInput): Promise<Answer
 
 /** Deterministic, zero-LLM fallback — the terminal fallback of the provider chain. */
 export function evidenceOnlyAnswer(pkg: EvidencePackage, language: string): string {
-  const isHindi = language === "hi";
+  const base = baseLanguage(language);
+  const isHindi = base === "hi" && !/-Latn$/i.test(language);
+  const isMarathi = base === "mr" && !/-Latn$/i.test(language);
   if (!pkg.primary_standard || pkg.sources.length === 0) {
     return isHindi
       ? "हमारे पास मौजूद दस्तावेज़ों में इसका उत्तर नहीं मिला।"
-      : "I couldn't find this in the documents we hold.";
+      : isMarathi
+        ? "आमच्याकडे असलेल्या दस्तऐवजांमध्ये हे आढळले नाही."
+        : "I couldn't find this in the documents we hold.";
   }
 
   const lines: string[] = [
     isHindi
       ? `संबंधित मानक **${pkg.primary_standard.id}** — ${pkg.primary_standard.title} है [${pkg.sources[0].label}].`
-      : `The relevant standard is **${pkg.primary_standard.id}** — ${pkg.primary_standard.title} [${pkg.sources[0].label}].`,
+      : isMarathi
+        ? `संबंधित मानक **${pkg.primary_standard.id}** — ${pkg.primary_standard.title} आहे [${pkg.sources[0].label}].`
+        : `The relevant standard is **${pkg.primary_standard.id}** — ${pkg.primary_standard.title} [${pkg.sources[0].label}].`,
   ];
   for (const s of pkg.sources.slice(0, 3)) {
     const excerpt = s.text.slice(0, 180).trim();
@@ -116,7 +123,7 @@ When the user asks general conversational questions like "what can you do", "tum
    - Verification: Checking 6-digit gold HUID and 7-8 digit CM/L licence numbers on products.
    - Form I Registration: Assisting jewellers in drafting official hallmarking registration.
    - Voice Call Helpline: Connecting users directly over telephone.
-3. Answer strictly in the same language as the user's prompt (Hindi for Hindi/Hinglish queries like "tum kya kar sakte ho", English for English queries).
+3. Answer strictly in the language and script named on the "Language to reply in" line of the user message (Hindi, Marathi, Tamil, Hinglish in Roman letters, English, etc.). Keep IS numbers and digits (0-9) unchanged.
 4. Keep the tone helpful, professional, and well-structured using clean markdown formatting. No preamble or meta commentary.`;
 
 export async function generateGeneralQueryAnswer(input: {
@@ -124,14 +131,14 @@ export async function generateGeneralQueryAnswer(input: {
   language: string;
   historyText?: string;
 }): Promise<string> {
-  const isHindi = input.language === "hi" || /kya|karo|kaun|batao|sakta|sakte|namaste/i.test(input.question);
+  const isHindi = baseLanguage(input.language) === "hi" && !/-Latn$/i.test(input.language);
   const groqKey = process.env.GROQ_API_KEY;
 
   if (groqKey) {
     try {
       const parts: string[] = [];
       if (input.historyText) parts.push(`<conversation_history>\n${input.historyText}\n</conversation_history>`);
-      const userContent = `User query: "${input.question}"\nLanguage to reply in: ${isHindi ? "Hindi (or Hinglish if question is Hinglish)" : "English"}\n\n${parts.join("\n\n")}`;
+      const userContent = `User query: "${input.question}"\nLanguage to reply in: ${languageInstruction(input.language)}\n\n${parts.join("\n\n")}`;
 
       const text = await groqChat(
         [

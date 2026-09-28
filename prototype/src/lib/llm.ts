@@ -54,16 +54,28 @@ export async function groqChat(messages: ChatMessage[], opts: GroqChatOptions = 
   // effort to "low" leaves real budget for the actual answer.
   body.reasoning_effort = "low";
 
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(opts.timeoutMs ?? 12000),
-  });
+  // Free-tier Groq limits tokens per minute; on a 429 the response says how long to wait
+  // ("Please try again in 562.5ms" / "5.9s"). Wait that long (capped) and retry, so a busy
+  // minute degrades to a slower answer rather than a fallback answer.
+  let res: Response | undefined;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(opts.timeoutMs ?? 12000),
+    });
+    if (res.status !== 429 || attempt === 2) break;
+    const errText = await res.clone().text().catch(() => "");
+    const m = errText.match(/try again in ([\d.]+)\s*(ms|s)\b/i);
+    const waitMs = m ? Math.ceil(parseFloat(m[1]) * (m[2].toLowerCase() === "ms" ? 1 : 1000)) + 250 : 2000;
+    if (waitMs > 9000) break;
+    await new Promise((r) => setTimeout(r, waitMs));
+  }
 
-  if (!res.ok) {
-    const errBody = await res.text().catch(() => "");
-    throw new Error(`Groq chat HTTP ${res.status}: ${errBody.slice(0, 300)}`);
+  if (!res || !res.ok) {
+    const errBody = (await res?.text().catch(() => "")) ?? "";
+    throw new Error(`Groq chat HTTP ${res?.status}: ${errBody.slice(0, 300)}`);
   }
 
   const data = await res.json();

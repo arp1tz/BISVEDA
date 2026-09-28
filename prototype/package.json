@@ -9,6 +9,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "eval:rag": "tsx scripts/eval-rag.ts",
+    "eval:multi": "tsx scripts/eval-rag.ts --file multilingual.jsonl",
     "calibrate:floor": "tsx scripts/calibrate-floor.ts",
     "kb:build": "tsx scripts/kb/build.ts",
     "dir:labs": "tsx scripts/directory/labs.ts",

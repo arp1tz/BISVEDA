@@ -38,6 +38,7 @@ interface EvalResultItem {
   pass: boolean;
   actualKind: string;
   expectedKind: string;
+  langPass: boolean;
   primaryPass: boolean;
   mustIncludePass: boolean;
   mustNotIncludePass: boolean;
@@ -69,7 +70,13 @@ async function main() {
   console.log("  BISVEDA — RAG Evaluation Runner (eval:rag)");
   console.log("=".repeat(80) + "\n");
 
-  const goldenPath = path.resolve(__dirname, "../data/eval/golden.jsonl");
+  // `--file multilingual.jsonl` runs another case file (relative to data/eval); default is the golden set.
+  const fileArgIdx = process.argv.indexOf("--file");
+  const caseFile = fileArgIdx > -1 && process.argv[fileArgIdx + 1] ? process.argv[fileArgIdx + 1] : "golden.jsonl";
+  const isDefaultSet = caseFile === "golden.jsonl" && !process.argv.includes("--only");
+  const onlyArgIdx = process.argv.indexOf("--only");
+  const only = onlyArgIdx > -1 ? (process.argv[onlyArgIdx + 1] || "").split(",") : null;
+  const goldenPath = path.resolve(__dirname, "../data/eval", caseFile);
   if (!fs.existsSync(goldenPath)) {
     console.error("Golden test file not found:", goldenPath);
     process.exit(1);
@@ -79,7 +86,8 @@ async function main() {
     .readFileSync(goldenPath, "utf-8")
     .split("\n")
     .filter((l) => l.trim().length > 0)
-    .map((l) => JSON.parse(l));
+    .map((l) => JSON.parse(l))
+    .filter((c: GoldenCase) => !only || only.includes(c.id));
 
   console.log(`Loaded ${cases.length} golden evaluation cases.\n`);
 
@@ -96,7 +104,7 @@ async function main() {
   for (const c of cases) {
     // Pace requests to stay under the Gemini free-tier embedding quota
     // (~100/min) across a full run's worth of dense-search calls.
-    if (results.length > 0) await new Promise((resolve) => setTimeout(resolve, 800));
+    if (results.length > 0) await new Promise((resolve) => setTimeout(resolve, 2500));
     process.stdout.write(`[${results.length + 1}/${cases.length}] ${c.id}...`);
     let conversationId = `eval-${c.id}-${Date.now()}`;
     let history: Array<{ query: string; response: any }> = [];
@@ -124,6 +132,16 @@ async function main() {
       details.push(`Kind mismatch: expected ${c.expect.kind}, got ${actualKind}`);
     }
     if (kindPass) kindCorrectCount++;
+
+    // 1b. Reply language check (base language code of the response, e.g. "mr-Latn" -> "mr")
+    let langPass = true;
+    if (c.expect.lang) {
+      const actualLang = (res.language || "en").split("-")[0].toLowerCase();
+      if (actualLang !== c.expect.lang) {
+        langPass = false;
+        details.push(`Language mismatch: expected ${c.expect.lang}, got ${res.language}`);
+      }
+    }
 
     // 2. Primary standard check
     let primaryPass = true;
@@ -212,13 +230,14 @@ async function main() {
       }
     }
 
-    const overallPass = kindPass && primaryPass && mustIncludePass && mustNotIncludePass && citationValidityPass && numberSupportPass;
+    const overallPass = kindPass && langPass && primaryPass && mustIncludePass && mustNotIncludePass && citationValidityPass && numberSupportPass;
 
     results.push({
       id: c.id,
       pass: overallPass,
       actualKind,
       expectedKind: c.expect.kind || "any",
+      langPass,
       primaryPass,
       mustIncludePass,
       mustNotIncludePass,
@@ -247,6 +266,7 @@ async function main() {
   console.log(`  Total Cases:          ${cases.length}`);
   console.log(`  Passed Cases:         ${results.filter((r) => r.pass).length} / ${cases.length}`);
   console.log(`  Wrong-Standard Rate:  ${wrongStandardCount} violations (Required: 0)`);
+  console.log(`  Language Match:       ${results.filter((r) => r.langPass).length} / ${cases.length}`);
   console.log(`  Kind Accuracy:        ${kindCorrectCount} / ${cases.length}`);
   console.log(`  Primary Accuracy:     ${primaryCorrectCount} / ${primaryCount} (${primaryCount > 0 ? Math.round((primaryCorrectCount / primaryCount) * 100) : 100}%) (Target: >=90%)`);
   console.log(`  Citation Validity:    ${validCitations} / ${totalCitations} (${totalCitations > 0 ? Math.round((validCitations / totalCitations) * 100) : 100}%) (Target: 100%)`);
@@ -267,8 +287,12 @@ async function main() {
     results,
   };
   fs.writeFileSync(path.join(resultsDir, `${timestamp}.json`), JSON.stringify(payload, null, 2));
-  fs.writeFileSync(path.join(resultsDir, "baseline.json"), JSON.stringify(payload, null, 2));
-  console.log(`\nResults written to data/eval/results/${timestamp}.json and baseline.json\n`);
+  if (isDefaultSet) {
+    fs.writeFileSync(path.join(resultsDir, "baseline.json"), JSON.stringify(payload, null, 2));
+    console.log(`\nResults written to data/eval/results/${timestamp}.json and baseline.json\n`);
+  } else {
+    console.log(`\nResults written to data/eval/results/${timestamp}.json (baseline.json untouched)\n`);
+  }
 }
 
 main().catch((err) => {

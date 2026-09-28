@@ -1,0 +1,24 @@
+{"id":"mr-cap-roman","conversation":[{"q":"tu ka karu shaktos"}],"expect":{"kind":"answer","lang":"mr"}}
+{"id":"mr-cap-roman-2","conversation":[{"q":"tumhi kay karu shakta"}],"expect":{"kind":"answer","lang":"mr"}}
+{"id":"mr-helmet-roman","conversation":[{"q":"motorcycle helmet cha standard konta ahe"}],"expect":{"kind":"answer","primary":"IS 4151","must_include":["IS 4151"],"must_not_include":["IS 1417"],"lang":"mr"}}
+{"id":"mr-helmet-native","conversation":[{"q":"मोटरसायकल हेल्मेटसाठी कोणते मानक लागू आहे?"}],"expect":{"kind":"answer","must_include":["IS 4151"],"must_not_include":["IS 1417"],"lang":"mr"}}
+{"id":"mr-toys-roman","conversation":[{"q":"lahan mulanchya khelnyansathi konte standard pahije"}],"expect":{"kind":"answer","must_include":["IS 9873 (Part 1)"],"must_not_include":["IS 1417","IS 4151"],"lang":"mr"}}
+{"id":"mr-oos-roman","conversation":[{"q":"aaj havaman kase ahe"}],"expect":{"kind":"refusal_out_of_scope","lang":"mr"}}
+{"id":"hi-helmet-native","conversation":[{"q":"मोटरसाइकिल हेलमेट के लिए कौन सा मानक है?"}],"expect":{"kind":"answer","must_include":["IS 4151"],"must_not_include":["IS 1417"],"lang":"hi"}}
+{"id":"hi-license-roman","conversation":[{"q":"helmet banane ke liye BIS license chahiye kya"}],"expect":{"kind":"answer","must_include":["IS 4151"],"must_not_include":["IS 1417"],"lang":"hi"}}
+{"id":"hi-cap-roman","conversation":[{"q":"tum kya kar sakte ho"}],"expect":{"kind":"answer","lang":"hi"}}
+{"id":"hi-gold-roman","conversation":[{"q":"22 carat sone ke gahne ki hallmark purity ke grades kya hote hain"}],"expect":{"kind":"answer","must_include":["IS 1417"],"must_not_include":["IS 4151","IS 2925"],"lang":"hi"}}
+{"id":"hi-oos-roman","conversation":[{"q":"aaj mausam kaisa hai delhi mein"}],"expect":{"kind":"refusal_out_of_scope","lang":"hi"}}
+{"id":"hi-labs-roman","conversation":[{"q":"helmet testing ke liye lab kahan hai batao"}],"expect":{"kind":"answer","lang":"hi"}}
+{"id":"ta-helmet","conversation":[{"q":"மோட்டார் சைக்கிள் ஹெல்மெட்டுக்கு எந்த தரநிலை பொருந்தும்?"}],"expect":{"kind":"answer","must_include":["IS 4151"],"must_not_include":["IS 1417"],"lang":"ta"}}
+{"id":"te-helmet","conversation":[{"q":"మోటార్ సైకిల్ హెల్మెట్‌కు ఏ ప్రమాణం వర్తిస్తుంది?"}],"expect":{"kind":"answer","must_include":["IS 4151"],"must_not_include":["IS 1417"],"lang":"te"}}
+{"id":"bn-helmet","conversation":[{"q":"মোটরসাইকেলের হেলমেটের জন্য কোন মান প্রযোজ্য?"}],"expect":{"kind":"answer","must_include":["IS 4151"],"must_not_include":["IS 1417"],"lang":"bn"}}
+{"id":"gu-helmet","conversation":[{"q":"મોટરસાયકલ હેલ્મેટ માટે કયું ધોરણ લાગુ પડે છે?"}],"expect":{"kind":"answer","must_include":["IS 4151"],"must_not_include":["IS 1417"],"lang":"gu"}}
+{"id":"kn-toys","conversation":[{"q":"ಮಕ್ಕಳ ಆಟಿಕೆಗಳಿಗೆ ಯಾವ ಮಾನದಂಡ ಅನ್ವಯಿಸುತ್ತದೆ?"}],"expect":{"kind":"answer","must_not_include":["IS 1417","IS 4151"],"lang":"kn"}}
+{"id":"ml-gold","conversation":[{"q":"സ്വർണ്ണാഭരണ ഹാൾമാർക്കിംഗിന് ഏത് മാനദണ്ഡമാണ്?"}],"expect":{"kind":"answer","must_include":["IS 1417"],"must_not_include":["IS 4151"],"lang":"ml"}}
+{"id":"mr-greet-native","conversation":[{"q":"नमस्कार"}],"expect":{"kind":"smalltalk"}}
+{"id":"hi-greet-native","conversation":[{"q":"नमस्ते"}],"expect":{"kind":"smalltalk","lang":"hi"}}
+{"id":"en-cap","conversation":[{"q":"what can you do"}],"expect":{"kind":"answer","lang":"en"}}
+{"id":"en-helmet","conversation":[{"q":"which standard for two wheeler motorcycle helmet"}],"expect":{"kind":"answer","primary":"IS 4151","must_not_include":["IS 1417"],"lang":"en"}}
+{"id":"en-gib","conversation":[{"q":"asdkjh qwe zzkk"}],"expect":{"kind":"gibberish","lang":"en"}}
+{"id":"en-oos","conversation":[{"q":"weather in Delhi today"}],"expect":{"kind":"refusal_out_of_scope","lang":"en"}}

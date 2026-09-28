@@ -67,9 +67,19 @@ const CLARIFICATION_CHIPS = [
   { label: "Gold Jewellery & Hallmarking", value: "gold jewellery" },
 ];
 
+export interface RouteOptions {
+  /** Skip the keyboard-mash detector — set when the text is (or is being treated as) a real non-English language. */
+  skipGibberish?: boolean;
+}
+
+/**
+ * Routes ENGLISH working text (the caller passes the English translation for non-English turns).
+ * Reply strings here are English; the caller localizes them into the user's language.
+ */
 export function routeQuery(
   input: NormalizedInput,
-  hasActiveProductInContext: boolean = false
+  hasActiveProductInContext: boolean = false,
+  opts: RouteOptions = {}
 ): RouteOutcome {
   const q = input.normalizedText;
   const qLower = q.toLowerCase();
@@ -87,20 +97,18 @@ export function routeQuery(
   }
 
   // 2. Smalltalk & Greetings
-  const greetingsRegex = /^(?:hi|hello|hey|namaste|नमस्ते|good\s*(?:morning|afternoon|evening)|pranam|sup|hlo)(?:\b|\s|$|[!?.,])/iu;
+  const greetingsRegex = /^(?:hi|hello|hey|namaste|namaskar|नमस्ते|नमस्कार|good\s*(?:morning|afternoon|evening)|pranam|sup|hlo)(?:\b|\s|$|[!?.,])/iu;
   if (greetingsRegex.test(qLower) && q.split(/\s+/).length <= 3) {
-    const isHindi = input.detectedLanguage === "hi";
     return {
       kind: "smalltalk",
       lang: input.detectedLanguage,
-      reply: isHindi
-        ? "नमस्ते! मैं BISVEDA हूँ। आप भारतीय मानकों (Indian Standards), BIS प्रमाणीकरण (Certification) या परीक्षण प्रयोगशालाओं (Testing Labs) के बारे में पूछ सकते हैं। आप किस उत्पाद के बारे में जानना चाहते हैं?"
-        : "Hello! I am BISVEDA. I can help you find Indian Standards, check if BIS certification is mandatory, and locate recognized testing laboratories. Which product are you asking about?",
+      reply:
+        "Hello! I am BISVEDA. I can help you find Indian Standards, check if BIS certification is mandatory, and locate recognized testing laboratories. Which product are you asking about?",
     };
   }
 
   // 3. Gibberish Detection
-  if (isGibberish(q)) {
+  if (!opts.skipGibberish && isGibberish(q)) {
     return {
       kind: "gibberish",
       message: "The entered text does not appear to be a recognizable query. Please ask about a product, standard, or BIS certification service.",
