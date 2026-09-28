@@ -117,14 +117,38 @@ export async function POST(req: NextRequest) {
         const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Calls.json`;
         const authHeader = `Basic ${Buffer.from(`${twilioAccountSid}:${twilioAuthToken}`).toString("base64")}`;
 
-        // Determine TwiML URL: custom env URL, or public origin twiml route, or twilio voice demo
-        const fallbackUrl = "https://demo.twilio.com/welcome/voice/";
-        const reqOrigin = req.nextUrl?.origin;
-        const localTwimlUrl = reqOrigin && !reqOrigin.includes("localhost")
-          ? `${reqOrigin}/api/helpline/twiml`
-          : fallbackUrl;
+        // Determine TwiML URL: check bridge file, env, public origin, or fallback
+        let effectiveTwimlUrl = process.env.TWILIO_TWIML_URL;
+        if (!effectiveTwimlUrl) {
+          try {
+            const fs = await import("fs");
+            const path = await import("path");
+            const candidates = [
+              path.resolve(process.cwd(), ".voice_bridge.json"),
+              path.resolve(process.cwd(), "prototype", ".voice_bridge.json"),
+              path.resolve(process.cwd(), "..", ".voice_bridge.json"),
+            ];
+            for (const c of candidates) {
+              if (fs.existsSync(c)) {
+                const raw = fs.readFileSync(c, "utf-8");
+                const parsed = JSON.parse(raw);
+                if (parsed.active && parsed.twiml_url) {
+                  effectiveTwimlUrl = parsed.twiml_url;
+                  break;
+                }
+              }
+            }
+          } catch (e) {
+            // bridge file read error ignored
+          }
+        }
 
-        const effectiveTwimlUrl = twilioTwimlUrl || localTwimlUrl;
+        if (!effectiveTwimlUrl) {
+          const reqOrigin = req.nextUrl?.origin;
+          effectiveTwimlUrl = reqOrigin && !reqOrigin.includes("localhost") && !reqOrigin.includes("127.0.0.1")
+            ? `${reqOrigin}/api/helpline/twiml`
+            : "https://demo.twilio.com/welcome/voice/";
+        }
 
         const params = new URLSearchParams();
         params.append("To", e164Number);

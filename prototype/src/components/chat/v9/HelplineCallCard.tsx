@@ -93,8 +93,8 @@ export function HelplineCallCard({ card }: HelplineCallCardProps) {
             <span className="text-xs font-bold text-emerald-900 block">
               You will receive a call shortly!
             </span>
-            <span className="text-[11px] text-emerald-700">
-              Dispatched to <strong className="font-mono">{confirmedPhone}</strong>. Please keep your phone nearby.
+            <span className="text-[11px] text-emerald-700 block">
+              Dispatched to <strong className="font-mono">{confirmedPhone}</strong>. When you pick up, press any key (e.g. 1) to connect to BISVEDA AI!
             </span>
           </div>
         </div>

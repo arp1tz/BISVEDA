@@ -121,10 +121,10 @@ export function HelplineModal({ isOpen, onClose, initialPhone = "" }: HelplineMo
                 <Volume2 className="h-3.5 w-3.5 text-[#E8710A]" />
                 <span>What to expect on the call:</span>
               </div>
-              <ul className="list-disc pl-5 space-y-0.5 text-[11px] text-slate-600">
+              <ul className="list-disc pl-5 space-y-1 text-[11px] text-slate-600">
+                <li className="font-semibold text-amber-800">Answer the call and press any key (e.g. 1) to connect to BISVEDA AI.</li>
                 <li>BISVEDA AI Assistant will greet you in Hindi or English.</li>
                 <li>Speak naturally: ask about Indian Standards, ISI marks, or hallmarking.</li>
-                <li>Inbound inquiries supported on <strong>{successData.caller_id || "09513886363"}</strong>.</li>
               </ul>
             </div>
 
