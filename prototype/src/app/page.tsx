@@ -2,15 +2,19 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, ArrowRight, Paperclip, BookOpen, ShieldCheck, FlaskConical, Sparkles, PhoneCall } from "lucide-react";
+import { Search, ArrowRight, BookOpen, ShieldCheck, FlaskConical, Sparkles, PhoneCall } from "lucide-react";
 import { AppHeader } from "@/components/chat/v9/AppHeader";
 import { AppFooter } from "@/components/chat/v9/AppFooter";
 import { HelplineModal } from "@/components/chat/v9/HelplineModal";
+import { AttachMenu } from "@/components/chat/v9/AttachMenu";
+import { AttachmentPreview } from "@/components/chat/v9/AttachmentPreview";
+import { fileToAttachment, type AttachmentItem } from "@/lib/attachments";
 
 export default function HomePage() {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [attachment, setAttachment] = useState<AttachmentItem | null>(null);
+  const [attachError, setAttachError] = useState<string | null>(null);
   const [isHelplineOpen, setIsHelplineOpen] = useState(false);
 
   const productPills = [
@@ -41,34 +45,37 @@ export default function HomePage() {
     },
   ];
 
+  const handleAttachFile = async (file: File) => {
+    setAttachError(null);
+    try {
+      setAttachment(await fileToAttachment(file));
+    } catch (err) {
+      setAttachment(null);
+      setAttachError(err instanceof Error ? err.message : "Could not attach that file.");
+    }
+  };
+
   const handleSearch = (searchQuery: string) => {
     const q = searchQuery.trim();
-    if (!q && !attachedFile) return;
+    if (!q && !attachment) return;
     const conversationId = `conv-${Date.now()}`;
 
-    if (attachedFile) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = reader.result as string;
-        const base64 = dataUrl.includes("base64,") ? dataUrl.split("base64,")[1] : dataUrl;
-        if (typeof window !== "undefined") {
-          sessionStorage.setItem(
-            `pending_attachment_${conversationId}`,
-            JSON.stringify({
-              name: attachedFile.name,
-              previewUrl: dataUrl,
-              base64,
-              type: attachedFile.type,
-            })
-          );
+    if (attachment && typeof window !== "undefined") {
+      // Hand the (already downscaled) attachment to the chat page via sessionStorage.
+      try {
+        sessionStorage.setItem(`pending_attachment_${conversationId}`, JSON.stringify(attachment));
+      } catch {
+        try {
+          // Storage full: keep the analysable bytes, drop the duplicate preview.
+          sessionStorage.setItem(`pending_attachment_${conversationId}`, JSON.stringify({ ...attachment, previewUrl: undefined }));
+        } catch {
+          setAttachError("That file is too large to send. Please choose a smaller one.");
+          return;
         }
-        router.push(`/chat/${conversationId}${q ? `?q=${encodeURIComponent(q)}` : ""}`);
-      };
-      reader.readAsDataURL(attachedFile);
-      return;
+      }
     }
 
-    router.push(`/chat/${conversationId}?q=${encodeURIComponent(q)}`);
+    router.push(`/chat/${conversationId}${q ? `?q=${encodeURIComponent(q)}` : ""}`);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -113,60 +120,37 @@ export default function HomePage() {
 
         {/* Search Box */}
         <form onSubmit={handleSubmit} className="w-full max-w-2xl relative mb-4">
-          <div className="flex items-center w-full bg-[#F7F8FA] border border-[#E5E7EB] focus-within:border-[#0B2A4A] focus-within:ring-2 focus-within:ring-[#0B2A4A]/10 rounded-xl px-3.5 py-2.5 shadow-xs transition-all">
-            <Search className="h-5 w-5 text-[#64748B] shrink-0 mr-2.5" />
+          {/* Attached file preview sits directly above the search bar */}
+          {attachment && (
+            <div className="mb-2 flex justify-start">
+              <AttachmentPreview attachment={attachment} onRemove={() => setAttachment(null)} />
+            </div>
+          )}
+          {attachError && <p className="mb-2 text-xs text-[#bd2f2f]">{attachError}</p>}
+
+          <div className="flex items-center w-full bg-[#F7F8FA] border border-[#E5E7EB] focus-within:border-[#0B2A4A] focus-within:ring-2 focus-within:ring-[#0B2A4A]/10 rounded-xl px-3 py-2.5 shadow-xs transition-all gap-2">
+            <AttachMenu onFile={handleAttachFile} />
+            <Search className="h-5 w-5 text-[#64748B] shrink-0" />
             <input
               type="text"
               id="landing-search-input"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Ask about a product, standard or certification…"
-              className="flex-1 bg-transparent text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-hidden"
+              className="flex-1 min-w-0 bg-transparent text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-hidden"
               autoFocus
             />
 
-            {/* Hidden file input for attachment */}
-            <input
-              type="file"
-              id="file-attachment-input"
-              className="hidden"
-              accept="image/*,.pdf"
-              onChange={(e) => {
-                if (e.target.files?.[0]) setAttachedFile(e.target.files[0]);
-              }}
-            />
-
-            <label
-              htmlFor="file-attachment-input"
-              className={`p-1.5 rounded-lg text-[#64748B] hover:text-[#0B2A4A] hover:bg-[#E5E7EB] cursor-pointer transition-colors mr-1.5 ${
-                attachedFile ? "text-[#E8710A] bg-[#FFF7ED]" : ""
-              }`}
-              title={attachedFile ? attachedFile.name : "Attach photo or document"}
-            >
-              <Paperclip className="h-4 w-4" />
-            </label>
-
             <button
               type="submit"
-              disabled={!query.trim() && !attachedFile}
+              disabled={!query.trim() && !attachment}
               className="p-2 rounded-lg bg-[#0B2A4A] text-white hover:bg-[#081e36] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
               title="Submit Query"
+              aria-label="Submit query"
             >
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
-          {attachedFile && (
-            <div className="text-[11px] text-[#64748B] mt-1 flex items-center gap-1.5">
-              <span>Attached: {attachedFile.name}</span>
-              <button
-                type="button"
-                onClick={() => setAttachedFile(null)}
-                className="text-red-500 hover:underline cursor-pointer"
-              >
-                Remove
-              </button>
-            </div>
-          )}
         </form>
 
         {/* Product Pills + Try an example */}
