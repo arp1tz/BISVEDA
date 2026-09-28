@@ -113,7 +113,7 @@ export function HelplineModal({ isOpen, onClose, initialPhone = "" }: HelplineMo
               </span>
               <h3 className="text-lg font-bold text-[#0B2A4A]">You will receive a call shortly!</h3>
               <p className="text-xs text-slate-600 mt-1 max-w-xs mx-auto">
-                Calling <strong className="text-slate-900 font-mono text-sm">{successData.phone}</strong>.
+                Calling <strong className="text-slate-900 font-mono text-sm">{successData.phone}</strong> from our official BISVEDA helpline number <strong className="text-[#0B2A4A] font-mono font-bold">09513886363</strong>.
                 Please keep your mobile phone nearby and answer when it rings.
               </p>
             </div>
@@ -124,9 +124,9 @@ export function HelplineModal({ isOpen, onClose, initialPhone = "" }: HelplineMo
                 <span>What to expect on the call:</span>
               </div>
               <ul className="list-disc pl-5 space-y-0.5 text-[11px] text-slate-600">
-                <li>BISVEDA AI Assistant will greet you in Hindi/English.</li>
+                <li>BISVEDA AI Assistant will greet you in Hindi or English.</li>
                 <li>Speak naturally: ask about Indian Standards, ISI marks, or hallmarking.</li>
-                <li>No app download or waiting on hold required.</li>
+                <li>You can also dial <strong>09513886363</strong> directly from your phone.</li>
               </ul>
             </div>
 
