@@ -4,12 +4,15 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { PhoneCall } from "lucide-react";
+
 interface AppHeaderProps {
   onLanguageToggle?: (lang: "en" | "hi") => void;
   currentLang?: "en" | "hi";
+  onOpenHelpline?: () => void;
 }
 
-export function AppHeader({ onLanguageToggle, currentLang = "en" }: AppHeaderProps) {
+export function AppHeader({ onLanguageToggle, currentLang = "en", onOpenHelpline }: AppHeaderProps) {
   const pathname = usePathname();
   const [lang, setLang] = useState<"en" | "hi">(currentLang);
 
@@ -60,6 +63,20 @@ export function AppHeader({ onLanguageToggle, currentLang = "en" }: AppHeaderPro
           </nav>
 
           <div className="h-4 w-px bg-[#E5E7EB]" />
+
+          {/* Call Helpline Button */}
+          {onOpenHelpline && (
+            <button
+              type="button"
+              onClick={onOpenHelpline}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-[#0B2A4A] bg-amber-50 hover:bg-amber-100/80 border border-amber-200 transition-colors shadow-2xs cursor-pointer"
+              title="Talk with BISVEDA on Call"
+            >
+              <PhoneCall className="h-3 w-3 text-[#E8710A]" />
+              <span className="hidden sm:inline">Call Helpline</span>
+              <span className="sm:hidden">Call</span>
+            </button>
+          )}
 
           {/* Language Toggle */}
           <button

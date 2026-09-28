@@ -216,11 +216,37 @@ All are archive.org scans. **Measured in P1, corrected from an earlier audit's g
   - Fixed localhost cookie setting (`req.nextUrl.protocol === "https:"`) in `/api/admin/login`.
   - Updated `AppFooter.tsx` staff link to `/admin`.
   - Added demo access key hint (`bisveda2026`) on `/admin/login`.
-- [ ] **9.8** Helpline Feature: Awaiting user inputs before starting development (deferred per instruction).
+- [x] **9.8** Helpline Feature: Replaced deferred status with active integration in P10.
+
+## P10: Trust Gate Layer for General Queries, Admin Ingestion & Version Control, and Exotel Voice Helpline — ✅ DONE
+- [x] **10.1** General Queries & Trust Gate Layer:
+  - Created `runTrustGateForGeneralQuery` in `src/lib/pipeline/trust.ts` and updated `runTrustGate(..., { isGeneralQuery: true })`.
+  - Validates Indian Standards format while preserving numbered capability lists and step-by-step guidance without dropping lines for lacking `[S#]` citations.
+  - Connected in `src/lib/pipeline/orchestrator.ts` for capability queries ("tum kya kar sakte ho", "what can you do", "help", "who are you", etc.).
+  - Updated `AnswerCard.tsx` so `response.text` falls back to `refusal.message` and renders `✓ BIS Assistant Guidance`.
+- [x] **10.2** Knowledge Graph Glitch & Infinite Refresh Loop Fix:
+  - Memoized `handleGraphLoaded` with `useCallback` in `src/app/admin/page.tsx`.
+  - Replaced callback prop dependency in `GraphTab.tsx` with `onGraphLoadedRef` and cloned graph nodes/links so force simulations don't trigger parent re-render loops.
+  - Stabilized physics with `cooldownTicks={100}` and `warmupTicks={30}`.
+- [x] **10.3** Document Ingestion Tab in Employee Console:
+  - Added "Document Ingestion" tab to `/admin` navigation in `src/app/admin/page.tsx`.
+  - Created `src/components/admin/IngestionTab.tsx` with drag & drop upload, metadata inputs (Standard ID, Title, Domain, Version, Classification), a live 5-step pipeline progress visualizer, real-time log stream, and recent ingestions history table.
+  - Implemented supporting API `/api/admin/ingest/route.ts` with authentication.
+- [x] **10.4** Document Version Control & Amendments Management:
+  - Enhanced `src/components/admin/DocumentsTab.tsx` with dual-mode navigation ("Version Control & Amendments" vs "Clauses & Text Chunks").
+  - Displays current active version, superseded historical editions, statutory gazette notifications, and notified amendments log.
+  - Added interactive modals to register new revisions or record new amendments with live state updates.
+- [x] **10.5** Helpline Voice Call Integration (Exotel + Web/Chat):
+  - Reviewed `C:\BISVEDA\BISVEDA_VoiceCall.ipynb` Exotel outbound call mechanics (`https://api.exotel.com/v1/Accounts/{SID}/Calls/connect`).
+  - Created `/api/helpline/call` route supporting live Exotel dispatch with fallback simulated queue and 10-digit Indian phone validation.
+  - Added "📞 Call Helpline" button on the landing page (`src/app/page.tsx`).
+  - Added "Talk on Call" button on chat top bar and header (`src/components/chat/v9/AppHeader.tsx` and `src/app/chat/[id]/page.tsx`).
+  - Added inline `HelplineCallCard.tsx` inside chat messages and `HelplineModal.tsx` popup with "You will receive a call shortly" feedback.
 
 ## Escalate to Opus 5.5 / High+ when
 - the RAG returns wrong answers even though the code looks correct
 - debugging spans multiple files
 - an architecture decision comes up
 - a demo-critical bug appears
+
 

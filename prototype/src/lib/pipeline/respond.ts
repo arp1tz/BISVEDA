@@ -44,6 +44,12 @@ export interface FormICard {
   print_url?: string;
 }
 
+export interface HelplineCard {
+  phone_number?: string;
+  status?: "prompt" | "queued" | "connecting" | "active";
+  message?: string;
+}
+
 export interface ImageReadCard {
   category?: string;
   product_guess?: string;
@@ -72,6 +78,7 @@ export interface BisvedaResponse {
     mark?: MarkCard;
     image?: ImageReadCard;
     form_i?: FormICard;
+    helpline?: HelplineCard;
   };
   clarify?: {
     question: string;

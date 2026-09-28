@@ -177,7 +177,13 @@ export function AnswerCard({
       )}
 
       {/* Answer text (markdown-lite: bullets, bold, [S#] citation pills) */}
-      <div className="space-y-2">{response.text ? renderAnswerText(response.text) : null}</div>
+      <div className="space-y-2">
+        {response.text
+          ? renderAnswerText(response.text)
+          : response.refusal?.message
+          ? renderAnswerText(response.refusal.message)
+          : null}
+      </div>
 
       {/* Grounding Status Indicator */}
       <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-[#E5E7EB]/60 text-xs">
@@ -190,8 +196,9 @@ export function AnswerCard({
             <span>Some details could not be confirmed in official sources</span>
           </div>
         ) : (
-          <div className="flex items-center gap-1.5 text-[#64748B]">
-            <span>General enquiry response</span>
+          <div className="flex items-center gap-1.5 text-[#0B2A4A] font-medium">
+            <span className="h-2 w-2 rounded-full bg-[#228f4a]" />
+            <span>✓ BIS Assistant Guidance</span>
           </div>
         )}
 

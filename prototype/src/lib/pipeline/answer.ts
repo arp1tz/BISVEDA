@@ -103,3 +103,76 @@ export function evidenceOnlyAnswer(pkg: EvidencePackage, language: string): stri
   }
   return lines.join("\n");
 }
+
+const GENERAL_SYSTEM_PROMPT = `You are BISVEDA, the official AI assistant for the Bureau of Indian Standards (BIS).
+You provide grounded, authoritative guidance on Indian Standards, mandatory Quality Control Orders (QCOs), testing laboratories, and certification schemes.
+
+When the user asks general conversational questions like "what can you do", "tum kya kar sakte ho", "who are you", "help", or general greetings:
+1. Explain warmly and concisely what BISVEDA is: The official Bureau of Indian Standards (BIS) AI guidance platform.
+2. Structure your answer clearly with bullet points covering your core capabilities:
+   - Indian Standards: Helmets (IS 4151 motorcycle, IS 2925 industrial), Toys (IS 9873 mechanical/chemical, IS 15644 electric), and Gold Hallmarking (IS 1417, IS 1418, IS 15820).
+   - Mandatory QCOs: Checking which products legally require the ISI mark under Section 16 of the BIS Act.
+   - Testing Laboratories: Locating 29 BIS-recognised testing labs with distance-based nearest sorting and geolocation.
+   - Verification: Checking 6-digit gold HUID and 7-8 digit CM/L licence numbers on products.
+   - Form I Registration: Assisting jewellers in drafting official hallmarking registration.
+   - Voice Call Helpline: Connecting users directly over telephone.
+3. Answer strictly in the same language as the user's prompt (Hindi for Hindi/Hinglish queries like "tum kya kar sakte ho", English for English queries).
+4. Keep the tone helpful, professional, and well-structured using clean markdown formatting. No preamble or meta commentary.`;
+
+export async function generateGeneralQueryAnswer(input: {
+  question: string;
+  language: string;
+  historyText?: string;
+}): Promise<string> {
+  const isHindi = input.language === "hi" || /kya|karo|kaun|batao|sakta|sakte|namaste/i.test(input.question);
+  const groqKey = process.env.GROQ_API_KEY;
+
+  if (groqKey) {
+    try {
+      const parts: string[] = [];
+      if (input.historyText) parts.push(`<conversation_history>\n${input.historyText}\n</conversation_history>`);
+      const userContent = `User query: "${input.question}"\nLanguage to reply in: ${isHindi ? "Hindi (or Hinglish if question is Hinglish)" : "English"}\n\n${parts.join("\n\n")}`;
+
+      const text = await groqChat(
+        [
+          { role: "system", content: GENERAL_SYSTEM_PROMPT },
+          { role: "user", content: userContent },
+        ],
+        { model: "chat", temperature: 0.3, maxTokens: 800 }
+      );
+
+      if (text && text.trim().length > 40) {
+        return text.trim();
+      }
+    } catch (err) {
+      console.warn("[answer] general query generation failed, falling back to deterministic template:", err);
+    }
+  }
+
+  // Deterministic fallback
+  if (isHindi) {
+    return `नमस्ते! मैं **BISVEDA** हूँ — भारतीय मानक ब्यूरो (Bureau of Indian Standards) का आधिकारिक AI सहायक।
+
+मैं इन मुख्य सेवाओं में आपकी सहायता कर सकता हूँ:
+• **भारतीय मानक (Indian Standards)**: दोपहिया हेलमेट (**IS 4151**), औद्योगिक हेलमेट (**IS 2925**), खिलौनों की सुरक्षा (**IS 9873, IS 15644**) और सोने की हॉलमार्किंग (**IS 1417, IS 1418, IS 15820**)।
+• **अनिवार्य QCO अनुपालन**: जानें कि आपके उत्पाद पर BIS प्रमाणीकरण कानूनी रूप से अनिवार्य है या नहीं।
+• **परीक्षण प्रयोगशालाएं (Labs Near Me)**: भारत भर में मान्यता प्राप्त 29 LIMS परीक्षण प्रयोगशालाएं खोजें और अपने स्थान से निकटतम दूरी के आधार पर देखें।
+• **हॉलमार्क एवं ISI मार्क सत्यापन**: आभूषणों के 6-अंकीय **HUID** और उत्पादों पर **CM/L** लाइसेंस नंबर की प्रामाणिकता जांचें।
+• **ज्वैलर हॉलमार्किंग पंजीकरण (Form I)**: अपनी फर्म के लिए Form I आवेदन पत्र बातचीत के माध्यम से ड्राफ्ट करें।
+• **हेल्पलाइन कॉल (Voice Helpline)**: सीधे फोन पर बात करने के लिए कॉल का अनुरोध करें।
+
+आप किस उत्पाद या मानक के बारे में पूछना चाहते हैं?`;
+  }
+
+  return `Hello! I am **BISVEDA**, the official AI assistant for the Bureau of Indian Standards (BIS).
+
+Here is how I can help you:
+• **Indian Standards Guidance**: Technical requirements for Motorcycle Helmets (**IS 4151**), Industrial Helmets (**IS 2925**), Children's Toys (**IS 9873, IS 15644**), and Gold Hallmarking (**IS 1417, IS 1418, IS 15820**).
+• **Mandatory QCO Compliance**: Check whether your product requires mandatory ISI certification under Government Quality Control Orders.
+• **Testing Laboratories**: Locate 29 BIS-recognised testing labs nationwide, sorted by distance from your current location.
+• **Mark & Purity Verification**: Verify 6-digit Hallmark Unique Identification (**HUID**) codes and 7-8 digit **CM/L** factory licence numbers.
+• **Form I Registration**: Concurrently draft your official application for Jeweller Hallmarking Registration.
+• **Voice Call Helpline**: Request an instant telephone callback to speak directly with the AI assistant.
+
+Which product or standard would you like to enquire about?`;
+}

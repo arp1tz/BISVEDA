@@ -11,25 +11,27 @@ import {
   ExternalLink,
   ShieldCheck,
   Sparkles,
+  UploadCloud,
 } from "lucide-react";
 import { GraphTab } from "@/components/admin/GraphTab";
 import { NodeInspector } from "@/components/admin/NodeInspector";
 import { DocumentsTab } from "@/components/admin/DocumentsTab";
 import { DirectoryTab } from "@/components/admin/DirectoryTab";
+import { IngestionTab } from "@/components/admin/IngestionTab";
 import type { GraphApiNode, GraphApiLink, GraphApiResponse } from "@/lib/knowledge/types";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"graph" | "docs" | "directory">("graph");
+  const [activeTab, setActiveTab] = useState<"graph" | "docs" | "ingest" | "directory">("graph");
 
   // Graph state
   const [selectedNode, setSelectedNode] = useState<GraphApiNode | null>(null);
   const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
   const [graphLinks, setGraphLinks] = useState<GraphApiLink[]>([]);
 
-  const handleGraphLoaded = (data: GraphApiResponse) => {
+  const handleGraphLoaded = React.useCallback((data: GraphApiResponse) => {
     setGraphLinks(data.links || []);
-  };
+  }, []);
 
   const handleSelectNode = (nodeOrId: GraphApiNode | string) => {
     if (typeof nodeOrId === "string") {
@@ -116,6 +118,18 @@ export default function AdminDashboardPage() {
             </button>
 
             <button
+              onClick={() => setActiveTab("ingest")}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                activeTab === "ingest"
+                  ? "bg-[#0B2A4A] text-white shadow-xs"
+                  : "text-[#64748B] hover:text-[#0F172A] hover:bg-slate-100"
+              }`}
+            >
+              <UploadCloud className="h-3.5 w-3.5" />
+              <span>Document Ingestion</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab("directory")}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                 activeTab === "directory"
@@ -175,7 +189,7 @@ export default function AdminDashboardPage() {
         )}
 
         {activeTab === "docs" && <DocumentsTab />}
-
+        {activeTab === "ingest" && <IngestionTab />}
         {activeTab === "directory" && <DirectoryTab />}
       </main>
     </div>

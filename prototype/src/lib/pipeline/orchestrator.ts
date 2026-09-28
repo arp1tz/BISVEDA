@@ -18,9 +18,9 @@ import { fuseRetrievalResults } from "./fuse";
 import { checkRelevanceFloor } from "./floor";
 import { adjudicateCandidates } from "./adjudicate";
 import { buildEvidencePackage, EvidencePackage, Source } from "./package";
-import { generateAnswer, evidenceOnlyAnswer } from "./answer";
+import { generateAnswer, evidenceOnlyAnswer, generateGeneralQueryAnswer } from "./answer";
 import { runTrustGate } from "./trust";
-import { BisvedaResponse, StageEvent, STAGE_LABELS, PipelineStage, buildFollowUps, ImageReadCard, MarkCard, HallmarkCard, LabsCard, AhcCard, FormICard } from "./respond";
+import { BisvedaResponse, StageEvent, STAGE_LABELS, PipelineStage, buildFollowUps, ImageReadCard, MarkCard, HallmarkCard, LabsCard, AhcCard, FormICard, HelplineCard } from "./respond";
 import { getAllStandards, getChunksByStandard, getStandardById, isScopeChunk } from "../kb/store";
 import { inspectImage, normalizeCmlNumber, validateHuid, parsePurity, VisionInspectionResult } from "../vision";
 import { findLabs } from "../tools/labs";
@@ -133,6 +133,7 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
   let hallmarkCard: HallmarkCard | undefined;
   let ahcCard: AhcCard | undefined;
   let formICard: FormICard | undefined;
+  let helplineCard: HelplineCard | undefined;
   let userProvidedText: string | undefined;
 
   const buildCards = (): BisvedaResponse["cards"] => {
@@ -142,6 +143,7 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
     if (hallmarkCard) cards.hallmark = hallmarkCard;
     if (ahcCard) cards.ahc = ahcCard;
     if (formICard) cards.form_i = formICard;
+    if (helplineCard) cards.helpline = helplineCard;
     return Object.keys(cards).length > 0 ? (cards as BisvedaResponse["cards"]) : undefined;
   };
 
@@ -327,6 +329,67 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
 
   const normalized = normalizeQuery(effectiveQuery);
 
+  // ── Helpline Trigger ("call helpline", "talk on call", "call me") ──────────
+  const isHelplineTrigger =
+    /\b(?:call\s*helpline|voice\s*call|talk\s*on\s*call|call\s*me|helpline\s*number|phone\s*helpline|call\s*bisveda|helpline\s*call)\b/i.test(
+      effectiveQuery.toLowerCase()
+    );
+
+  if (isHelplineTrigger) {
+    const isHindi = understood.language === "hi" || /kall|karo|batao|number/i.test(effectiveQuery);
+    helplineCard = {
+      status: "prompt",
+      message: isHindi
+        ? "आप BISVEDA वॉयस हेल्पलाइन से सीधे फोन पर बात कर सकते हैं।"
+        : "Connect directly with the official BISVEDA Voice Helpline over phone.",
+    };
+    const answerText = isHindi
+      ? `### 📞 BISVEDA वॉयस हेल्पलाइन सहायता\n\nआप भारतीय मानकों, ISI मार्क सत्यापन, QCO अनिवार्यताओं अथवा परीक्षण प्रयोगशालाओं के संबंध में सीधे फोन कॉल पर हमारे AI वॉयस सहायक से बात कर सकते हैं।\n\nकृपया नीचे अपना **10-अंकीय मोबाइल नंबर** दर्ज करें — आपको कुछ ही क्षणों में कॉल प्राप्त होगी।`
+      : `### 📞 BISVEDA Voice Helpline Assistance\n\nYou can speak directly with our AI voice assistant over telephone regarding Indian Standards, ISI mark verification, QCO requirements, or testing laboratories.\n\nPlease enter your **10-digit mobile number** below — you will receive a call shortly.`;
+
+    return {
+      conversation_id: conversationId,
+      kind: "answer",
+      language: understood.language,
+      grounding: "none",
+      text: answerText,
+      sources: [],
+      cards: buildCards(),
+      follow_ups: isHindi
+        ? ["दोपहिया हेलमेट के लिए कौन सा मानक है?", "सोने का HUID कैसे जांचें?"]
+        : ["Which standard applies to motorcycle helmets?", "How to check gold HUID?"],
+    };
+  }
+
+  // ── General Enquiry / Capability Query ("tum kya kar sakte ho", "what can you do", "help") ──
+  const isGeneralCapabilityQuery =
+    /\b(?:tum\s*kya\s*kar\s*sakte\s*ho|aap\s*kya\s*kar\s*sakte\s*hain|kya\s*kar\s*sakte\s*ho|what\s*can\s*you\s*do|how\s*can\s*you\s*help|who\s*are\s*you|what\s*is\s*bisveda|help\s*me|capabilities|features|options)\b/i.test(
+      effectiveQuery.toLowerCase()
+    ) || (understood.intent === "smalltalk" && /kya|sakte|help|features|who/i.test(effectiveQuery));
+
+  if (isGeneralCapabilityQuery) {
+    const isHindi = understood.language === "hi" || /kya|karo|kaun|batao|sakta|sakte|namaste/i.test(effectiveQuery);
+    const rawAnswer = await generateGeneralQueryAnswer({
+      question: effectiveQuery,
+      language: understood.language,
+      historyText,
+    });
+    const trustReport = runTrustGate(rawAnswer, undefined, { isGeneralQuery: true, language: understood.language });
+
+    return {
+      conversation_id: conversationId,
+      kind: "answer",
+      language: understood.language,
+      grounding: "none",
+      text: trustReport.text,
+      sources: [],
+      cards: buildCards(),
+      follow_ups: isHindi
+        ? ["दोपहिया हेलमेट के लिए कौन सा मानक है?", "सोने की शुद्धता और हॉलमार्किंग कैसे जांचें?", "निकटतम BIS परीक्षण लैब खोजें"]
+        : ["Which standard applies to motorcycle helmets?", "What are the gold hallmarking grades?", "Where is the nearest BIS testing lab?"],
+    };
+  }
+
   // ── Canonical Verified FAQ Match (Speedgate Layer) ───────────────────────
   if (
     understood.intent !== "smalltalk" &&
@@ -353,22 +416,53 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
 
   // ── Branch: smalltalk / gibberish / out_of_scope ─────────────────────────
   if (understood.intent === "smalltalk" || understood.intent === "gibberish" || understood.intent === "out_of_scope") {
+    let replyText = understood.fastReply || "";
+
+    if (understood.intent === "smalltalk") {
+      const isHindi = understood.language === "hi" || /kya|karo|kaun|batao|sakta|sakte|namaste/i.test(effectiveQuery);
+      if (!replyText || replyText.trim().length < 15) {
+        const rawAnswer = await generateGeneralQueryAnswer({
+          question: effectiveQuery,
+          language: understood.language,
+          historyText,
+        });
+        const trustReport = runTrustGate(rawAnswer, undefined, { isGeneralQuery: true, language: understood.language });
+        replyText = trustReport.text;
+      }
+      return {
+        conversation_id: conversationId,
+        kind: "smalltalk",
+        language: understood.language,
+        grounding: "none",
+        text: replyText,
+        sources: [],
+        cards: buildCards(),
+        follow_ups: isHindi
+          ? ["दोपहिया हेलमेट के लिए कौन सा मानक है?", "सोने की शुद्धता और हॉलमार्किंग कैसे जांचें?", "निकटतम BIS परीक्षण लैब खोजें"]
+          : ["Which standard applies to motorcycle helmets?", "What are the gold hallmarking grades?", "Where is the nearest BIS testing lab?"],
+      };
+    }
+
+    const refusalMsg =
+      replyText ||
+      (understood.intent === "gibberish"
+        ? "The entered text does not appear to be a recognizable query. Please ask about an Indian Standard, product, or certification service."
+        : "This inquiry is outside what BISVEDA covers. BISVEDA provides guidance on product standards, mandatory Quality Control Orders (QCOs), certification schemes, and recognized testing laboratories.");
+
     return {
       conversation_id: conversationId,
-      kind: understood.intent === "smalltalk" ? "smalltalk" : "refusal",
+      kind: "refusal",
       language: understood.language,
       grounding: "none",
-      text: understood.intent === "smalltalk" ? understood.fastReply || "" : "",
+      text: refusalMsg,
       sources: [],
-      refusal:
-        understood.intent === "smalltalk"
-          ? undefined
-          : {
-              reason: understood.intent,
-              message: understood.fastReply || "This is outside what BISVEDA covers.",
-              next_steps: [{ text: "Visit the official BIS Portal", url: "https://www.bis.gov.in/" }],
-            },
-      follow_ups: understood.intent === "smalltalk" ? [`Which standard applies to helmets?`, `What are the gold hallmarking grades?`] : [],
+      cards: buildCards(),
+      refusal: {
+        reason: understood.intent as "out_of_scope" | "gibberish",
+        message: refusalMsg,
+        next_steps: [{ text: "Visit the official BIS Portal", url: "https://www.bis.gov.in/" }],
+      },
+      follow_ups: [`Which standard applies to helmets?`, `What are the gold hallmarking grades?`],
     };
   }
 

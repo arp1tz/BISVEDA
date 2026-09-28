@@ -93,6 +93,11 @@ export function GraphTab({
   const [highlightNodes, setHighlightNodes] = useState<Set<string>>(new Set());
   const [highlightLinks, setHighlightLinks] = useState<Set<any>>(new Set());
 
+  const onGraphLoadedRef = useRef(onGraphLoaded);
+  useEffect(() => {
+    onGraphLoadedRef.current = onGraphLoaded;
+  }, [onGraphLoaded]);
+
   // Resize handler
   useEffect(() => {
     function updateDimensions() {
@@ -129,14 +134,14 @@ export function GraphTab({
       if (res.ok) {
         const data: GraphApiResponse = await res.json();
         setGraphData(data);
-        onGraphLoaded?.(data);
+        onGraphLoadedRef.current?.(data);
       }
     } catch (err) {
       console.error("[Graph Fetch Error]:", err);
     } finally {
       setLoading(false);
     }
-  }, [focusedNodeId, depth, enabledTypes, onGraphLoaded]);
+  }, [focusedNodeId, depth, enabledTypes]);
 
   useEffect(() => {
     fetchGraph();
@@ -144,7 +149,10 @@ export function GraphTab({
 
   const processedGraph = useMemo(() => {
     if (!graphData) return { nodes: [], links: [] };
-    return { nodes: graphData.nodes, links: graphData.links };
+    return {
+      nodes: graphData.nodes.map((n) => ({ ...n })),
+      links: graphData.links.map((l) => ({ ...l })),
+    };
   }, [graphData]);
 
   // Search matches

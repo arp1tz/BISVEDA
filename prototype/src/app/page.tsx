@@ -2,14 +2,16 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, ArrowRight, Paperclip, BookOpen, ShieldCheck, FlaskConical, Sparkles } from "lucide-react";
+import { Search, ArrowRight, Paperclip, BookOpen, ShieldCheck, FlaskConical, Sparkles, PhoneCall } from "lucide-react";
 import { AppHeader } from "@/components/chat/v9/AppHeader";
 import { AppFooter } from "@/components/chat/v9/AppFooter";
+import { HelplineModal } from "@/components/chat/v9/HelplineModal";
 
 export default function HomePage() {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [isHelplineOpen, setIsHelplineOpen] = useState(false);
 
   const productPills = [
     { label: "Helmets", query: "Which Indian Standard applies to motorcycle helmets and is it mandatory under QCO?" },
@@ -83,18 +85,30 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen sm:h-screen w-screen overflow-x-hidden bg-white text-[#0F172A] font-sans justify-between">
       {/* Shared Minimal Header */}
-      <AppHeader />
+      <AppHeader onOpenHelpline={() => setIsHelplineOpen(true)} />
 
       {/* Center 1-Screen Landing View */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-6 max-w-4xl mx-auto w-full">
         {/* Hero Headings */}
-        <div className="text-center space-y-2.5 mb-7">
+        <div className="text-center space-y-2.5 mb-5">
           <h1 className="text-2xl sm:text-4xl font-extrabold text-[#0B2A4A] tracking-tight leading-tight">
             Find the right BIS standard, certification and lab.
           </h1>
           <p className="text-sm sm:text-base text-[#64748B] max-w-xl mx-auto leading-relaxed">
             Ask in any Indian language. Every answer shows its official source.
           </p>
+        </div>
+
+        {/* Helpline Voice Call Pill */}
+        <div className="mb-5 flex items-center justify-center">
+          <button
+            type="button"
+            onClick={() => setIsHelplineOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-50 hover:bg-amber-100/90 border border-amber-200 text-xs font-bold text-[#0B2A4A] shadow-2xs transition-all hover:scale-105 cursor-pointer"
+          >
+            <PhoneCall className="h-3.5 w-3.5 text-[#E8710A] animate-pulse" />
+            <span>📞 Call Helpline — Speak with BISVEDA on Call</span>
+          </button>
         </div>
 
         {/* Search Box */}
@@ -221,6 +235,9 @@ export default function HomePage() {
 
       {/* Shared Minimal Footer */}
       <AppFooter />
+
+      {/* Voice Call Helpline Modal */}
+      <HelplineModal isOpen={isHelplineOpen} onClose={() => setIsHelplineOpen(false)} />
     </div>
   );
 }

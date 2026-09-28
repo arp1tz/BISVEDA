@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { PanelLeft, Sparkles } from "lucide-react";
+import { PanelLeft, Sparkles, PhoneCall } from "lucide-react";
 import { AppHeader } from "@/components/chat/v9/AppHeader";
 import { AppFooter } from "@/components/chat/v9/AppFooter";
 import { ChatSidebar, ChatSessionItem } from "@/components/chat/v9/ChatSidebar";
@@ -20,6 +20,8 @@ import { HallmarkCard } from "@/components/chat/v9/HallmarkCard";
 import { MarkCard } from "@/components/chat/v9/MarkCard";
 import { ImageReadCard } from "@/components/chat/v9/ImageReadCard";
 import { FormICard } from "@/components/chat/v9/FormICard";
+import { HelplineCallCard } from "@/components/chat/v9/HelplineCallCard";
+import { HelplineModal } from "@/components/chat/v9/HelplineModal";
 import { listConversations, getConversation, saveConversation } from "@/lib/conversations";
 import type { BisvedaResponse, StageEvent } from "@/lib/pipeline/respond";
 import type { Source } from "@/lib/pipeline/package";
@@ -51,6 +53,7 @@ function ChatWorkspaceInner() {
   const [isLoading, setIsLoading] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [formState, setFormState] = useState<Record<string, string>>({});
+  const [isHelplineOpen, setIsHelplineOpen] = useState(false);
 
   // Source Drawer state
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -401,7 +404,7 @@ function ChatWorkspaceInner() {
   return (
     <div className="min-h-screen flex flex-col bg-white text-[#0F172A]">
       {/* Top Header */}
-      <AppHeader />
+      <AppHeader onOpenHelpline={() => setIsHelplineOpen(true)} />
 
       {/* Main Container */}
       <div className="flex-1 flex overflow-hidden relative">
@@ -417,20 +420,30 @@ function ChatWorkspaceInner() {
 
         {/* Center Chat Column */}
         <main className="flex-1 flex flex-col min-w-0 bg-[#F7F8FA]/50 relative">
-          {/* Top Bar with Sidebar Reopen Toggle */}
-          {!sidebarOpen && (
-            <div className="absolute top-3 left-4 z-10">
+          {/* Top Bar with Sidebar Reopen Toggle & Talk on Call */}
+          <div className="absolute top-3 left-4 right-4 z-10 flex items-center justify-between pointer-events-none">
+            {!sidebarOpen ? (
               <button
                 type="button"
                 onClick={() => setSidebarOpen(true)}
-                className="p-1.5 rounded-lg bg-white border border-[#E5E7EB] text-[#64748B] hover:text-[#0F172A] shadow-xs cursor-pointer"
+                className="p-1.5 rounded-lg bg-white border border-[#E5E7EB] text-[#64748B] hover:text-[#0F172A] shadow-xs cursor-pointer pointer-events-auto"
                 title="Open Sidebar"
                 aria-label="Open Sidebar"
               >
                 <PanelLeft className="h-4 w-4" />
               </button>
-            </div>
-          )}
+            ) : <div />}
+
+            <button
+              type="button"
+              onClick={() => setIsHelplineOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-amber-200 text-xs font-bold text-[#0B2A4A] shadow-xs hover:bg-amber-50 transition-all pointer-events-auto cursor-pointer hover:scale-105"
+              title="Talk with BISVEDA on Call"
+            >
+              <PhoneCall className="h-3.5 w-3.5 text-[#E8710A]" />
+              <span>Talk on Call</span>
+            </button>
+          </div>
 
           {/* Messages Scroll Area */}
           <div className="flex-1 overflow-y-auto px-4 py-6">
@@ -536,6 +549,9 @@ function ChatWorkspaceInner() {
                     {msg.response?.cards?.form_i && (
                       <FormICard card={msg.response.cards.form_i} />
                     )}
+                    {msg.response?.cards?.helpline && (
+                      <HelplineCallCard card={msg.response.cards.helpline} />
+                    )}
                   </div>
                 );
               })}
@@ -581,6 +597,12 @@ function ChatWorkspaceInner() {
 
       {/* Global Footer */}
       <AppFooter />
+
+      {/* Helpline Voice Call Modal */}
+      <HelplineModal
+        isOpen={isHelplineOpen}
+        onClose={() => setIsHelplineOpen(false)}
+      />
     </div>
   );
 }

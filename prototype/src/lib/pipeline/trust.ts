@@ -134,9 +134,86 @@ export interface TrustGateReport {
   text: string;
   droppedLines: Array<{ line: string; reason: string }>;
   allDropped: boolean; // true when every citation-requiring line was dropped — caller should refuse
+  isGeneralQuery?: boolean;
 }
 
-export function runTrustGate(rawText: string, pkg: EvidencePackage): TrustGateReport {
+/**
+ * Trust Gate Layer for General / Conversational Queries:
+ * Verifies and sanitizes LLM-generated general capability and guidance responses.
+ * Unlike standard clause checks that require [S#] citations from retrieval packages:
+ * 1. Strips any hallucinated [S#] citations.
+ * 2. Validates that any mentioned IS standards are well-formed Indian Standards.
+ * 3. Preserves structured bullet points, numbered capability lists, and guidance text without citation requirements.
+ * 4. Ensures output is non-empty, well-formatted markdown.
+ */
+export function runTrustGateForGeneralQuery(rawText: string, language?: string): TrustGateReport {
+  if (!rawText || !rawText.trim()) {
+    return {
+      text: "",
+      droppedLines: [{ line: "", reason: "empty_response" }],
+      allDropped: true,
+      isGeneralQuery: true,
+    };
+  }
+
+  const normalizedBrackets = normalizeCitationBrackets(rawText);
+  const lines = normalizedBrackets.split("\n");
+  const kept: string[] = [];
+  const dropped: Array<{ line: string; reason: string }> = [];
+
+  // Allowed standards for general guidance
+  const validIsPattern = /\bIS\s*[:\-]?\s*(\d{1,5})(?:\s*[\-:]?\s*(?:\((?:Part|Pt)\s*\d+\)|(?:Part|Pt)\s*[\-:]?\s*\d+))?(?::\d{4})?\b/gi;
+
+  for (const rawLine of lines) {
+    const trimmed = rawLine.trim();
+    if (!trimmed) {
+      kept.push("");
+      continue;
+    }
+
+    // Strip any hallucinated [S#] brackets
+    let sanitized = trimmed.replace(/\[S\d+\]/g, "").replace(/\s+([.,;:])/g, "$1").trim();
+
+    // Check for any bizarre or malformed standards
+    const matches = sanitized.match(validIsPattern);
+    let lineValid = true;
+    if (matches) {
+      for (const m of matches) {
+        // e.g. IS 9999999 is invalid
+        const digits = m.replace(/\D/g, "");
+        if (digits.length > 5) {
+          lineValid = false;
+          dropped.push({ line: rawLine, reason: `unrecognized_standard_${m}` });
+          break;
+        }
+      }
+    }
+
+    if (lineValid) {
+      kept.push(sanitized);
+    }
+  }
+
+  const cleanedText = kept.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+  const allDropped = cleanedText.length === 0;
+
+  return {
+    text: cleanedText,
+    droppedLines: dropped,
+    allDropped,
+    isGeneralQuery: true,
+  };
+}
+
+export function runTrustGate(
+  rawText: string,
+  pkg?: EvidencePackage,
+  options?: { isGeneralQuery?: boolean; language?: string }
+): TrustGateReport {
+  if (options?.isGeneralQuery || !pkg) {
+    return runTrustGateForGeneralQuery(rawText, options?.language);
+  }
+
   const sourceMap = new Map(pkg.sources.map((s) => [s.label, s]));
   const dropped: Array<{ line: string; reason: string }> = [];
 
@@ -162,5 +239,7 @@ export function runTrustGate(rawText: string, pkg: EvidencePackage): TrustGateRe
     text: kept.join("\n").trim(),
     droppedLines: dropped,
     allDropped,
+    isGeneralQuery: false,
   };
 }
+
