@@ -54,3 +54,7 @@ prototype/data/directory/.cache/
 
 # Build artifacts
 tsconfig.tsbuildinfo
+
+# UX4G handbook PDFs (large reference files, not source)
+UX4G-Handbook.pdf
+UX4G Handbook Final - UX4G-Handbook.pdf
