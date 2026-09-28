@@ -28,15 +28,31 @@ function isGibberish(text: string): boolean {
   const words = text.toLowerCase().match(/[a-z]+/g) || [];
   const letters = words.join("");
   if (letters.length < 5) return false;
+
   const vowels = letters.replace(/[^aeiou]/g, "").length;
   const vowelRatio = vowels / letters.length;
-  // If fewer than 10% vowels or 6+ consecutive consonants
   if (vowelRatio < 0.10 && letters.length > 6) return true;
-  // Check per word, not on the space-stripped whole string — otherwise a
-  // legitimate multi-word query like "toy ... and physical properties"
-  // can fuse across a word boundary ("...andphysical..." -> "ndphys",
-  // 6 consonants in a row) and false-trigger.
+
+  // Everything below is checked per word, not on the space-stripped whole
+  // string — otherwise a legitimate multi-word query like "toy ... and
+  // physical properties" can fuse across a word boundary ("...andphysical..."
+  // -> "ndphys", 6 consonants in a row) and false-trigger.
   if (words.some((w) => /[bcdfghjklmnpqrstvwxyz]{6,}/i.test(w))) return true;
+
+  // A "word-shaped" token (length >= 4) with too few vowels for its length
+  // reads as keyboard-mash rather than a real word (e.g. "asdkjh", "zzkk").
+  // Short words (< 6 letters) are only flagged if they have literally zero
+  // vowels — plenty of real short words ("which", "chahiye") sit close to
+  // a raw ratio cutoff and shouldn't be flagged. If at least half of the
+  // query's word-shaped tokens look fake, call the whole thing gibberish.
+  const qualifying = words.filter((w) => w.length >= 4);
+  if (qualifying.length > 0) {
+    const suspicious = qualifying.filter((w) => {
+      const v = (w.match(/[aeiou]/g) || []).length;
+      return w.length >= 6 ? v / w.length < 0.2 : v === 0;
+    });
+    if (suspicious.length / qualifying.length >= 0.5) return true;
+  }
   return false;
 }
 

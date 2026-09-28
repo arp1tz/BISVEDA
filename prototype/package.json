@@ -15,6 +15,7 @@
     "dir:ahc": "tsx scripts/directory/ahc.ts"
   },
   "dependencies": {
+    "@huggingface/transformers": "^4.3.0",
     "@types/diff": "^7.0.2",
     "diff": "^9.0.0",
     "leaflet": "^1.9.4",

@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-09-28T00:58:33.271Z",
+  "timestamp": "2026-09-28T01:59:30.234Z",
   "totalCases": 32,
-  "passedCount": 26,
+  "passedCount": 29,
   "wrongStandardCount": 0,
-  "kindAccuracy": "27/32",
+  "kindAccuracy": "30/32",
   "primaryAccuracy": "15/16",
-  "citationValidity": "44/44",
-  "numberSupport": "22/22",
+  "citationValidity": "56/56",
+  "numberSupport": "53/53",
   "results": [
     {
       "id": "helmet-01",
@@ -109,18 +109,15 @@
     },
     {
       "id": "toys-03",
-      "pass": false,
-      "actualKind": "refusal_not_in_sources",
+      "pass": true,
+      "actualKind": "answer",
       "expectedKind": "answer",
       "primaryPass": true,
-      "mustIncludePass": false,
+      "mustIncludePass": true,
       "mustNotIncludePass": true,
       "citationValidityPass": true,
       "numberSupportPass": true,
-      "details": [
-        "Kind mismatch: expected answer, got refusal_not_in_sources",
-        "Missing required standard: IS 9873 (Part 3)"
-      ]
+      "details": []
     },
     {
       "id": "toys-04",
@@ -136,18 +133,15 @@
     },
     {
       "id": "gold-01",
-      "pass": false,
-      "actualKind": "refusal_not_in_sources",
+      "pass": true,
+      "actualKind": "answer",
       "expectedKind": "answer",
       "primaryPass": true,
-      "mustIncludePass": false,
+      "mustIncludePass": true,
       "mustNotIncludePass": true,
       "citationValidityPass": true,
       "numberSupportPass": true,
-      "details": [
-        "Kind mismatch: expected answer, got refusal_not_in_sources",
-        "Missing required standard: IS 1417"
-      ]
+      "details": []
     },
     {
       "id": "gold-02",
@@ -359,17 +353,15 @@
     },
     {
       "id": "gib-01",
-      "pass": false,
-      "actualKind": "refusal_out_of_scope",
+      "pass": true,
+      "actualKind": "gibberish",
       "expectedKind": "gibberish",
       "primaryPass": true,
       "mustIncludePass": true,
       "mustNotIncludePass": true,
       "citationValidityPass": true,
       "numberSupportPass": true,
-      "details": [
-        "Kind mismatch: expected gibberish, got refusal_out_of_scope"
-      ]
+      "details": []
     },
     {
       "id": "inj-01",

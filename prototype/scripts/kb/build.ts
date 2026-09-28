@@ -40,28 +40,18 @@ function assertRegistryCoversFolder() {
   }
 }
 
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 /**
- * Embeds sequentially with pacing to stay under Gemini's free-tier per-minute
- * embedding quota (observed: ~100 requests/min triggers HTTP 429). Cache hits
- * (already-embedded chunks from a prior run) skip the delay entirely.
+ * Embeds sequentially (the local bge-m3 model instance isn't safe to call
+ * concurrently from one process). No rate-limit pacing needed — this is
+ * on-CPU local inference, not a metered API. Cache hits (already-embedded
+ * chunks from a prior run) return near-instantly.
  */
-async function embedAll(chunks: KbChunk[], delayMs = 700) {
+async function embedAll(chunks: KbChunk[]) {
   let done = 0;
   for (const c of chunks) {
-    const before = Date.now();
     c.embedding = await embedChunk(c.standard_id, c.clause_title, c.text, c.sha256);
     done++;
     process.stdout.write(`\r  embedding: ${done}/${chunks.length}`);
-    const elapsed = Date.now() - before;
-    if (elapsed < 50 && elapsed >= 0) {
-      // Sub-50ms return means this was a cache hit (no network round-trip) — no need to pace it.
-      continue;
-    }
-    await sleep(delayMs);
   }
   process.stdout.write("\n");
 }
@@ -90,7 +80,7 @@ async function main() {
     allChunks.push(...chunks);
   }
 
-  console.log(`\nTotal chunks: ${allChunks.length}. Embedding (Gemini, cached by sha256)...`);
+  console.log(`\nTotal chunks: ${allChunks.length}. Embedding (local bge-m3, cached by sha256 — first call loads the model)...`);
   await embedAll(allChunks);
 
   const missingEmbeddings = allChunks.filter((c) => !c.embedding || c.embedding.length === 0);
@@ -106,9 +96,21 @@ async function main() {
   console.log("Building graph.json...");
   const graph = buildGraph(SOURCES, standards, allChunks);
 
+  // Runtime-safe doc registry (doc_id -> real PDF filename), so /api/docs/[docId]
+  // can serve the source PDF without importing scripts/ into the Next.js build.
+  const docs = SOURCES.map((s) => ({
+    doc_id: s.doc_id,
+    standard_id: s.standard_id,
+    title: s.title,
+    domain: s.domain,
+    file: s.file,
+    source_url: s.source_url,
+  }));
+
   fs.writeFileSync(path.join(KB_DIR, "standards.json"), JSON.stringify(standards, null, 2), "utf-8");
   fs.writeFileSync(path.join(KB_DIR, "chunks.json"), JSON.stringify(allChunks, null, 2), "utf-8");
   fs.writeFileSync(path.join(KB_DIR, "graph.json"), JSON.stringify(graph, null, 2), "utf-8");
+  fs.writeFileSync(path.join(KB_DIR, "docs.json"), JSON.stringify(docs, null, 2), "utf-8");
 
   console.log("\n" + "=".repeat(70));
   console.log("DONE");

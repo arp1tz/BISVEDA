@@ -1,0 +1,73 @@
+[
+  {
+    "doc_id": "is-4151",
+    "standard_id": "IS 4151",
+    "title": "Protective Helmets for Motorcycle Riders — Specification (Third Revision)",
+    "domain": "helmets",
+    "file": "IS_4151_Protective_Helmets_for_Motorcycle_Riders_Specification_(Third_Revision).pdf",
+    "source_url": "https://archive.org/download/gov.law.is.4151.1993/is.4151.1993.pdf"
+  },
+  {
+    "doc_id": "is-2925",
+    "standard_id": "IS 2925",
+    "title": "Specification for Industrial Safety Helmets (Second Revision)",
+    "domain": "helmets",
+    "file": "IS_2925_Specification_for_Industrial_Safety_Helmets_(Second_Revision).pdf",
+    "source_url": "https://archive.org/download/gov.law.is.2925.1984/is.2925.1984.pdf"
+  },
+  {
+    "doc_id": "is-15644",
+    "standard_id": "IS 15644",
+    "title": "Safety of Electric Toys",
+    "domain": "toys",
+    "file": "IS_15644_Safety_of_Electric_toys.pdf",
+    "source_url": "https://archive.org/download/gov.in.is.15644.2006/is.15644.2006.pdf"
+  },
+  {
+    "doc_id": "is-9873-1",
+    "standard_id": "IS 9873 (Part 1)",
+    "title": "Safety Requirements for Toys, Part 1: Safety Aspects Related to Mechanical and Physical Properties",
+    "domain": "toys",
+    "file": "IS_9873_1_Safety_Requirements_for_Toys,_Part_1_Safety_Aspects_related_to_Mechanical_and_Physical_Properties.pdf",
+    "source_url": "https://archive.org/download/gov.in.is.9873.1.2012/is.9873.1.2012.pdf"
+  },
+  {
+    "doc_id": "is-9873-3",
+    "standard_id": "IS 9873 (Part 3)",
+    "title": "Safety Requirements for Toys, Part 3: Migration of Certain Elements",
+    "domain": "toys",
+    "file": "IS_9873_3_Safety_Requirements_for_Toys,_Part_3_Migration_of_Certain_Elements.pdf",
+    "source_url": "https://archive.org/download/gov.in.is.9873.3.1999/is.9873.3.1999.pdf"
+  },
+  {
+    "doc_id": "is-1417",
+    "standard_id": "IS 1417",
+    "title": "Gold and Gold Alloys, Jewellery/Artefacts — Fineness and Marking",
+    "domain": "gold",
+    "file": "IS_1417_Gold_and_Gold_Alloys,_JewelleryArtefacts_Fineness_and_Marking.pdf",
+    "source_url": "https://archive.org/download/gov.in.is.1417.1999/is.1417.1999.pdf"
+  },
+  {
+    "doc_id": "is-1418",
+    "standard_id": "IS 1418",
+    "title": "Determination of Gold in Gold Bullion, Gold Alloys and Gold Jewellery/Artefacts — Cupellation (Fire Assay) Method",
+    "domain": "gold",
+    "file": "IS_1418_Determination_of_Gold_in_Gold_Bullion,_Gold_Alloys_and_Gold_JewelleryArtefacts_Cupellation_(Fire_Assay)_Method.pdf",
+    "source_url": "https://archive.org/download/gov.in.is.1418.2009/is.1418.2009.pdf"
+  },
+  {
+    "doc_id": "is-15820",
+    "standard_id": "IS 15820",
+    "title": "General Requirement for Competence of Assaying and Hallmarking Centres",
+    "domain": "gold",
+    "file": "IS_15820_General_requirement_for_competence_of_assaying_and_hallmarking_centres.pdf",
+    "source_url": "https://archive.org/download/gov.in.is.15820.2009/is.15820.2009.pdf"
+  },
+  {
+    "doc_id": "form-i-jeweller",
+    "standard_id": "FORM-I",
+    "title": "Form I — Application for Grant of Certificate of Registration to Jewellers for Sale of Hallmarked Articles",
+    "domain": "forms",
+    "file": "Form I Application for Grant of Certificateof Registration to Jewellers For Sale of Hallmarked Article.pdf"
+  }
+]

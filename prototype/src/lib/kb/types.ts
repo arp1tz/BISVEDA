@@ -25,6 +25,18 @@ export interface KbChunk {
   embedding: number[] | null;
 }
 
+/** One entry from the closed source registry (scripts/kb/sources.ts), serialized
+ * at build time so the runtime (the /api/docs route) can resolve a doc_id to
+ * its real PDF filename without importing scripts/ into the Next.js build. */
+export interface KbDoc {
+  doc_id: string;
+  standard_id: string;
+  title: string;
+  domain: Domain;
+  file: string; // filename under "example docs uploaded by employees/"
+  source_url?: string;
+}
+
 export interface KbStandard {
   id: string;
   title: string;

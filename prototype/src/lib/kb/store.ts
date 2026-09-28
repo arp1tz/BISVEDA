@@ -15,7 +15,7 @@
 
 import fs from "fs";
 import path from "path";
-import type { AhcRecord, GraphEdge, GraphNode, KbChunk, KbGraph, KbStandard, LabRecord } from "./types";
+import type { AhcRecord, GraphEdge, GraphNode, KbChunk, KbDoc, KbGraph, KbStandard, LabRecord } from "./types";
 
 function resolveDataDir(subpath: string): string | null {
   const candidates = [
@@ -49,8 +49,10 @@ interface Store {
   graph: KbGraph;
   labs: LabRecord[];
   ahcs: AhcRecord[];
+  docs: KbDoc[];
   chunksByStandard: Map<string, KbChunk[]>;
   standardsById: Map<string, KbStandard>;
+  docsById: Map<string, KbDoc>;
 }
 
 let store: Store | null = null;
@@ -67,6 +69,7 @@ function load(): Store {
   const graph = loadJson<KbGraph>(path.join("kb", "graph.json"), { nodes: [], edges: [] });
   const labs = loadJson<LabRecord[]>(path.join("directory", "labs.json"), []);
   const ahcs = loadJson<AhcRecord[]>(path.join("directory", "ahc.json"), []);
+  const docs = loadJson<KbDoc[]>(path.join("kb", "docs.json"), []);
 
   const chunksByStandard = new Map<string, KbChunk[]>();
   for (const c of chunks) {
@@ -78,7 +81,10 @@ function load(): Store {
   const standardsById = new Map<string, KbStandard>();
   for (const s of standards) standardsById.set(s.id, s);
 
-  store = { chunks, standards, graph, labs, ahcs, chunksByStandard, standardsById };
+  const docsById = new Map<string, KbDoc>();
+  for (const d of docs) docsById.set(d.doc_id, d);
+
+  store = { chunks, standards, graph, labs, ahcs, docs, chunksByStandard, standardsById, docsById };
 
   if (chunks.length === 0) {
     console.warn("[kb/store] 0 chunks loaded. Run `npm run kb:build` from prototype/ before starting the app.");
@@ -131,6 +137,11 @@ export function getStandardById(idOrNorm: string): KbStandard | null {
     if (cleanStd.startsWith(cleanTarget) || cleanTarget.startsWith(cleanStd)) return std;
   }
   return null;
+}
+
+/** Resolves a doc_id to its registry entry (real PDF filename, title, source_url), or null if unknown. */
+export function getDocById(docId: string): KbDoc | null {
+  return load().docsById.get(docId) ?? null;
 }
 
 export function getGraphNode(id: string): GraphNode | undefined {

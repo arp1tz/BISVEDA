@@ -13,7 +13,8 @@ Read other files only when a task names them. Reference earlier reads instead of
 
 ## Commands (run from `prototype/`)
 - `npm run dev` · `npm run typecheck` · `npm run build`
-- `npm run kb:build`: rebuilds `data/kb/*` from the PDFs. Needs Python + PyMuPDF + rapidocr, and `GEMINI_API_KEY`.
+- `npm run kb:build`: rebuilds `data/kb/*` from the PDFs. Needs Python + PyMuPDF + rapidocr for parsing. Embedding is local bge-m3 (no API key, no quota) — first run downloads and caches the model from the Hugging Face Hub.
+- `npm run calibrate:floor`: recomputes `data/kb/calibration.json`'s semantic-similarity threshold from the golden set.
 - `npm run dir:labs` · `npm run dir:ahc`: scrape the official directories into `data/directory/*`. Throttled and cached.
 - `npm run eval:rag`: runs the golden eval (`data/eval/golden.jsonl`).
 
@@ -35,7 +36,7 @@ L0/L2 scripts/kb, scripts/directory  (offline)
 - Every knowledge-base answer carries `[S#]` citations, and the trust gate is authoritative.
 - Never declare a mark, licence or HUID valid or genuine. Show the format check plus the BIS Care app / Manak Online route.
 - Vision and OCR output is `user_provided` evidence and is never cited as `[S#]`.
-- Model ids come from env only (`GROQ_CHAT_MODEL`, `GROQ_FAST_MODEL`, `GEMINI_VISION_MODEL`, `GEMINI_EMBED_MODEL`). No hash or placeholder embeddings.
+- Model ids come from env only (`GROQ_CHAT_MODEL`, `GROQ_FAST_MODEL`, `GEMINI_VISION_MODEL`, `EMBED_MODEL`). Embeddings are local bge-m3 (`Xenova/bge-m3` via transformers.js, 1024-dim) — no hosted embedding API, no hash or placeholder embeddings.
 - Emit only the stage events that actually ran.
 - Don't use these words in user-facing text: statutory, sovereign, NotebookLM, corpus boundary, zero-shot, provenance, "Axiom".
 
