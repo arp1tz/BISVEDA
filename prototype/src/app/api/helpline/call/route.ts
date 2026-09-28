@@ -12,8 +12,9 @@ interface CallLogRecord {
   phone_number: string;
   status: "queued" | "connecting" | "completed" | "failed";
   timestamp: string;
-  exotel_sid?: string;
-  mode: "live_exotel" | "simulated_local";
+  provider_sid?: string;
+  mode: "live_twilio" | "live_exotel" | "simulated_local";
+  provider: "twilio" | "exotel" | "simulator";
 }
 
 const CALL_LOG: CallLogRecord[] = [];
@@ -47,13 +48,30 @@ function cleanIndianPhoneNumber(raw: string): string | null {
 }
 
 export async function GET() {
+  const hasTwilio = Boolean(
+    process.env.TWILIO_ACCOUNT_SID &&
+    process.env.TWILIO_AUTH_TOKEN &&
+    process.env.TWILIO_PHONE_NUMBER
+  );
+  const hasExotel = Boolean(
+    process.env.EXOTEL_ACCOUNT_SID &&
+    process.env.EXOTEL_API_KEY &&
+    process.env.EXOTEL_API_TOKEN
+  );
+
   return NextResponse.json({
     service: "BISVEDA AI Voice Helpline",
     status: "online",
     operating_hours: "24x7 Multilingual Voice Assistance",
     supported_languages: ["Hindi", "English", "Hinglish"],
     active_calls_count: CALL_LOG.length,
-    caller_id: process.env.EXOTEL_CALLER_ID || "08045681234",
+    active_provider: hasTwilio ? "twilio" : hasExotel ? "exotel" : "simulated_local",
+    caller_id: process.env.TWILIO_PHONE_NUMBER || process.env.EXOTEL_CALLER_ID || "09513886363",
+    verified_number: process.env.MY_PHONE_NUMBER || null,
+    providers: {
+      twilio: hasTwilio ? "active" : "unconfigured",
+      exotel: hasExotel ? "configured" : "unconfigured",
+    },
   });
 }
 
@@ -62,14 +80,17 @@ export async function POST(req: NextRequest) {
     const body: HelplineCallRequest = await req.json();
     const { phone_number, language = "hi", source = "chat_modal" } = body;
 
-    if (!phone_number) {
+    // Use user-provided phone number, or fall back to MY_PHONE_NUMBER if empty
+    const rawNumber = (phone_number || "").trim() || (process.env.MY_PHONE_NUMBER || "");
+
+    if (!rawNumber) {
       return NextResponse.json(
         { error: "Phone number is required." },
         { status: 400 }
       );
     }
 
-    const cleanMobile = cleanIndianPhoneNumber(phone_number);
+    const cleanMobile = cleanIndianPhoneNumber(rawNumber);
     if (!cleanMobile) {
       return NextResponse.json(
         {
@@ -80,28 +101,91 @@ export async function POST(req: NextRequest) {
     }
 
     const formattedDisplay = `+91 ${cleanMobile.slice(0, 5)} ${cleanMobile.slice(5)}`;
-    const callId = `CALL-EXO-${Date.now()}`;
+    const e164Number = `+91${cleanMobile}`;
+    const callId = `CALL-BIS-${Date.now()}`;
 
-    // Exotel Credentials from environment (matching BISVEDA_VoiceCall.ipynb)
+    // ─────────────────────────────────────────────────────────────
+    // 1. Twilio Voice Outbound Call Flow (BISVEDA_VoiceCall_Twilio)
+    // ─────────────────────────────────────────────────────────────
+    const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
+    const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
+    const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
+    const twilioTwimlUrl = process.env.TWILIO_TWIML_URL;
+
+    if (twilioAccountSid && twilioAuthToken && twilioPhoneNumber) {
+      try {
+        const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Calls.json`;
+        const authHeader = `Basic ${Buffer.from(`${twilioAccountSid}:${twilioAuthToken}`).toString("base64")}`;
+
+        // Determine TwiML URL: custom env URL, or public origin twiml route, or twilio demo voice
+        const fallbackUrl = "http://demo.twilio.com/docs/voice.xml";
+        const reqOrigin = req.nextUrl?.origin;
+        const localTwimlUrl = reqOrigin && !reqOrigin.includes("localhost")
+          ? `${reqOrigin}/api/helpline/twiml`
+          : fallbackUrl;
+
+        const effectiveTwimlUrl = twilioTwimlUrl || localTwimlUrl;
+
+        const params = new URLSearchParams();
+        params.append("To", e164Number);
+        params.append("From", twilioPhoneNumber);
+        params.append("Url", effectiveTwimlUrl);
+
+        const response = await fetch(twilioUrl, {
+          method: "POST",
+          headers: {
+            Authorization: authHeader,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: params.toString(),
+        });
+
+        const resData = await response.json();
+        console.log("[Twilio Call Trigger]", response.status, resData);
+
+        if (response.ok && resData.sid) {
+          const newRecord: CallLogRecord = {
+            call_id: resData.sid,
+            phone_number: formattedDisplay,
+            status: "queued",
+            timestamp: new Date().toISOString(),
+            provider_sid: resData.sid,
+            mode: "live_twilio",
+            provider: "twilio",
+          };
+          CALL_LOG.unshift(newRecord);
+
+          return NextResponse.json({
+            success: true,
+            call_id: resData.sid,
+            phone: formattedDisplay,
+            caller_id: twilioPhoneNumber,
+            message: `Outbound call queued via Twilio (${resData.sid.slice(0, 10)}…). You will receive a call shortly on ${formattedDisplay}.`,
+            mode: "live_twilio",
+            provider: "twilio",
+          });
+        } else {
+          console.warn("[Twilio Call Warning - response not ok]:", resData);
+        }
+      } catch (err: any) {
+        console.warn("[Twilio Call Exception]:", err);
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // 2. Exotel Fallback Voice Flow (BISVEDA_VoiceCall)
+    // ─────────────────────────────────────────────────────────────
     const exotelAccountSid = process.env.EXOTEL_ACCOUNT_SID;
     const exotelApiKey = process.env.EXOTEL_API_KEY;
     const exotelApiToken = process.env.EXOTEL_API_TOKEN;
-    const exotelCallerId = process.env.EXOTEL_CALLER_ID || "08045681234";
+    const exotelCallerId = process.env.EXOTEL_CALLER_ID || "09513886363";
     const exotelStreamBase = process.env.EXOTEL_STREAM_BASE;
     const exotelSampleRate = process.env.EXOTEL_SAMPLE_RATE || "8000";
 
-    const hasLiveExotel = Boolean(
-      exotelAccountSid &&
-      exotelApiKey &&
-      exotelApiToken &&
-      exotelStreamBase
-    );
-
-    if (hasLiveExotel) {
+    if (exotelAccountSid && exotelApiKey && exotelApiToken && exotelStreamBase) {
       try {
         const streamUrl = `${exotelStreamBase}?sample-rate=${exotelSampleRate}`;
         const exotelUrl = `https://api.exotel.com/v1/Accounts/${exotelAccountSid}/Calls/connect`;
-
         const authHeader = `Basic ${Buffer.from(`${exotelApiKey}:${exotelApiToken}`).toString("base64")}`;
 
         const params = new URLSearchParams();
@@ -119,39 +203,47 @@ export async function POST(req: NextRequest) {
           body: params.toString(),
         });
 
-        const resData = await response.text();
-        console.log("[Exotel Call Trigger]", response.status, resData);
+        const resText = await response.text();
+        console.log("[Exotel Call Trigger]", response.status, resText);
 
-        const newRecord: CallLogRecord = {
-          call_id: callId,
-          phone_number: formattedDisplay,
-          status: response.ok ? "queued" : "failed",
-          timestamp: new Date().toISOString(),
-          exotel_sid: callId,
-          mode: "live_exotel",
-        };
-        CALL_LOG.unshift(newRecord);
+        if (response.ok) {
+          const newRecord: CallLogRecord = {
+            call_id: callId,
+            phone_number: formattedDisplay,
+            status: "queued",
+            timestamp: new Date().toISOString(),
+            provider_sid: callId,
+            mode: "live_exotel",
+            provider: "exotel",
+          };
+          CALL_LOG.unshift(newRecord);
 
-        return NextResponse.json({
-          success: true,
-          call_id: callId,
-          phone: formattedDisplay,
-          message: `Outbound call placed. You will receive a call shortly on ${formattedDisplay}.`,
-          mode: "live_exotel",
-        });
+          return NextResponse.json({
+            success: true,
+            call_id: callId,
+            phone: formattedDisplay,
+            caller_id: exotelCallerId,
+            message: `Outbound call placed. You will receive a call shortly on ${formattedDisplay}.`,
+            mode: "live_exotel",
+            provider: "exotel",
+          });
+        }
       } catch (err: any) {
-        console.warn("[Exotel Call Exception - falling back to simulated dispatch]:", err);
+        console.warn("[Exotel Call Exception]:", err);
       }
     }
 
-    // Local / Demo mode fallback when Exotel API keys are not actively mounted
+    // ─────────────────────────────────────────────────────────────
+    // 3. Failsafe Demo Simulation Mode
+    // ─────────────────────────────────────────────────────────────
     const newRecord: CallLogRecord = {
       call_id: callId,
       phone_number: formattedDisplay,
       status: "queued",
       timestamp: new Date().toISOString(),
-      exotel_sid: `EXO-SIM-${Math.random().toString(36).substring(2, 9).toUpperCase()}`,
+      provider_sid: `SIM-${Math.random().toString(36).substring(2, 9).toUpperCase()}`,
       mode: "simulated_local",
+      provider: "simulator",
     };
     CALL_LOG.unshift(newRecord);
 
@@ -159,8 +251,10 @@ export async function POST(req: NextRequest) {
       success: true,
       call_id: callId,
       phone: formattedDisplay,
+      caller_id: twilioPhoneNumber || exotelCallerId,
       message: `You will receive a call shortly on ${formattedDisplay}.`,
       mode: "simulated_local",
+      provider: "simulator",
       tip: "Please keep your mobile phone nearby. Our voice assistant will connect in moments.",
     });
   } catch (err: any) {
