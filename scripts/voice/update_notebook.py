@@ -1,164 +1,163 @@
 import json
 
-def update_notebook():
-    nb_path = "BISVEDA_VoiceCall_Twilio.ipynb"
-    with open(nb_path, "r", encoding="utf-8") as f:
-        nb = json.load(f)
+with open('BISVEDA_VoiceCall_Exotel.ipynb', 'r', encoding='utf-8') as f:
+    nb = json.load(f)
 
-    # 1. Update Cell 7: GeminiLiveSession
-    c7_str = "".join(nb["cells"][7]["source"])
-    
-    target_7 = """        # Kick off the greeting immediately so the caller hears something
-        # right away, rather than silence while Gemini waits for audio.
-        await self.session.send_client_content(
-            turns={
-                "role": "user",
-                "parts": [{
-                    "text": (
-                        "The caller has just answered the phone. Greet them "
-                        "warmly in Hindi first and then in English as "
-                        "instructed, then invite them to ask their question "
-                        "in any language."
-                    )
-                }],
-            },
-            turn_complete=True,
-        )
-        return self"""
+# Update Cell 2
+cell2_code = '''# 2. Configuration
+#
+# Loads API keys and Exotel credentials with safe environment/secret fallbacks.
+# Gemini 3.1 Flash Live handles real-time audio + tool calling.
 
-    replacement_7 = """        return self
+import os
 
-    async def trigger_greeting(self):
-        \"\"\"Send the opening greeting instruction once the telephony media stream is confirmed active.\"\"\"
-        await self.session.send_client_content(
-            turns={
-                "role": "user",
-                "parts": [{
-                    "text": (
-                        "The caller has just answered the phone and the media stream is active. Greet them "
-                        "warmly in Hindi first and then in English as "
-                        "instructed, then invite them to ask their question "
-                        "in any language."
-                    )
-                }],
-            },
-            turn_complete=True,
-        )"""
+def _get_secret(key, default=""):
+    try:
+        from kaggle_secrets import UserSecretsClient
+        val = UserSecretsClient().get_secret(key)
+        if val:
+            return str(val)
+    except Exception:
+        pass
+    try:
+        from google.colab import userdata
+        val = userdata.get(key)
+        if val:
+            return str(val)
+    except Exception:
+        pass
+    return os.environ.get(key, default)
 
-    if target_7 in c7_str:
-        c7_str = c7_str.replace(target_7, replacement_7)
-        nb["cells"][7]["source"] = [line + "\n" for line in c7_str.split("\n")]
-        # strip last extra newline if added
-        if nb["cells"][7]["source"] and nb["cells"][7]["source"][-1] == "\n":
-            nb["cells"][7]["source"].pop()
-        print("Cell 7 successfully updated.")
-    else:
-        print("Warning: target_7 not found in Cell 7 (may already be updated).")
+# ── Gemini ──
+GEMINI_API_KEY = _get_secret("VOICE_GEMINI_API_KEY") or _get_secret("GEMINI_API_KEY") or "AQ.Ab8RN6JrOHqgvRTeVBWciSg1P4LcTEuVq6lDEh7tF0EctC-1Mw"
+GEMINI_MODEL   = _get_secret("VOICE_GEMINI_MODEL", "gemini-3.1-flash-live-preview")
 
-    # 2. Update Cell 9: Twilio Media Streams bridge
-    c9_str = "".join(nb["cells"][9]["source"])
+# ── Exotel Telephony ──
+EXOTEL_ACCOUNT_SID = _get_secret("EXOTEL_ACCOUNT_SID", "none6723")
+EXOTEL_API_KEY     = _get_secret("EXOTEL_API_KEY", "90b2ea024e1f7ec958f6a3bf1d775952604fa5d65c64d90f")
+EXOTEL_API_TOKEN   = _get_secret("EXOTEL_API_TOKEN", "b9e9b63bd4e658fa6eb5562a70a30433e900b2f4adc4ae23")
+EXOTEL_CALLER_ID   = _get_secret("EXOTEL_CALLER_ID", "01414939968")
+EXOTEL_APP_ID      = _get_secret("EXOTEL_APP_ID", "1349660")
+MY_PHONE_NUMBER    = _get_secret("MY_PHONE_NUMBER", "9529512485")
 
-    # Add stream_ready and pause(120) to twiml
-    twiml_target = """    connect = Connect()
-    connect.stream(url=stream_url)
-    response.append(connect)
-    logger.info("TWIML_SERVED", f"Returning stream TwiML for {stream_url}")"""
+# ── Server / tunnel ──
+PORT               = int(_get_secret("BISVEDA_VOICE_PORT", "8001"))
+NGROK_AUTHTOKEN    = _get_secret("NGROK_AUTHTOKEN", "3JuYjB10Je24Y4vDMc7nmD8yvqk_6EvETNmVk772rHuTkJVLV")
+EXOTEL_SAMPLE_RATE = 8000
+EXOTEL_CHANNELS    = 1
+EXOTEL_BIT_DEPTH   = 16
 
-    twiml_replacement = """    connect = Connect()
-    connect.stream(url=stream_url)
-    response.append(connect)
-    response.pause(length=120)
-    logger.info("TWIML_SERVED", f"Returning stream TwiML for {stream_url}")"""
+# ── Work directory & database ──
+WORK_DIR = "/kaggle/working" if os.path.exists("/kaggle") else "."
+os.makedirs(WORK_DIR, exist_ok=True)
+DB_PATH        = os.path.join(WORK_DIR, "bisveda_voice.db")
+LOG_FILE       = os.path.join(WORK_DIR, "bisveda_exotel_voice.log")
+LOG_JSONL_FILE = os.path.join(WORK_DIR, "bisveda_exotel_voice.jsonl")
 
-    if twiml_target in c9_str:
-        c9_str = c9_str.replace(twiml_target, twiml_replacement)
-        print("Cell 9 twiml response.pause updated.")
+print("Configuration loaded successfully.")
+print(f"Gemini model:       {GEMINI_MODEL}")
+print(f"Exotel Account SID: {EXOTEL_ACCOUNT_SID}")
+print(f"Exotel Caller ID:   {EXOTEL_CALLER_ID}")
+print(f"My Phone Number:    {MY_PHONE_NUMBER}")
+print(f"Exotel Audio:       {EXOTEL_SAMPLE_RATE} Hz / PCM16 mono")
+'''
+nb['cells'][2]['source'] = [line + '\n' for line in cell2_code.splitlines()]
 
-    # Add stream_ready = asyncio.Event() at beginning of bisveda_media
-    media_target = """    call_id = "unknown"
-    stream_sid = None
-    started_at = time.time()"""
+# Update Cell 11 to define EXOTEL_STREAM_BASE consistently
+cell11_code = '''# 11. Start ngrok tunnel
 
-    media_replacement = """    call_id = "unknown"
-    stream_sid = None
-    stream_ready = asyncio.Event()
-    started_at = time.time()"""
+from pyngrok import ngrok
 
-    if media_target in c9_str:
-        c9_str = c9_str.replace(media_target, media_replacement)
-        print("Cell 9 stream_ready event added.")
+ngrok.set_auth_token(NGROK_AUTHTOKEN)
 
-    # In twilio_to_gemini, set stream_ready when start event received
-    start_target = """                        stream_sid = (
-                            event.get("streamSid")
-                            or start.get("streamSid")
-                        )"""
+try:
+    ngrok.kill()
+except Exception:
+    pass
 
-    start_replacement = """                        stream_sid = (
-                            event.get("streamSid")
-                            or start.get("streamSid")
-                        )
-                        stream_ready.set()"""
+tunnel = ngrok.connect(PORT, "http")
+public_url = tunnel.public_url
 
-    if start_target in c9_str:
-        c9_str = c9_str.replace(start_target, start_replacement)
-        print("Cell 9 stream_ready.set() wired into start event.")
+if public_url.startswith("https://"):
+    public_wss_url = "wss://" + public_url[len("https://"):]
+elif public_url.startswith("http://"):
+    public_wss_url = "wss://" + public_url[len("http://"):]
+else:
+    public_wss_url = public_url.replace("http://", "wss://")
 
-    # In gemini_to_twilio, wait for stream_ready and trigger greeting
-    gemini_wait_target = """                while True:
-                    gemini_turns += 1
-                    logger.info("GEMINI_WAIT", f"Turn {gemini_turns}", call_id)"""
+EXOTEL_STREAM_BASE = public_wss_url + "/bisveda/media"
+EXOTEL_WSS_URL     = EXOTEL_STREAM_BASE
 
-    gemini_wait_replacement = """                logger.info("STREAM_WAIT", "Waiting for Twilio streamSid before starting conversation...", call_id)
-                await stream_ready.wait()
-                logger.info("STREAM_READY", f"Twilio streamSid active ({stream_sid}). Triggering greeting.", call_id)
-                await gemini.trigger_greeting()
+print("=" * 70)
+print("NGROK READY")
+print("=" * 70)
+print("Public HTTPS  :", public_url)
+print("Exotel WSS    :", EXOTEL_STREAM_BASE)
+print("=" * 70)
+'''
+nb['cells'][11]['source'] = [line + '\n' for line in cell11_code.splitlines()]
 
-                while True:
-                    gemini_turns += 1
-                    logger.info("GEMINI_WAIT", f"Turn {gemini_turns}", call_id)"""
+# Update Cell 12 to support both Outbound Call and Inbound Setup
+cell12_code = '''# 12. Place an outbound call (for demo / testing)
+#
+# call_bisveda(phone_number) places an Exotel outbound call to your phone.
+# When you answer, you immediately hear the BISVEDA greeting and can
+# ask questions in Hindi, English, or any Indian language.
 
-    if gemini_wait_target in c9_str:
-        c9_str = c9_str.replace(gemini_wait_target, gemini_wait_replacement)
-        print("Cell 9 gemini_to_twilio wait for stream_ready wired.")
+import requests
 
-    # Prevent infinite exception loop in gemini_to_twilio
-    error_loop_target = """                    except Exception as e:
-                        logger.error(
-                            "GEMINI_ERROR",
-                            f"{type(e).__name__}: {e}",
-                            call_id,
-                        )
-                        logger.error(
-                            "GEMINI_ERROR_TRACE",
-                            traceback.format_exc(),
-                            call_id,
-                        )
-                        await asyncio.sleep(0.5)"""
+def call_bisveda(phone_number: str = None):
+    """Place an outbound BISVEDA call via Exotel AgentStream."""
+    phone = phone_number or MY_PHONE_NUMBER
+    digits = "".join(filter(str.isdigit, str(phone)))
+    if len(digits) == 12 and digits.startswith("91"):
+        digits = digits[2:]
+    elif len(digits) == 11 and digits.startswith("0"):
+        digits = digits[1:]
 
-    error_loop_replacement = """                    except Exception as e:
-                        if "1000" in str(e) or "closed" in str(e).lower() or isinstance(e, asyncio.CancelledError):
-                            logger.info("GEMINI_CLEAN_CLOSE", "Gemini stream closed cleanly", call_id)
-                            break
-                        logger.error(
-                            "GEMINI_ERROR",
-                            f"{type(e).__name__}: {e}",
-                            call_id,
-                        )
-                        break"""
+    stream_url = f"{EXOTEL_STREAM_BASE}?sample-rate={EXOTEL_SAMPLE_RATE}"
+    url = f"https://api.exotel.com/v1/Accounts/{EXOTEL_ACCOUNT_SID}/Calls/connect.json"
 
-    if error_loop_target in c9_str:
-        c9_str = c9_str.replace(error_loop_target, error_loop_replacement)
-        print("Cell 9 exception handling updated to prevent infinite 1000 loops.")
+    payload = {
+        "From": digits,
+        "CallerId": EXOTEL_CALLER_ID,
+        "StreamUrl": stream_url,
+        "StreamType": "bidirectional",
+    }
 
-    nb["cells"][9]["source"] = [line + "\n" for line in c9_str.split("\n")]
-    if nb["cells"][9]["source"] and nb["cells"][9]["source"][-1] == "\n":
-        nb["cells"][9]["source"].pop()
+    print(f"Calling {digits} via Exotel...")
+    response = requests.post(
+        url,
+        auth=(EXOTEL_API_KEY, EXOTEL_API_TOKEN),
+        data=payload,
+        timeout=30,
+    )
+    response.raise_for_status()
+    data = response.json()
+    call_sid = data.get("Call", {}).get("Sid")
+    print(f"Call placed successfully! Call SID: {call_sid}")
+    print(f"Answer your phone ({digits}) to speak with BISVEDA AI.")
+    return data
 
-    with open(nb_path, "w", encoding="utf-8") as f:
-        json.dump(nb, f, indent=1)
+print("call_bisveda() ready — run call_bisveda(MY_PHONE_NUMBER) to place a live test call.")
+'''
+nb['cells'][12]['source'] = [line + '\n' for line in cell12_code.splitlines()]
 
-    print("BISVEDA_VoiceCall_Twilio.ipynb updated successfully!")
+# Update Cell 13 to demo call execution
+cell13_code = '''# 13. Place the live demo call
+#
+# Run this cell to call your phone. When you pick up:
+#   - Listen to the opening greeting
+#   - Ask: "Mera ISI mark check karna hai — number hai CM/L-1234567"
+#   - Ask: "Steel pipes ke liye kaunsa standard lagta hai?"
+#   - Ask: "Is my gold hallmark real? HUID is AB1234CD"
+#   - Ask: "Kya cement QCO ke under aata hai?"
 
-if __name__ == "__main__":
-    update_notebook()
+call_bisveda(MY_PHONE_NUMBER)
+'''
+nb['cells'][13]['source'] = [line + '\n' for line in cell13_code.splitlines()]
+
+with open('BISVEDA_VoiceCall_Exotel.ipynb', 'w', encoding='utf-8') as f:
+    json.dump(nb, f, indent=1)
+
+print('Updated BISVEDA_VoiceCall_Exotel.ipynb successfully!')

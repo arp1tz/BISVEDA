@@ -120,13 +120,13 @@ export function HelplineModal({ isOpen, onClose, initialPhone = "" }: HelplineMo
               <span className="text-xl">📱</span>
               <div className="space-y-1">
                 <p className="font-bold text-amber-950 text-xs">
-                  Important: Press 1 on your keypad when you answer!
+                  What to expect when you answer:
                 </p>
                 <p className="text-[11px] text-amber-900 leading-relaxed">
-                  Because this is a trial line, you will hear: <em>"This is a test call from Twilio..."</em>. <strong>Press 1 (or any key) on your phone dialpad</strong> immediately to connect directly to BISVEDA AI.
+                  BISVEDA AI Assistant connects directly to your call. You will immediately hear the opening greeting in <strong>Hindi and English</strong>.
                 </p>
                 <p className="text-[11px] text-amber-800">
-                  Once connected, Gemini Live AI will greet you and answer your questions in Hindi or English!
+                  You can speak naturally in Hindi, English, Hinglish, or Marathi to ask about BIS standards, ISI marks, or gold hallmarking!
                 </p>
               </div>
             </div>

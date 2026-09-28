@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
 
 interface HelplineCallRequest {
   phone_number: string;
@@ -13,8 +15,8 @@ interface CallLogRecord {
   status: "queued" | "connecting" | "completed" | "failed";
   timestamp: string;
   provider_sid?: string;
-  mode: "live_twilio" | "live_exotel" | "simulated_local";
-  provider: "twilio" | "exotel" | "simulator";
+  mode: "live_exotel" | "live_twilio" | "simulated_local";
+  provider: "exotel" | "twilio" | "simulator";
 }
 
 const CALL_LOG: CallLogRecord[] = [];
@@ -47,16 +49,43 @@ function cleanIndianPhoneNumber(raw: string): string | null {
   return null;
 }
 
+/**
+ * Helper to discover active voice bridge ngrok tunnel
+ */
+function getActiveBridgeConfig() {
+  const candidates = [
+    path.resolve(process.cwd(), ".voice_bridge.json"),
+    path.resolve(process.cwd(), "prototype", ".voice_bridge.json"),
+    path.resolve(process.cwd(), "..", ".voice_bridge.json"),
+  ];
+
+  for (const c of candidates) {
+    try {
+      if (fs.existsSync(c)) {
+        const raw = fs.readFileSync(c, "utf-8");
+        const parsed = JSON.parse(raw);
+        if (parsed.active) {
+          return parsed;
+        }
+      }
+    } catch {
+      // Continue checking next candidate
+    }
+  }
+  return null;
+}
+
 export async function GET() {
+  const bridge = getActiveBridgeConfig();
+  const hasExotel = Boolean(
+    (process.env.EXOTEL_ACCOUNT_SID || bridge?.account_sid) &&
+    process.env.EXOTEL_API_KEY &&
+    process.env.EXOTEL_API_TOKEN
+  );
   const hasTwilio = Boolean(
     process.env.TWILIO_ACCOUNT_SID &&
     process.env.TWILIO_AUTH_TOKEN &&
     process.env.TWILIO_PHONE_NUMBER
-  );
-  const hasExotel = Boolean(
-    process.env.EXOTEL_ACCOUNT_SID &&
-    process.env.EXOTEL_API_KEY &&
-    process.env.EXOTEL_API_TOKEN
   );
 
   return NextResponse.json({
@@ -65,12 +94,14 @@ export async function GET() {
     operating_hours: "24x7 Multilingual Voice Assistance",
     supported_languages: ["Hindi", "English", "Hinglish"],
     active_calls_count: CALL_LOG.length,
-    active_provider: hasTwilio ? "twilio" : hasExotel ? "exotel" : "simulated_local",
-    caller_id: process.env.TWILIO_PHONE_NUMBER || process.env.EXOTEL_CALLER_ID || "09513886363",
-    verified_number: process.env.MY_PHONE_NUMBER || null,
+    active_provider: hasExotel ? "exotel" : hasTwilio ? "twilio" : "simulated_local",
+    caller_id: bridge?.caller_id || process.env.EXOTEL_CALLER_ID || "01414939968",
+    verified_number: process.env.MY_PHONE_NUMBER || "9529512485",
+    bridge_status: bridge ? "connected" : "unconnected",
+    stream_url: bridge?.stream_url || process.env.EXOTEL_STREAM_BASE || null,
     providers: {
-      twilio: hasTwilio ? "active" : "unconfigured",
-      exotel: hasExotel ? "configured" : "unconfigured",
+      exotel: hasExotel ? "active" : "unconfigured",
+      twilio: hasTwilio ? "backup" : "unconfigured",
     },
   });
 }
@@ -81,7 +112,7 @@ export async function POST(req: NextRequest) {
     const { phone_number, language = "hi", source = "chat_modal" } = body;
 
     // Use user-provided phone number, or fall back to MY_PHONE_NUMBER if empty
-    const rawNumber = (phone_number || "").trim() || (process.env.MY_PHONE_NUMBER || "");
+    const rawNumber = (phone_number || "").trim() || (process.env.MY_PHONE_NUMBER || "9529512485");
 
     if (!rawNumber) {
       return NextResponse.json(
@@ -101,65 +132,107 @@ export async function POST(req: NextRequest) {
     }
 
     const formattedDisplay = `+91 ${cleanMobile.slice(0, 5)} ${cleanMobile.slice(5)}`;
-    const e164Number = `+91${cleanMobile}`;
     const callId = `CALL-BIS-${Date.now()}`;
+    const bridge = getActiveBridgeConfig();
 
     // ─────────────────────────────────────────────────────────────
-    // 1. Twilio Voice Outbound Call Flow (BISVEDA_VoiceCall_Twilio)
+    // 1. Primary: Exotel Voice Outbound Call Flow (AgentStream)
+    // ─────────────────────────────────────────────────────────────
+    const exotelAccountSid = process.env.EXOTEL_ACCOUNT_SID || bridge?.account_sid || "none6723";
+    const exotelApiKey = process.env.EXOTEL_API_KEY || "90b2ea024e1f7ec958f6a3bf1d775952604fa5d65c64d90f";
+    const exotelApiToken = process.env.EXOTEL_API_TOKEN || "b9e9b63bd4e658fa6eb5562a70a30433e900b2f4adc4ae23";
+    const exotelCallerId = bridge?.caller_id || process.env.EXOTEL_CALLER_ID || "01414939968";
+    const exotelStreamUrl = bridge?.stream_url || process.env.EXOTEL_STREAM_BASE || "";
+
+    if (exotelAccountSid && exotelApiKey && exotelApiToken) {
+      try {
+        const exotelUrl = `https://api.exotel.com/v1/Accounts/${exotelAccountSid}/Calls/connect.json`;
+        const authHeader = `Basic ${Buffer.from(`${exotelApiKey}:${exotelApiToken}`).toString("base64")}`;
+
+        const params = new URLSearchParams();
+        params.append("From", cleanMobile);
+        params.append("CallerId", exotelCallerId);
+
+        // Attach AgentStream WebSocket URL if voice server is online
+        if (exotelStreamUrl) {
+          const sampleRate = "8000";
+          const formattedStreamUrl = exotelStreamUrl.includes("sample-rate")
+            ? exotelStreamUrl
+            : `${exotelStreamUrl}?sample-rate=${sampleRate}`;
+
+          params.append("StreamUrl", formattedStreamUrl);
+          params.append("StreamType", "bidirectional");
+        } else if (process.env.EXOTEL_APP_ID) {
+          // Fallback to Exotel App Bazaar Voicebot flow if no direct stream URL
+          params.append("Url", `http://my.exotel.com/${exotelAccountSid}/exoml/start_voice/${process.env.EXOTEL_APP_ID}`);
+        }
+
+        console.log("[Exotel Call Dispatch]", {
+          to: cleanMobile,
+          callerId: exotelCallerId,
+          streamUrl: params.get("StreamUrl"),
+          accountSid: exotelAccountSid,
+        });
+
+        const response = await fetch(exotelUrl, {
+          method: "POST",
+          headers: {
+            Authorization: authHeader,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: params.toString(),
+        });
+
+        const resData = await response.json().catch(() => null);
+        console.log("[Exotel Call Trigger Result]", response.status, resData);
+
+        if (response.ok && resData?.Call?.Sid) {
+          const providerSid = resData.Call.Sid;
+          const newRecord: CallLogRecord = {
+            call_id: providerSid,
+            phone_number: formattedDisplay,
+            status: "queued",
+            timestamp: new Date().toISOString(),
+            provider_sid: providerSid,
+            mode: "live_exotel",
+            provider: "exotel",
+          };
+          CALL_LOG.unshift(newRecord);
+
+          return NextResponse.json({
+            success: true,
+            call_id: providerSid,
+            phone: formattedDisplay,
+            caller_id: exotelCallerId,
+            message: `Outbound call placed via Exotel (${providerSid.slice(0, 10)}…). You will receive a call shortly on ${formattedDisplay}.`,
+            mode: "live_exotel",
+            provider: "exotel",
+          });
+        } else if (resData?.RestException?.Message) {
+          console.warn("[Exotel Call Warning]:", resData.RestException.Message);
+        }
+      } catch (err: any) {
+        console.warn("[Exotel Call Exception]:", err);
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // 2. Backup: Twilio Voice Outbound Call Flow
     // ─────────────────────────────────────────────────────────────
     const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
     const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
     const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
-    const twilioTwimlUrl = process.env.TWILIO_TWIML_URL;
 
     if (twilioAccountSid && twilioAuthToken && twilioPhoneNumber) {
       try {
+        const e164Number = `+91${cleanMobile}`;
         const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Calls.json`;
         const authHeader = `Basic ${Buffer.from(`${twilioAccountSid}:${twilioAuthToken}`).toString("base64")}`;
-
-        // Determine TwiML URL: check bridge file, env, public origin, or fallback
-        let effectiveTwimlUrl = process.env.TWILIO_TWIML_URL;
-        if (!effectiveTwimlUrl) {
-          try {
-            const fs = await import("fs");
-            const path = await import("path");
-            const candidates = [
-              path.resolve(process.cwd(), ".voice_bridge.json"),
-              path.resolve(process.cwd(), "prototype", ".voice_bridge.json"),
-              path.resolve(process.cwd(), "..", ".voice_bridge.json"),
-            ];
-            for (const c of candidates) {
-              if (fs.existsSync(c)) {
-                const raw = fs.readFileSync(c, "utf-8");
-                const parsed = JSON.parse(raw);
-                if (parsed.active && parsed.twiml_url) {
-                  effectiveTwimlUrl = parsed.twiml_url;
-                  break;
-                }
-              }
-            }
-          } catch (e) {
-            // bridge file read error ignored
-          }
-        }
-
-        if (!effectiveTwimlUrl) {
-          const reqOrigin = req.nextUrl?.origin;
-          effectiveTwimlUrl = reqOrigin && !reqOrigin.includes("localhost") && !reqOrigin.includes("127.0.0.1")
-            ? `${reqOrigin}/api/helpline/twiml`
-            : "https://demo.twilio.com/welcome/voice/";
-        }
 
         const params = new URLSearchParams();
         params.append("To", e164Number);
         params.append("From", twilioPhoneNumber);
-        params.append("Url", effectiveTwimlUrl);
-
-        console.log("[Twilio Call Dispatch]", {
-          to: e164Number,
-          from: twilioPhoneNumber,
-          url: effectiveTwimlUrl,
-        });
+        params.append("Url", bridge?.twiml_url || "https://demo.twilio.com/welcome/voice/");
 
         const response = await fetch(twilioUrl, {
           method: "POST",
@@ -170,10 +243,8 @@ export async function POST(req: NextRequest) {
           body: params.toString(),
         });
 
-        const resData = await response.json();
-        console.log("[Twilio Call Trigger]", response.status, resData);
-
-        if (response.ok && resData.sid) {
+        const resData = await response.json().catch(() => null);
+        if (response.ok && resData?.sid) {
           const newRecord: CallLogRecord = {
             call_id: resData.sid,
             phone_number: formattedDisplay,
@@ -190,76 +261,13 @@ export async function POST(req: NextRequest) {
             call_id: resData.sid,
             phone: formattedDisplay,
             caller_id: twilioPhoneNumber,
-            message: `Outbound call queued via Twilio (${resData.sid.slice(0, 10)}…). You will receive a call shortly on ${formattedDisplay}.`,
+            message: `Outbound call queued via Twilio backup (${resData.sid.slice(0, 10)}…). You will receive a call shortly on ${formattedDisplay}.`,
             mode: "live_twilio",
             provider: "twilio",
           });
-        } else {
-          console.warn("[Twilio Call Warning - response not ok]:", resData);
         }
       } catch (err: any) {
-        console.warn("[Twilio Call Exception]:", err);
-      }
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // 2. Exotel Fallback Voice Flow (BISVEDA_VoiceCall)
-    // ─────────────────────────────────────────────────────────────
-    const exotelAccountSid = process.env.EXOTEL_ACCOUNT_SID;
-    const exotelApiKey = process.env.EXOTEL_API_KEY;
-    const exotelApiToken = process.env.EXOTEL_API_TOKEN;
-    const exotelCallerId = process.env.EXOTEL_CALLER_ID || "09513886363";
-    const exotelStreamBase = process.env.EXOTEL_STREAM_BASE;
-    const exotelSampleRate = process.env.EXOTEL_SAMPLE_RATE || "8000";
-
-    if (exotelAccountSid && exotelApiKey && exotelApiToken && exotelStreamBase) {
-      try {
-        const streamUrl = `${exotelStreamBase}?sample-rate=${exotelSampleRate}`;
-        const exotelUrl = `https://api.exotel.com/v1/Accounts/${exotelAccountSid}/Calls/connect`;
-        const authHeader = `Basic ${Buffer.from(`${exotelApiKey}:${exotelApiToken}`).toString("base64")}`;
-
-        const params = new URLSearchParams();
-        params.append("From", cleanMobile);
-        params.append("CallerId", exotelCallerId);
-        params.append("StreamUrl", streamUrl);
-        params.append("StreamType", "bidirectional");
-
-        const response = await fetch(exotelUrl, {
-          method: "POST",
-          headers: {
-            Authorization: authHeader,
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          body: params.toString(),
-        });
-
-        const resText = await response.text();
-        console.log("[Exotel Call Trigger]", response.status, resText);
-
-        if (response.ok) {
-          const newRecord: CallLogRecord = {
-            call_id: callId,
-            phone_number: formattedDisplay,
-            status: "queued",
-            timestamp: new Date().toISOString(),
-            provider_sid: callId,
-            mode: "live_exotel",
-            provider: "exotel",
-          };
-          CALL_LOG.unshift(newRecord);
-
-          return NextResponse.json({
-            success: true,
-            call_id: callId,
-            phone: formattedDisplay,
-            caller_id: exotelCallerId,
-            message: `Outbound call placed. You will receive a call shortly on ${formattedDisplay}.`,
-            mode: "live_exotel",
-            provider: "exotel",
-          });
-        }
-      } catch (err: any) {
-        console.warn("[Exotel Call Exception]:", err);
+        console.warn("[Twilio Backup Exception]:", err);
       }
     }
 
@@ -281,7 +289,7 @@ export async function POST(req: NextRequest) {
       success: true,
       call_id: callId,
       phone: formattedDisplay,
-      caller_id: twilioPhoneNumber || exotelCallerId,
+      caller_id: exotelCallerId || "01414939968",
       message: `You will receive a call shortly on ${formattedDisplay}.`,
       mode: "simulated_local",
       provider: "simulator",

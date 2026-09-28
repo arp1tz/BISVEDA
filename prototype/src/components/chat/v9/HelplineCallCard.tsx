@@ -100,7 +100,7 @@ export function HelplineCallCard({ card }: HelplineCallCardProps) {
           <div className="p-2.5 bg-amber-50 rounded-lg border border-amber-300 text-left flex items-center gap-2">
             <span className="text-base">📱</span>
             <span className="text-[11px] text-amber-950 font-medium">
-              <strong>When you answer:</strong> Press <strong>1</strong> on your dialpad to connect to BISVEDA AI.
+              <strong>When you answer:</strong> BISVEDA AI will automatically greet you in Hindi and English. Speak naturally!
             </span>
           </div>
         </div>
