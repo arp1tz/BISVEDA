@@ -27,8 +27,11 @@ export function getCalibratedThreshold(): number {
   if (cachedThreshold !== null) return cachedThreshold;
 
   const candidatePaths = [
+    path.resolve(process.cwd(), "data/kb/calibration.json"),
     path.resolve(process.cwd(), "data/calibration.json"),
+    path.resolve(process.cwd(), "../data/kb/calibration.json"),
     path.resolve(process.cwd(), "../data/calibration.json"),
+    path.resolve(__dirname, "../../../data/kb/calibration.json"),
     path.resolve(__dirname, "../../../data/calibration.json"),
   ];
 
@@ -80,7 +83,22 @@ export function checkRelevanceFloor(
     };
   }
 
-  // 3. Below Floor -> Out-of-Corpus Refusal
+  // 3. A strong lexical (BM25) hit for the top fused standard is real
+  // evidence on its own — don't refuse a query the keyword index clearly
+  // answered just because the dense embedding call had no vote this turn
+  // (it can fail on a rate limit, or a short/keyword-heavy query can
+  // legitimately score low on cosine similarity while matching exactly
+  // on terms).
+  const topStandard = fused.rankedStandards[0];
+  if (topStandard && raw.bm25Hits.some((h) => h.standardId === topStandard)) {
+    return {
+      passed: true,
+      signalScore: maxSimilarity,
+      threshold,
+    };
+  }
+
+  // 4. Below Floor -> Out-of-Corpus Refusal
   return {
     passed: false,
     signalScore: maxSimilarity,

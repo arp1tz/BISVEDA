@@ -11,16 +11,18 @@ One conversational BIS assistant whose answers are cited only from the employee-
 ## 📋 Iterative Feature Checklist
 - [x] P0: git snapshot + cleanup + deps prune -> Status: Complete
 - [x] P1: KB build from PDFs + labs/AHC directories -> Status: Complete
-- [ ] P2: KB store + hybrid retrieval + eval baseline -> Status: Not Started
-- [ ] P3: Conversational orchestrator + trust gate -> Status: Not Started
+- [~] P2: KB store + hybrid retrieval + eval baseline -> Status: Code complete, re-verifying after a fuse.ts fix
+- [~] P3: Conversational orchestrator + trust gate -> Status: Code complete, manually verified working; eval re-run pending
 - [ ] P4: Vision (helmet/toy/gold/other, ISI/CM/L/HUID/purity) -> Status: Not Started
 - [ ] P5: In-chat tools: labs, AHC, hallmark, Form I -> Status: Not Started
-- [ ] P6: Chat UI integration + home -> Status: Not Started
+- [ ] P6: Chat UI integration + home -> Status: Minimal fixes only (see HANDOFF.md)
 - [ ] P7: Employee dashboard (Obsidian graph, docs, directories) -> Status: Not Started
 - [ ] P8: Eval suite green + demo script -> Status: Not Started
 
 ## 🧠 Current Context & Active State
-- **Current Task**: None (P1 done, P2 not started)
+- **>>> READ `C:\BISVEDA\HANDOFF.md` FIRST <<<** — full session handoff with the exact next step, every bug found and fixed, known remaining issues, and the debugging method that worked. This progress.md entry is a short pointer only; HANDOFF.md is authoritative for P2/P3 state.
+- **Current Task**: Dev server running (`npm run dev`, http://localhost:3000) for manual walkthrough. Eval at 26/32 (up from 19/32); 2 remaining failures need a real `calibrate:floor` run, blocked on Gemini's **daily** embedding quota being fully exhausted (not just per-minute — confirmed via a fresh 429 on every case). Re-run `npm run calibrate:floor` once quota resets or a second `GEMINI_API_KEY` is supplied.
+- **2026-09-28 session (fresh agent after handoff)**: fixed 2 real bugs found via re-running eval: (1) `route.ts` `isGibberish()` stripped spaces before the 6-consonant-run check, so multi-word queries could fuse across a word boundary (e.g. "...and physical..." → "ndphys") and false-trigger — now checked per word. (2) `floor.ts`'s `checkRelevanceFloor()` only passed on exact/graph hits or dense similarity ≥ threshold, ignoring BM25 entirely — a query with a strong lexical match but a failed/weak dense signal (embedding 429, or a short keyword-heavy query with a legitimately low cosine score) was wrongly refused as `refusal_not_in_sources` even though `adjudicate.ts` would have ranked it correctly. Added a 3rd pass condition: the top fused standard appearing anywhere in `raw.bm25Hits`. Fixed 5 of 7 eval failures (gold-03, gold-04, formi-01, toys-04, and one gibberish false-positive). Remaining 2 (gold-01, toys-03) trace to `calibration.json` being a zero-sample fallback (`n_in:0, n_out:0`, threshold hardcoded to 0.43) from a prior run that also hit the quota wall — not fixable in code, needs a real calibration run. helmet-05 (IS 4151 outranking IS 2925 for "safety helmet for construction workers") is a genuine BM25/RRF ranking call, not a bug — flagged, not fixed, see HANDOFF.md.
 - **Latest State Blocks**:
   - P0 done: git init, snapshot commit, ~150 files/dirs moved to C:\BISVEDA_archive (V8 pages/APIs/components, legacy pipeline libs, services/, repos/, all fabricated seed JSON, scratch files). Root now: CLAUDE.md, progress.md, TODO.md, docs/, example docs/, prototype/, .env*, .gitignore.
   - Repointed 4 files (graph-repository.ts, fuse.ts, package.ts, retrieve.ts) from archived `local-db` to new stub `src/lib/kb/store.ts` (empty-result stubs, real impl in P2.1).

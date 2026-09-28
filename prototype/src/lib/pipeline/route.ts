@@ -25,26 +25,30 @@ export type RouteOutcome =
  * Checks for gibberish using vowel ratio and consonant clusters.
  */
 function isGibberish(text: string): boolean {
-  const letters = text.replace(/[^a-zA-Z]/g, "").toLowerCase();
+  const words = text.toLowerCase().match(/[a-z]+/g) || [];
+  const letters = words.join("");
   if (letters.length < 5) return false;
   const vowels = letters.replace(/[^aeiou]/g, "").length;
   const vowelRatio = vowels / letters.length;
   // If fewer than 10% vowels or 6+ consecutive consonants
   if (vowelRatio < 0.10 && letters.length > 6) return true;
-  if (/[bcdfghjklmnpqrstvwxyz]{6,}/i.test(letters)) return true;
+  // Check per word, not on the space-stripped whole string — otherwise a
+  // legitimate multi-word query like "toy ... and physical properties"
+  // can fuse across a word boundary ("...andphysical..." -> "ndphys",
+  // 6 consonants in a row) and false-trigger.
+  if (words.some((w) => /[bcdfghjklmnpqrstvwxyz]{6,}/i.test(w))) return true;
   return false;
 }
 
 /**
- * Common product group options for the clarification gate.
+ * Product groups the knowledge base actually covers (8 standards from the
+ * employee-uploaded PDFs: helmets, toys, gold hallmarking). Never list a
+ * domain here that we hold no document for — see CLAUDE.md.
  */
 const CLARIFICATION_CHIPS = [
-  { label: "Two-Wheeler Helmets", value: "helmet" },
-  { label: "Domestic Pressure Cookers", value: "pressure cooker" },
-  { label: "Children's Toys", value: "toys" },
-  { label: "Packaged Drinking Water", value: "packaged drinking water" },
+  { label: "Helmets", value: "helmet" },
+  { label: "Toys", value: "toys" },
   { label: "Gold Jewellery & Hallmarking", value: "gold jewellery" },
-  { label: "Steel & Construction (TMT)", value: "sariya steel" },
 ];
 
 export function routeQuery(
@@ -124,7 +128,7 @@ export function routeQuery(
     /\b(?:for\s*manufacturing|for\s*production|for\s*my\s*product|do\s*i\s*need|to\s*sell|in\s*india)\b/i.test(qLower);
 
   const hasSpecificProduct =
-    /\b(?:helmet|cooker|toy|toys|water|gold|sariya|cement|bottle|battery|power\s*bank|steel|cable|wire|pipe|shoes|textile|gas\s*stove|iron|plywood)\b/i.test(qLower) ||
+    /\b(?:helmets?|toys?|gold|jewellery|jewelry|hallmark\w*)\b/i.test(qLower) ||
     input.canonicalStandards.length > 0;
 
   if (isGenericRegulatoryQuery && !hasSpecificProduct && !hasActiveProductInContext) {
