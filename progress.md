@@ -6,7 +6,7 @@ One conversational BIS assistant whose answers are cited only from the employee-
 ## 🛠️ Architecture Decisions & Boundaries
 - **Active Stack**: Next.js 15 / React 19 / Tailwind v4 / TS (prototype/); Groq (chat + intent), Gemini (vision only), local bge-m3 embeddings (1024-dim, `Xenova/bge-m3` via transformers.js); local JSON KB loaded once in memory; Python only for the offline PDF parse.
 - **Core Files**: prototype/scripts/kb/build.ts · prototype/src/lib/kb/store.ts · prototype/src/lib/pipeline/{understand,retrieve,answer,trust,orchestrator}.ts · prototype/src/lib/vision.ts · prototype/src/app/api/chat/route.ts · prototype/src/app/chat/[id]/page.tsx · prototype/src/app/admin/page.tsx
-- **Out of Bounds**: C:\BISVEDA_archive (everything moved there) · ingestion/upload UI · Postgres/MinIO/Python API · QCO/scheme data · voice · V8 pages · docs/reference/* (read only the cited section, on request)
+- **Out of Bounds**: C:\BISVEDA_archive (everything moved there) · ingestion/upload UI · Postgres/MinIO/Python API · QCO/scheme data · V8 pages (voice is in scope since P11) · docs/reference/* (read only the cited section, on request)
 
 ## 📋 Iterative Feature Checklist
 - [x] P0: git snapshot + cleanup + deps prune -> Status: Complete
@@ -21,8 +21,13 @@ One conversational BIS assistant whose answers are cited only from the employee-
 - [x] P9: User-requested fixes & enhancements -> Status: Complete (Labs Near Me geolocation & manual city select, Canonical FAQ speedgate layer without UI leaks, Form I multi-line field extraction & acknowledgement, /standards, /labs, /certification pages, /admin & cookie fixes)
 - [x] P10: General Queries Trustgate Layer & Voice Helpline Integration -> Status: Complete (LLM capability answers in Hindi/Hinglish/English passed through Trust Gate layer without dropping bullets, Document Ingestion Tab in /admin with upload & progress stepper, Knowledge Graph infinite refresh glitch fixed, Document Version Control & Amendments management, Exotel voice helpline call trigger integrated via Landing Page, Chat Header, and Chat Card).
 
+- [x] P11: Landing attach/voice UX + working TTS + multilingual layer -> Status: Complete (+ attach menu with preview, Groq Whisper mic, hands-free voice chat, chunked read-aloud, language/script detection with English working query, localized replies, `eval:multi` 23/24)
+
 ## 🧠 Current Context & Active State
-- **Latest State**: All user-requested features from current turn complete and production-verified. `npm run typecheck` passes with 0 errors. Dev server running on `http://localhost:3000`.
+- **Latest State**: P11 done, `npm run typecheck` 0 errors, dev server on `http://localhost:3000`.
+  - Multilingual: `understand.ts` detects language+script (`mr-Latn` = romanized Marathi) and returns `english_query`; routing, FAQ and retrieval run on English, answers come back in the user's language/script (`lib/i18n.ts`, `answer.ts`); trust gate normalizes non-ASCII digits. `npm run eval:multi` 23/24, golden 27/32 (LLM variance: follow-01 flaky when the model invents numbers and the gate drops them; formi-01 now routes to `form_question` since P9).
+  - Landing: "+" menu (Camera modal/Photos/Files), preview above the bar, downscaled to 1600px JPEG (`lib/attachments.ts`), mic via `/api/stt` (Groq Whisper, `GROQ_STT_MODEL`) and `useVoiceInput`; `?voice=1` opens chat in hands-free loop (speak, read aloud, listen again).
+  - TTS: `lib/voice/tts.ts` (voice picking incl. hi stand-in for mr, text cleanup, sentence chunking). Verified with a fake speech engine only; check real voices (Marathi/Tamil need an installed voice) on the demo machine. Groq 429s now retried in `llm.ts`.
 - **Git State**: Local repository confirmed private with 0 remotes (`git remote -v` outputs nothing).
 - **General Queries Trust Gate Layer (Turn Item 1)**: Added `runTrustGateForGeneralQuery` in `src/lib/pipeline/trust.ts` and connected it to `generateGeneralQueryAnswer` in `answer.ts` and `orchestrator.ts`. Queries like "tum kya kar sakte ho" now produce a rich, LLM-generated structured response in Hinglish/Hindi passed through trust gate without dropping capability bullets. `AnswerCard.tsx` renders fallback refusal text and displays `✓ BIS Assistant Guidance`.
 - **Document Ingestion Tab (Turn Item 2A)**: Added "Document Ingestion" tab to `/admin` (`IngestionTab.tsx` and `/api/admin/ingest/route.ts`) supporting document uploads, metadata tagging (Standard, Title, Domain, Version, Classification), a 5-step pipeline progress visualizer, live console logs, and recent ingestions history.

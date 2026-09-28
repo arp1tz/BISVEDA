@@ -243,6 +243,15 @@ All are archive.org scans. **Measured in P1, corrected from an earlier audit's g
   - Added "Talk on Call" button on chat top bar and header (`src/components/chat/v9/AppHeader.tsx` and `src/app/chat/[id]/page.tsx`).
   - Added inline `HelplineCallCard.tsx` inside chat messages and `HelplineModal.tsx` popup with "You will receive a call shortly" feedback.
 
+## P11: Landing attach/voice UX, working TTS, multilingual layer `[Sonnet 5 / High]` — ✅ DONE
+- [x] **11.1** Multilingual core: `detectLanguageInfo` (all Indic scripts + romanized Hindi/Marathi lexicon), LLM `language`/`script`/`english_query` in `understand.ts`, routing/FAQ/retrieval on English, `lib/i18n.ts` (hand-written en/hi/mr, cached LLM translation with number guard), language-aware `answer.ts`, `toAsciiDigits` in `trust.ts`, retrieval variant fallback, Groq 429 retry, `data/eval/multilingual.jsonl` + `npm run eval:multi`.
+- [x] **11.2** Landing UI: `AttachMenu` (Camera/Photos/Files, desktop camera modal), `AttachmentPreview` above the search bar, `lib/attachments.ts` downscale; reused in `Composer`.
+- [x] **11.3** `lib/voice/tts.ts` + `AnswerCard` read-aloud (voice pick, cleanup, chunking, "no voice installed" note).
+- [x] **11.4** `/api/stt` (Groq Whisper) + `useVoiceInput` + `VoiceMicButton`, landing mic, `Composer` mic.
+- [x] **11.5** Hands-free voice chat in `/chat/[id]` (`?voice=1`, End chip, auto read-aloud, mic reopens).
+- [x] **11.6** Docs: CLAUDE.md voice boundary + `eval:multi`, `.env.example`, progress.md.
+- Known: real speech quality (Marathi/Tamil voices) depends on voices installed on the demo machine; `npm run build` not run (dev server shares `.next`).
+
 ## Escalate to Opus 5.5 / High+ when
 - the RAG returns wrong answers even though the code looks correct
 - debugging spans multiple files

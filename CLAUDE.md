@@ -17,12 +17,13 @@ Read other files only when a task names them. Reference earlier reads instead of
 - `npm run calibrate:floor`: recomputes `data/kb/calibration.json`'s semantic-similarity threshold from the golden set.
 - `npm run dir:labs` · `npm run dir:ahc`: scrape the official directories into `data/directory/*`. Throttled and cached.
 - `npm run eval:rag`: runs the golden eval (`data/eval/golden.jsonl`).
+- `npm run eval:multi`: runs the multilingual eval (`data/eval/multilingual.jsonl`); `-- --only id1,id2` runs specific cases without touching `baseline.json`.
 
 ## Architecture
 ```
 XL  "/" home · "/chat/[id]" single conversation · "/admin" dashboard · "/form-i/print"
 L1  api/chat (SSE: stage | response | error)
-L4a pipeline/understand.ts   intent + standalone query (Groq JSON; regex fallback)
+L4a pipeline/understand.ts   language+script, English working query, intent (Groq JSON; lexicon fallback); lib/i18n.ts localizes replies
 L5  tools/: kb_search · labs · ahc · hallmark · mark_check · form_i ; lib/vision.ts (Gemini)
 L4b pipeline/retrieve.ts     exact + BM25 + dense + graph → RRF(k=60) → calibrated floor → [S#] package
 L5  pipeline/answer.ts       Groq, history-aware, cites [S#]; evidence-only fallback
@@ -36,13 +37,13 @@ L0/L2 scripts/kb, scripts/directory  (offline)
 - Every knowledge-base answer carries `[S#]` citations, and the trust gate is authoritative.
 - Never declare a mark, licence or HUID valid or genuine. Show the format check plus the BIS Care app / Manak Online route.
 - Vision and OCR output is `user_provided` evidence and is never cited as `[S#]`.
-- Model ids come from env only (`GROQ_CHAT_MODEL`, `GROQ_FAST_MODEL`, `GEMINI_VISION_MODEL`, `EMBED_MODEL`). Embeddings are local bge-m3 (`Xenova/bge-m3` via transformers.js, 1024-dim) — no hosted embedding API, no hash or placeholder embeddings.
+- Model ids come from env only (`GROQ_CHAT_MODEL`, `GROQ_FAST_MODEL`, `GROQ_STT_MODEL`, `GEMINI_VISION_MODEL`, `EMBED_MODEL`). Embeddings are local bge-m3 (`Xenova/bge-m3` via transformers.js, 1024-dim) — no hosted embedding API, no hash or placeholder embeddings.
 - Emit only the stage events that actually ran.
 - Don't use these words in user-facing text: statutory, sovereign, NotebookLM, corpus boundary, zero-shot, provenance, "Axiom".
 
 ## Boundaries
 - Don't read `C:\BISVEDA_archive` or `docs/reference/*` unless asked.
-- Out of scope: the ingestion/upload UI, QCO and scheme data, voice, Postgres/MinIO, and the Python API.
+- Out of scope: the ingestion/upload UI, QCO and scheme data, Postgres/MinIO, and the Python API. (Voice is in scope since P11: Groq Whisper speech-to-text via `/api/stt`, browser speechSynthesis read-aloud, hands-free chat.)
 
 ## Design tokens
 Primary `#0B2A4A` · accent `#E8710A` · border `#E5E7EB` · text `#0F172A` · muted `#64748B` · verified `#228f4a` · mandatory `#bd2f2f` · warning `#B45309`. No gradients or glassmorphism. Chat column 760px.
