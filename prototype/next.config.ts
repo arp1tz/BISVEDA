@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Hides the Next.js "N" dev-mode badge.
+  devIndicators: false,
   async rewrites() {
     return {
       beforeFiles: [],
