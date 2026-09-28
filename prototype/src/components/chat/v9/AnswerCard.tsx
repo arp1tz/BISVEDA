@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Check, Copy, ThumbsUp, ThumbsDown, Sparkles, Volume2, VolumeX } from "lucide-react";
 import type { BisvedaResponse } from "@/lib/pipeline/respond";
 import { CitationPill } from "./CitationPill";
+import { speak, stopSpeaking, languageLabel } from "@/lib/voice/tts";
 
 interface AnswerCardProps {
   response: BisvedaResponse;
@@ -25,13 +26,15 @@ export function AnswerCard({
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<"up" | "down" | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [voiceNote, setVoiceNote] = useState<string | null>(null);
+  const isSpeakingRef = useRef(false);
 
-  // Stop speaking when unmounted
+  const speakableText = response.text || response.refusal?.message || response.clarify?.question || "";
+
+  // Keep the button in sync with the shared speech engine, and stop when this card goes away.
   useEffect(() => {
     return () => {
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
+      if (isSpeakingRef.current) stopSpeaking();
     };
   }, []);
 
@@ -41,30 +44,27 @@ export function AnswerCard({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleToggleSpeech = () => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-      alert("Text-to-speech is not supported in this browser.");
-      return;
-    }
-
+  const handleToggleSpeech = async () => {
     if (isSpeaking) {
-      window.speechSynthesis.cancel();
+      stopSpeaking();
       setIsSpeaking(false);
+      isSpeakingRef.current = false;
       return;
     }
 
-    // Strip bracketed citations like [S1], [S2] before reading
-    const textToRead = (response.text || "").replace(/\[S\d+\]/g, "");
-    const utterance = new SpeechSynthesisUtterance(textToRead);
-    utterance.lang = response.language === "hi" ? "hi-IN" : "en-IN";
-    utterance.rate = 1.0;
-
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
+    setVoiceNote(null);
     setIsSpeaking(true);
+    isSpeakingRef.current = true;
+    const result = await speak(speakableText, response.language);
+    // A newer speak() (another card) interrupts this one; its own card handles its own state.
+    setIsSpeaking(false);
+    isSpeakingRef.current = false;
+    if (!result.ok) {
+      if (result.reason === "unsupported") setVoiceNote("Read aloud is not supported in this browser.");
+      else if (result.reason === "no_voice")
+        setVoiceNote(`No ${languageLabel(result.language)} voice is installed on this device, so this answer can't be read aloud. Install one in your system's speech settings.`);
+      else setVoiceNote("Couldn't play the audio. Please try again.");
+    }
   };
 
   // Renders "**bold**" spans within a plain-text segment.
@@ -355,6 +355,7 @@ export function AnswerCard({
           </button>
         </div>
       </div>
+      {voiceNote && <p className="text-[11px] text-[#B45309]">{voiceNote}</p>}
     </div>
   );
 }
