@@ -92,12 +92,16 @@ function ChatWorkspaceInner() {
     },
   });
 
-  /** After an answer arrives in voice mode: read it aloud, then listen again. */
-  const handleVoiceAnswer = async (resp: BisvedaResponse) => {
+  /**
+   * After an answer arrives in voice mode: read it aloud, then listen again. `owner` is the
+   * assistant message's id, so the matching AnswerCard's Read aloud button (speechId={msg.id})
+   * shows Stop while this plays, whether the voice loop or the button itself started it.
+   */
+  const handleVoiceAnswer = async (resp: BisvedaResponse, owner: string) => {
     const text = resp.text || resp.refusal?.message || resp.clarify?.question || "";
     let interrupted = false;
     if (text) {
-      const result = await speak(text, resp.language);
+      const result = await speak(text, resp.language, { owner });
       if (result.ok) interrupted = !!result.interrupted;
       else if (result.reason === "no_voice")
         setVoiceNote(`No ${languageLabel(result.language)} voice is installed on this device, so answers can't be read aloud. You can keep talking.`);
@@ -436,7 +440,7 @@ function ChatWorkspaceInner() {
       });
     } finally {
       setIsLoading(false);
-      if (voiceModeRef.current && completedResponse) void handleVoiceAnswer(completedResponse);
+      if (voiceModeRef.current && completedResponse) void handleVoiceAnswer(completedResponse, assistantMsgId);
     }
   };
   sendRef.current = (text: string) => {
@@ -490,7 +494,7 @@ function ChatWorkspaceInner() {
         />
 
         {/* Center Chat Column */}
-        <main className="flex-1 flex flex-col min-w-0 bg-[#F7F8FA]/50 relative">
+        <main id="main-content" className="flex-1 flex flex-col min-w-0 bg-[#F7F8FA]/50 relative">
           {/* Top Bar with Sidebar Reopen Toggle & Talk on Call */}
           <div className="absolute top-3 left-4 right-4 z-10 flex items-center justify-between pointer-events-none">
             {!sidebarOpen ? (
@@ -598,6 +602,7 @@ function ChatWorkspaceInner() {
                         onRequestLocation={handleRequestLocation}
                         onSendQuery={(q) => handleSendMessage(q)}
                         userLocation={userLocation}
+                        speechId={msg.id}
                       />
                     )}
 
@@ -686,8 +691,8 @@ function ChatWorkspaceInner() {
                 onMicClick={handleMicClick}
               />
 
-              <div className="text-center text-[10px] text-[#64748B] select-none pt-0.5">
-                Official BIS standards &amp; gazetted Quality Control Orders · Ministry of Consumer Affairs
+              <div className="text-center text-[11px] text-[#64748B] select-none pt-0.5">
+                Answers come only from official BIS documents in our knowledge base
               </div>
             </div>
           </div>

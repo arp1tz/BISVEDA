@@ -126,9 +126,9 @@ const STATIC: Record<string, Table> = {
     mr: "तुम्ही BISVEDA व्हॉइस हेल्पलाइनशी थेट फोनवर बोलू शकता.",
   },
   helpline_text: {
-    en: "### 📞 BISVEDA Voice Helpline Assistance\n\nYou can speak directly with our AI voice assistant over telephone regarding Indian Standards, ISI mark verification, QCO requirements, or testing laboratories.\n\nPlease enter your **10-digit mobile number** below — you will receive a call shortly.",
-    hi: "### 📞 BISVEDA वॉयस हेल्पलाइन सहायता\n\nआप भारतीय मानकों, ISI मार्क सत्यापन, QCO अनिवार्यताओं अथवा परीक्षण प्रयोगशालाओं के संबंध में सीधे फोन कॉल पर हमारे AI वॉयस सहायक से बात कर सकते हैं।\n\nकृपया नीचे अपना **10-अंकीय मोबाइल नंबर** दर्ज करें — आपको कुछ ही क्षणों में कॉल प्राप्त होगी।",
-    mr: "### 📞 BISVEDA व्हॉइस हेल्पलाइन सहाय्य\n\nभारतीय मानके, ISI मार्क पडताळणी, QCO आवश्यकता किंवा चाचणी प्रयोगशाळा यांबाबत तुम्ही आमच्या AI व्हॉइस सहाय्यकाशी थेट फोन कॉलवर बोलू शकता.\n\nकृपया खाली तुमचा **10-अंकी मोबाइल नंबर** टाका — तुम्हाला थोड्याच वेळात कॉल येईल.",
+    en: "### Speak with BISVEDA on Call\n\nYou can speak directly with our AI voice assistant over telephone regarding Indian Standards, ISI mark verification, QCO requirements, or testing laboratories.\n\nPlease enter your **10-digit mobile number** below. You will receive a call shortly.",
+    hi: "### BISVEDA वॉयस हेल्पलाइन सहायता\n\nआप भारतीय मानकों, ISI मार्क सत्यापन, QCO अनिवार्यताओं अथवा परीक्षण प्रयोगशालाओं के संबंध में सीधे फोन कॉल पर हमारे AI वॉयस सहायक से बात कर सकते हैं।\n\nकृपया नीचे अपना **10-अंकीय मोबाइल नंबर** दर्ज करें। आपको कुछ ही क्षणों में कॉल प्राप्त होगी।",
+    mr: "### BISVEDA व्हॉइस हेल्पलाइन सहाय्य\n\nभारतीय मानके, ISI मार्क पडताळणी, QCO आवश्यकता किंवा चाचणी प्रयोगशाळा यांबाबत तुम्ही आमच्या AI व्हॉइस सहाय्यकाशी थेट फोन कॉलवर बोलू शकता.\n\nकृपया खाली तुमचा **10-अंकी मोबाइल नंबर** टाका. तुम्हाला थोड्याच वेळात कॉल येईल.",
   },
 };
 
@@ -182,7 +182,8 @@ export async function translateTo(text: string, tag: string | undefined, hintKey
             `You translate short product-guidance text into ${languageInstruction(tag)}. ` +
             "Keep markdown structure (headings, bullets, bold), URLs, [S#] labels, IS standard numbers, digits and product/scheme names (BIS, ISI, HUID, QCO, Form I, Manak Online, BIS Care, CM/L) unchanged. " +
             "Names of people, firms, places, laboratories and addresses stay exactly as written. Do not add or remove information. " +
-            (script === "roman" ? "Use ONLY Latin letters a-z — never any native-script characters. " : "") +
+            "Never use an em dash (—); use a comma, colon or period instead. " +
+            (script === "roman" ? "Use ONLY Latin letters a-z, never any native-script characters. " : "") +
             "Output the translation only.",
         },
         { role: "user", content: text },

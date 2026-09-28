@@ -120,7 +120,7 @@ export default function CertificationPage() {
     <div className="min-h-screen flex flex-col bg-[#F7F8FA] text-[#0F172A] font-sans">
       <AppHeader />
 
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
+      <main id="main-content" className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
         {/* Hero Section */}
         <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 sm:p-8 shadow-xs space-y-4">
           <div className="flex items-center gap-2 text-xs font-bold text-[#E8710A] uppercase tracking-wider">
@@ -149,7 +149,7 @@ export default function CertificationPage() {
                   : "text-[#64748B] border-transparent hover:text-[#0F172A]"
               }`}
             >
-              Scheme I — ISI Mark (Products)
+              Scheme I: ISI Mark (Products)
             </button>
 
             <button

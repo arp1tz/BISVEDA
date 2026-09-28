@@ -182,21 +182,41 @@ export function splitForSpeech(text: string, maxLen = 180): string[] {
 }
 
 let runToken = 0;
-const listeners = new Set<(speaking: boolean) => void>();
+const listeners = new Set<(speaking: boolean, owner: string | undefined) => void>();
 let speaking = false;
+let currentOwner: string | undefined;
 
-function setSpeaking(v: boolean) {
-  if (speaking === v) return;
+function setSpeaking(v: boolean, owner: string | undefined) {
+  const prevOwner = currentOwner;
+  const nextOwner = v ? owner : undefined;
+  if (speaking === v && prevOwner === nextOwner) return;
   speaking = v;
-  listeners.forEach((l) => l(v));
+  currentOwner = nextOwner;
+  // A stop is reported with the owner who WAS speaking (not undefined), so that owner's own
+  // listener (filtering on `owner === myId`) can see it was the one that stopped. If a new
+  // speaker displaces a previous one without an explicit stop in between, the previous owner
+  // gets an implicit stop notification first, so it doesn't end up stuck showing "speaking".
+  if (v && prevOwner && prevOwner !== nextOwner) {
+    listeners.forEach((l) => l(false, prevOwner));
+  }
+  listeners.forEach((l) => l(v, v ? nextOwner : prevOwner));
 }
 
 export function isSpeaking(): boolean {
   return speaking;
 }
 
-/** Subscribe to speaking start/stop (used by the voice loop to keep the mic closed while the answer plays). */
-export function onSpeakingChange(cb: (speaking: boolean) => void): () => void {
+/** Who `speak()` is currently reading for, e.g. an AnswerCard's message id. Undefined when idle. */
+export function speakingOwner(): string | undefined {
+  return currentOwner;
+}
+
+/**
+ * Subscribe to speaking start/stop. `owner` identifies which caller's speech is active (e.g. a chat
+ * message id) so a UI showing several answers can tell which one is currently talking, instead of
+ * every "Read aloud" button reacting to any speech on the page.
+ */
+export function onSpeakingChange(cb: (speaking: boolean, owner: string | undefined) => void): () => void {
   listeners.add(cb);
   return () => {
     listeners.delete(cb);
@@ -206,14 +226,19 @@ export function onSpeakingChange(cb: (speaking: boolean) => void): () => void {
 export function stopSpeaking(): void {
   runToken++;
   if (isTtsSupported()) window.speechSynthesis.cancel();
-  setSpeaking(false);
+  setSpeaking(false, undefined);
+}
+
+export interface SpeakOptions {
+  /** Identifies this call so `onSpeakingChange`/`speakingOwner` can report who is talking. */
+  owner?: string;
 }
 
 /**
  * Reads `text` aloud in the reply language. Resolves when finished, interrupted (a newer speak()/stop()),
  * or when it can't speak. Never throws.
  */
-export async function speak(text: string, tag: string | undefined): Promise<SpeakResult> {
+export async function speak(text: string, tag: string | undefined, opts: SpeakOptions = {}): Promise<SpeakResult> {
   if (!isTtsSupported()) return { ok: false, reason: "unsupported" };
 
   const { bcp47, base, roman } = speechLangFor(tag);
@@ -226,11 +251,11 @@ export async function speak(text: string, tag: string | undefined): Promise<Spea
   const { voice } = await pickVoice(tag);
   if (myToken !== runToken) return { ok: true, interrupted: true };
   if (!voice && base !== "en") {
-    setSpeaking(false);
+    setSpeaking(false, undefined);
     return { ok: false, reason: "no_voice", language: base };
   }
 
-  setSpeaking(true);
+  setSpeaking(true, opts.owner);
   const synth = window.speechSynthesis;
 
   for (const chunk of chunks) {
@@ -246,11 +271,11 @@ export async function speak(text: string, tag: string | undefined): Promise<Spea
     });
     if (myToken !== runToken) return { ok: true, interrupted: true };
     if (outcome === "error") {
-      setSpeaking(false);
+      setSpeaking(false, undefined);
       return { ok: false, reason: "error" };
     }
   }
 
-  if (myToken === runToken) setSpeaking(false);
+  if (myToken === runToken) setSpeaking(false, undefined);
   return { ok: true };
 }

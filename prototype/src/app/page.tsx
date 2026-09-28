@@ -31,7 +31,7 @@ export default function HomePage() {
     {
       icon: BookOpen,
       title: "Find standard & QCO",
-      desc: "Discover mandatory Indian Standards and gazetted Quality Control Orders",
+      desc: "Find the Indian Standard for your product and whether certification is required",
       query: "Which Indian Standard applies to protective helmets and toys?",
     },
     {
@@ -115,7 +115,7 @@ export default function HomePage() {
       <AppHeader onOpenHelpline={() => setIsHelplineOpen(true)} />
 
       {/* Center 1-Screen Landing View */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-6 max-w-4xl mx-auto w-full">
+      <main id="main-content" className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-6 max-w-4xl mx-auto w-full">
         {/* Hero Headings */}
         <div className="text-center space-y-2.5 mb-5">
           <h1 className="text-2xl sm:text-4xl font-extrabold text-[#0B2A4A] tracking-tight leading-tight">
@@ -134,7 +134,7 @@ export default function HomePage() {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-50 hover:bg-amber-100/90 border border-amber-200 text-xs font-bold text-[#0B2A4A] shadow-2xs transition-all hover:scale-105 cursor-pointer"
           >
             <PhoneCall className="h-3.5 w-3.5 text-[#E8710A] animate-pulse" />
-            <span>📞 Call Helpline — Speak with BISVEDA on Call</span>
+            <span>Speak with BISVEDA on Call</span>
           </button>
         </div>
 
@@ -233,9 +233,9 @@ export default function HomePage() {
 
         {/* What I know coverage banner */}
         <div className="mt-8 pt-5 border-t border-[#E5E7EB] text-center max-w-2xl w-full">
-          <div className="text-[11px] font-bold text-[#0B2A4A] uppercase tracking-wider mb-1.5 flex items-center justify-center gap-1.5">
+          <div className="text-[11px] font-bold text-[#0B2A4A] mb-1.5 flex items-center justify-center gap-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-[#228f4a]" />
-            <span>Coverage · 8 Indian Standards</span>
+            <span>Coverage: 8 Indian Standards</span>
           </div>
           <p className="text-xs text-[#64748B] leading-relaxed">
             <strong className="text-[#0F172A]">Helmets:</strong> IS 4151, IS 2925 ·{" "}

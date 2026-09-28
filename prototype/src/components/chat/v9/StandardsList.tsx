@@ -76,8 +76,8 @@ export function StandardsList({ standards = [] }: StandardsListProps) {
             <div className="mt-2 space-y-1.5 pl-2 border-l-2 border-[#E5E7EB]">
               {related.map((std) => (
                 <div key={std.id} className="py-1">
-                  <span className="font-mono font-semibold text-xs text-[#0F172A]">{std.id}</span>
-                  <span className="text-xs text-[#64748B]"> — {std.title}</span>
+                  <span className="font-mono font-semibold text-xs text-[#0F172A]">{std.id}:</span>
+                  <span className="text-xs text-[#64748B]"> {std.title}</span>
                 </div>
               ))}
             </div>

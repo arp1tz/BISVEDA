@@ -46,8 +46,8 @@ export function SourceDrawer({
             <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-[#0B2A4A] text-white">
               S{sourceIndex}
             </span>
-            <span className="font-semibold text-xs text-[#0B2A4A] uppercase tracking-wider">
-              Source Citation
+            <span className="font-semibold text-xs text-[#0B2A4A]">
+              Source citation
             </span>
           </div>
 
@@ -94,8 +94,8 @@ export function SourceDrawer({
 
           {/* Excerpt */}
           <div>
-            <h4 className="font-semibold text-[#0F172A] mb-1.5 uppercase text-[11px] text-[#64748B]">
-              Verified Excerpt
+            <h4 className="font-semibold text-[#0F172A] mb-1.5 text-[11px] text-[#64748B]">
+              Verified excerpt
             </h4>
             <div className="p-3 rounded-lg bg-[#F7F8FA] border border-[#E5E7EB] leading-relaxed text-[#0F172A] font-sans">
               <span className="bg-[#FFF7ED] text-[#0F172A] px-0.5 rounded font-medium">

@@ -36,7 +36,7 @@ const STANDARDS_DATA: StandardItem[] = [
     year: "2015",
     category: "helmets",
     categoryLabel: "Helmets & Headgear",
-    title: "Protective Helmets for Motorcycle Riders — Specification",
+    title: "Protective Helmets for Motorcycle Riders: Specification",
     qcoMandatory: true,
     docId: "is-4151-2015",
     summary:
@@ -60,7 +60,7 @@ const STANDARDS_DATA: StandardItem[] = [
     year: "1984 (Reaffirmed 2020)",
     category: "helmets",
     categoryLabel: "Helmets & Headgear",
-    title: "Industrial Safety Helmets — Specification",
+    title: "Industrial Safety Helmets: Specification",
     qcoMandatory: false,
     docId: "is-2925-1984",
     summary:
@@ -82,7 +82,7 @@ const STANDARDS_DATA: StandardItem[] = [
     year: "2019",
     category: "toys",
     categoryLabel: "Toys & Children",
-    title: "Safety of Toys — Part 1: Mechanical and Physical Properties",
+    title: "Safety of Toys, Part 1: Mechanical and Physical Properties",
     qcoMandatory: true,
     docId: "is-9873-1-2019",
     summary:
@@ -104,7 +104,7 @@ const STANDARDS_DATA: StandardItem[] = [
     year: "2017",
     category: "toys",
     categoryLabel: "Toys & Children",
-    title: "Safety of Toys — Part 3: Migration of Certain Elements",
+    title: "Safety of Toys, Part 3: Migration of Certain Elements",
     qcoMandatory: true,
     docId: "is-9873-3-2017",
     summary:
@@ -147,7 +147,7 @@ const STANDARDS_DATA: StandardItem[] = [
     year: "2016",
     category: "hallmarking",
     categoryLabel: "Gold & Hallmarking",
-    title: "Gold and Gold Alloys, Jewellery/Artefacts — Fineness and Marking",
+    title: "Gold and Gold Alloys, Jewellery/Artefacts: Fineness and Marking",
     qcoMandatory: true,
     docId: "is-1417-2016",
     summary:
@@ -169,11 +169,11 @@ const STANDARDS_DATA: StandardItem[] = [
     year: "2009 (Reaffirmed 2019)",
     category: "hallmarking",
     categoryLabel: "Gold & Hallmarking",
-    title: "Assaying of Gold in Gold Bullion, Gold Alloys and Gold Jewellery — Cupellation (Fire Assay)",
+    title: "Assaying of Gold in Gold Bullion, Gold Alloys and Gold Jewellery: Cupellation (Fire Assay)",
     qcoMandatory: true,
     docId: "is-1418-2009",
     summary:
-      "Specifies the gold cupellation (fire assay) method — the referee and benchmark laboratory technique used by Assaying and Hallmarking Centres for exact gold purity determination.",
+      "Specifies the gold cupellation (fire assay) method, the referee and benchmark laboratory technique used by Assaying and Hallmarking Centres for exact gold purity determination.",
     keyClauses: [
       "Cl. 4: Principle of cupellation with lead foil and proof gold",
       "Cl. 6: Parting with nitric acid to separate silver",
@@ -232,7 +232,7 @@ export default function StandardsPage() {
     <div className="min-h-screen flex flex-col bg-[#F7F8FA] text-[#0F172A] font-sans">
       <AppHeader />
 
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 space-y-6">
+      <main id="main-content" className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 space-y-6">
         {/* Hero Section */}
         <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 sm:p-8 shadow-xs space-y-3">
           <div className="flex items-center gap-2 text-xs font-bold text-[#E8710A] uppercase tracking-wider">

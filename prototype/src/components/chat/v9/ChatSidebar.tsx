@@ -69,7 +69,7 @@ export function ChatSidebar({
 
         {/* Middle: Chat History */}
         <div className="flex-1 overflow-y-auto px-2 py-1 space-y-0.5">
-          <span className="px-2 text-[10px] font-bold text-[#64748B] uppercase tracking-wider block mb-1">
+          <span className="px-2 text-[11px] font-bold text-[#64748B] block mb-1">
             Recent chats
           </span>
           {recentChats.length === 0 ? (

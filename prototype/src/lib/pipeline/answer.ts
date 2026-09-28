@@ -29,8 +29,9 @@ Rules:
 5. Reply in the language and script named in the user message (the question may have been translated to English for searching — still answer in the named language). Keep IS numbers, digits (use 0-9), and [S#] labels unchanged regardless of language.
 6. Write like a helpful person talking to another person: short sentences, no legal jargon, no headers, at most ~180 words. Markdown bullets are fine for lists.
 7. If conversation history is provided, use it for continuity (don't repeat context the user already has) but only cite from <evidence>, never from history.
+8. Never use an em dash (—). Use a comma, colon, or period instead.
 
-Reply with the answer text only — no JSON, no preamble.`;
+Reply with the answer text only, no JSON, no preamble.`;
 
 function buildEvidenceBlock(pkg: EvidencePackage): string {
   return pkg.sources
@@ -99,10 +100,10 @@ export function evidenceOnlyAnswer(pkg: EvidencePackage, language: string): stri
 
   const lines: string[] = [
     isHindi
-      ? `संबंधित मानक **${pkg.primary_standard.id}** — ${pkg.primary_standard.title} है [${pkg.sources[0].label}].`
+      ? `संबंधित मानक **${pkg.primary_standard.id}**: ${pkg.primary_standard.title} है [${pkg.sources[0].label}].`
       : isMarathi
-        ? `संबंधित मानक **${pkg.primary_standard.id}** — ${pkg.primary_standard.title} आहे [${pkg.sources[0].label}].`
-        : `The relevant standard is **${pkg.primary_standard.id}** — ${pkg.primary_standard.title} [${pkg.sources[0].label}].`,
+        ? `संबंधित मानक **${pkg.primary_standard.id}**: ${pkg.primary_standard.title} आहे [${pkg.sources[0].label}].`
+        : `The relevant standard is **${pkg.primary_standard.id}**: ${pkg.primary_standard.title} [${pkg.sources[0].label}].`,
   ];
   for (const s of pkg.sources.slice(0, 3)) {
     const excerpt = s.text.slice(0, 180).trim();
@@ -124,7 +125,8 @@ When the user asks general conversational questions like "what can you do", "tum
    - Form I Registration: Assisting jewellers in drafting official hallmarking registration.
    - Voice Call Helpline: Connecting users directly over telephone.
 3. Answer strictly in the language and script named on the "Language to reply in" line of the user message (Hindi, Marathi, Tamil, Hinglish in Roman letters, English, etc.). Keep IS numbers and digits (0-9) unchanged.
-4. Keep the tone helpful, professional, and well-structured using clean markdown formatting. No preamble or meta commentary.`;
+4. Keep the tone helpful, professional, and well-structured using clean markdown formatting. No preamble or meta commentary.
+5. Never use an em dash (—). Use a comma, colon, or period instead.`;
 
 export async function generateGeneralQueryAnswer(input: {
   question: string;
@@ -158,7 +160,7 @@ export async function generateGeneralQueryAnswer(input: {
 
   // Deterministic fallback
   if (isHindi) {
-    return `नमस्ते! मैं **BISVEDA** हूँ — भारतीय मानक ब्यूरो (Bureau of Indian Standards) का आधिकारिक AI सहायक।
+    return `नमस्ते! मैं **BISVEDA** हूँ, भारतीय मानक ब्यूरो (Bureau of Indian Standards) का आधिकारिक AI सहायक।
 
 मैं इन मुख्य सेवाओं में आपकी सहायता कर सकता हूँ:
 • **भारतीय मानक (Indian Standards)**: दोपहिया हेलमेट (**IS 4151**), औद्योगिक हेलमेट (**IS 2925**), खिलौनों की सुरक्षा (**IS 9873, IS 15644**) और सोने की हॉलमार्किंग (**IS 1417, IS 1418, IS 15820**)।

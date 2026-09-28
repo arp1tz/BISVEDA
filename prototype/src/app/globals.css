@@ -76,13 +76,32 @@
 html {
   color-scheme: light;
   scroll-behavior: smooth;
+  /* Accessibility bar's A-/A/A+ control (src/components/a11y/AccessibilityBar.tsx) scales this. */
+  --bisveda-text-scale: 1;
+  font-size: calc(16px * var(--bisveda-text-scale));
 }
 
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  /* UX4G handbook (Typography, p.152-154): Noto Sans as the standard government typeface,
+     line-height 1.25-1.5x font size for readability. Devanagari + the other Indic Noto
+     subsets are loaded via next/font in layout.tsx and layered ahead of the Latin family
+     so native-script text (Hindi, Marathi, etc.) renders in the matching Noto weight. */
+  font-family: var(--font-noto-devanagari), var(--font-noto-bengali), var(--font-noto-tamil),
+    var(--font-noto-telugu), var(--font-noto-gujarati), var(--font-noto-kannada),
+    var(--font-noto-malayalam), var(--font-noto-gurmukhi), var(--font-noto-oriya),
+    var(--font-noto-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
   overflow-x: hidden;
+}
+
+/* UX4G handbook (UI Foundations > Accessibility): a visible focus indicator for keyboard
+   navigation, using the primary brand colour. Mouse/touch clicks don't show it. */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 ::selection {

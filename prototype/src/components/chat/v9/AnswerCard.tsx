@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Check, Copy, ThumbsUp, ThumbsDown, Sparkles, Volume2, VolumeX } from "lucide-react";
 import type { BisvedaResponse } from "@/lib/pipeline/respond";
 import { CitationPill } from "./CitationPill";
-import { speak, stopSpeaking, languageLabel } from "@/lib/voice/tts";
+import { speak, stopSpeaking, speakingOwner, onSpeakingChange, languageLabel } from "@/lib/voice/tts";
 
 interface AnswerCardProps {
   response: BisvedaResponse;
@@ -13,6 +13,13 @@ interface AnswerCardProps {
   onRequestLocation?: () => void;
   onSendQuery?: (q: string) => void;
   userLocation?: { lat: number; lng: number } | null;
+  /**
+   * Identifies this card's speech to the shared TTS engine (e.g. the chat message id). Pass this
+   * when something outside the card (like the chat page's hands-free voice loop) may also call
+   * `speak()` for this answer, so the button's Stop/Read aloud state stays correct either way.
+   * If omitted, the card generates its own id and only reacts to its own button.
+   */
+  speechId?: string;
 }
 
 export function AnswerCard({
@@ -22,21 +29,44 @@ export function AnswerCard({
   onRequestLocation,
   onSendQuery,
   userLocation,
+  speechId,
 }: AnswerCardProps) {
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<"up" | "down" | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voiceNote, setVoiceNote] = useState<string | null>(null);
-  const isSpeakingRef = useRef(false);
+  const autoIdRef = useRef(`answer-${Math.random().toString(36).slice(2)}`);
+  const myId = speechId || autoIdRef.current;
+  const pendingStopRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const speakableText = response.text || response.refusal?.message || response.clarify?.question || "";
 
-  // Keep the button in sync with the shared speech engine, and stop when this card goes away.
+  // Reflect the shared speech engine's state for *this* card's id, however speak() was triggered
+  // (this card's own button, or the chat page's hands-free voice loop). Stop on unmount only if
+  // this card is the one currently talking.
+  //
+  // The stop is deferred by a tick rather than called straight from the cleanup: React's dev-mode
+  // StrictMode runs every effect's mount -> cleanup -> mount once on initial mount, and `speak()`
+  // can already have set this card as the active speaker by the time that synthetic cleanup fires.
+  // A same-tick stop would kill real playback that just started. Deferring lets the immediate
+  // re-mount cancel the pending stop; a genuine unmount (no re-mount follows) lets it fire.
   useEffect(() => {
+    if (pendingStopRef.current) {
+      clearTimeout(pendingStopRef.current);
+      pendingStopRef.current = null;
+    }
+    setIsSpeaking(speakingOwner() === myId);
+    const unsubscribe = onSpeakingChange((speaking, owner) => {
+      if (owner === myId) setIsSpeaking(speaking);
+    });
     return () => {
-      if (isSpeakingRef.current) stopSpeaking();
+      unsubscribe();
+      pendingStopRef.current = setTimeout(() => {
+        pendingStopRef.current = null;
+        if (speakingOwner() === myId) stopSpeaking();
+      }, 0);
     };
-  }, []);
+  }, [myId]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(response.text || "");
@@ -47,18 +77,11 @@ export function AnswerCard({
   const handleToggleSpeech = async () => {
     if (isSpeaking) {
       stopSpeaking();
-      setIsSpeaking(false);
-      isSpeakingRef.current = false;
       return;
     }
 
     setVoiceNote(null);
-    setIsSpeaking(true);
-    isSpeakingRef.current = true;
-    const result = await speak(speakableText, response.language);
-    // A newer speak() (another card) interrupts this one; its own card handles its own state.
-    setIsSpeaking(false);
-    isSpeakingRef.current = false;
+    const result = await speak(speakableText, response.language, { owner: myId });
     if (!result.ok) {
       if (result.reason === "unsupported") setVoiceNote("Read aloud is not supported in this browser.");
       else if (result.reason === "no_voice")
@@ -155,8 +178,7 @@ export function AnswerCard({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#0B2A4A]/5 border border-[#0B2A4A]/15 text-xs font-medium text-[#0B2A4A]">
             <span className="h-2 w-2 rounded-full bg-[#228f4a]" />
-            <span className="font-mono font-bold">{primaryStandard.id}</span>
-            <span className="text-[#64748B]">—</span>
+            <span className="font-mono font-bold">{primaryStandard.id}:</span>
             <span className="truncate max-w-[260px]">{primaryStandard.title}</span>
           </div>
         </div>
@@ -223,7 +245,7 @@ export function AnswerCard({
       {response.standards && response.standards.length > 0 && (
         <div className="pt-3 border-t border-[#E5E7EB] mt-3">
           <div className="flex flex-wrap items-center gap-1.5 text-xs">
-            <span className="text-[11px] font-semibold text-[#64748B] uppercase tracking-wider mr-1">
+            <span className="text-[11px] font-semibold text-[#64748B] mr-1">
               Standards:
             </span>
             {response.standards.map((std) => (
@@ -249,8 +271,8 @@ export function AnswerCard({
       {/* Grounded Sources List (Standard · Clause · Page) */}
       {response.sources && response.sources.length > 0 && (
         <div className="pt-2.5 border-t border-[#E5E7EB] mt-2.5">
-          <div className="text-[11px] font-semibold text-[#64748B] uppercase tracking-wider mb-1.5">
-            Cited Evidence ({response.sources.length}):
+          <div className="text-[11px] font-semibold text-[#64748B] mb-1.5">
+            Cited evidence ({response.sources.length}):
           </div>
           <div className="flex flex-wrap gap-1.5">
             {response.sources.map((src, i) => (

@@ -155,7 +155,7 @@ export default function FormIPrintPage() {
         {/* Footer Notes */}
         <div className="mt-8 pt-4 border-t border-slate-200 text-[10px] text-slate-500 text-center">
           <p>
-            Generated via BISVEDA Prototype — Official registration must be finalized through Manak Online portal (www.manakonline.in).
+            Generated via BISVEDA Prototype. Official registration must be finalized through the Manak Online portal (www.manakonline.in).
           </p>
         </div>
       </div>

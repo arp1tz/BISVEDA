@@ -126,25 +126,53 @@ async function answerForStandard(
 }
 
 /**
+ * UX4G wording rule: no em dashes in user-facing text. The system prompts already tell the
+ * model not to use them, but this is a punctuation-only safety net over whatever text lands
+ * in the response (never touches [S#] labels, IS numbers, or facts). " — " becomes ", " (a
+ * clause break); a lone "—" (no surrounding spaces, e.g. a compound like "north—south")
+ * becomes "-".
+ */
+function tidyDashes(s: string): string {
+  if (!s || !s.includes("—")) return s;
+  return s.replace(/\s*—\s*/g, ", ").replace(/—/g, "-");
+}
+
+function tidyResponseDashes(res: BisvedaResponse): BisvedaResponse {
+  return {
+    ...res,
+    text: tidyDashes(res.text),
+    follow_ups: (res.follow_ups || []).map(tidyDashes),
+    refusal: res.refusal
+      ? {
+          ...res.refusal,
+          message: tidyDashes(res.refusal.message),
+          next_steps: res.refusal.next_steps.map((s) => ({ ...s, text: tidyDashes(s.text) })),
+        }
+      : res.refusal,
+    clarify: res.clarify ? { ...res.clarify, question: tidyDashes(res.clarify.question) } : res.clarify,
+  };
+}
+
+/**
  * Public entry point. Runs the pipeline, then makes sure the parts that are built from
  * English templates (follow-up chips, refusal next-step links) come back in the user's
  * language. Answer text is already written in the user's language by each branch.
  */
 export async function runPipeline(options: PipelineOptions): Promise<BisvedaResponse> {
-  const res = await runPipelineInner(options);
+  const res = tidyResponseDashes(await runPipelineInner(options));
   if (isEnglish(res.language)) return res;
   try {
     const [followUps, stepTexts] = await Promise.all([
       translateMany(res.follow_ups || [], res.language),
       translateMany((res.refusal?.next_steps || []).map((s) => s.text), res.language),
     ]);
-    return {
+    return tidyResponseDashes({
       ...res,
       follow_ups: followUps,
       refusal: res.refusal
         ? { ...res.refusal, next_steps: res.refusal.next_steps.map((s, i) => ({ ...s, text: stepTexts[i] || s.text })) }
         : res.refusal,
-    };
+    });
   } catch {
     return res;
   }

@@ -107,9 +107,9 @@ export function HelplineModal({ isOpen, onClose, initialPhone = "" }: HelplineMo
             </div>
 
             <div>
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 mb-2">
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 mb-2">
                 <CheckCircle2 className="h-3.5 w-3.5" />
-                <span>Call Request Queued</span>
+                <span>Call request queued</span>
               </span>
               <h3 className="text-lg font-bold text-[#0B2A4A]">You will receive a call shortly!</h3>
               <p className="text-xs text-slate-600 mt-1 max-w-xs mx-auto">
@@ -148,8 +148,8 @@ export function HelplineModal({ isOpen, onClose, initialPhone = "" }: HelplineMo
                 <Headphones className="h-6 w-6 text-[#E8710A]" />
               </div>
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#E8710A]">
-                  Direct Voice Assistance
+                <span className="text-[11px] font-bold text-[#E8710A]">
+                  Direct voice assistance
                 </span>
                 <h3 className="text-base font-bold text-[#0B2A4A]">
                   Talk with BISVEDA on Call
@@ -209,7 +209,7 @@ export function HelplineModal({ isOpen, onClose, initialPhone = "" }: HelplineMo
                   ) : (
                     <>
                       <PhoneCall className="h-4 w-4 text-[#E8710A]" />
-                      <span>Call Me Now — Receive Call Shortly</span>
+                      <span>Call me now, receive a call shortly</span>
                     </>
                   )}
                 </button>

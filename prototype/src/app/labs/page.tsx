@@ -212,7 +212,7 @@ function LabsDirectoryContent() {
     <div className="min-h-screen flex flex-col bg-[#F7F8FA] text-[#0F172A] font-sans">
       <AppHeader />
 
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 space-y-6">
+      <main id="main-content" className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 space-y-6">
         {/* Hero Section */}
         <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 sm:p-8 shadow-xs space-y-4">
           <div className="flex items-center gap-2 text-xs font-bold text-[#E8710A] uppercase tracking-wider">

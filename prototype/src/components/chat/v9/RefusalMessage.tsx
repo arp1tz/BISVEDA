@@ -41,9 +41,9 @@ export function RefusalMessage({
 
       {/* Guided Path: Recommended Queries */}
       <div className="pt-2 border-t border-[#E5E7EB] space-y-2">
-        <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#0B2A4A]">
+        <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#0B2A4A]">
           <Compass className="h-3.5 w-3.5 text-[#E8710A]" />
-          <span>Recommended Pathways</span>
+          <span>Recommended pathways</span>
         </div>
         <p className="text-[11px] text-[#64748B]">
           Select a verified product category to inspect applicable standards, QCO orders, and testing labs:
@@ -65,8 +65,8 @@ export function RefusalMessage({
 
       {/* Official Government Routes */}
       <div className="pt-2 border-t border-[#E5E7EB] space-y-2">
-        <div className="text-[11px] font-bold uppercase tracking-wider text-[#64748B]">
-          Official Government Resources
+        <div className="text-[11px] font-bold text-[#64748B]">
+          Official government resources
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
           <a
