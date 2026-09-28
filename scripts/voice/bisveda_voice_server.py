@@ -1,8 +1,7 @@
 """
 BISVEDA Real-time Voice Call Assistant — Exotel + Gemini Live Runner
-Starts the FastAPI bridge, mounts ngrok tunnel, and connects bidirectional
-Exotel telephony audio (8kHz PCM16) directly to Gemini Live (gemini-3.1-flash-live-preview)
-for low-latency, natural, multi-turn conversational assistance.
+Natural Multilingual Conversational AI with Instant Barge-In / Interruption Engine
+Bidirectional 8kHz PCM16 Telephony <-> Gemini Live 16kHz in / 24kHz out
 """
 
 import os
@@ -48,8 +47,14 @@ EXOTEL_SAMPLE_RATE = 8000
 EXOTEL_CHANNELS = 1
 OUTGOING_CHUNK_BYTES = 1600  # 100ms at 8kHz 16-bit mono
 
-# Audio state buffer per call
+# Barge-In VAD Threshold (RMS amplitude on 8kHz linear PCM16)
+# Background line noise is typically 50-300 RMS. Voice is 1200-6000+ RMS.
+SPEECH_RMS_THRESHOLD = 900
+CONSECUTIVE_VOICED_PACKETS = 2
+
+# Audio & call state
 AUDIO_STATE = {}
+CALL_STATE = {}
 ACTIVE_CALLS = {}
 
 def _audio_state(call_id: str):
@@ -58,18 +63,32 @@ def _audio_state(call_id: str):
         {"in": None, "out": None, "out_buffer": bytearray()},
     )
 
-def exotel_to_gemini_pcm16(payload_b64: str, call_id: str) -> bytes:
-    """Exotel 8 kHz raw PCM16 -> Gemini 16 kHz raw PCM16."""
+def _call_state(call_id: str):
+    return CALL_STATE.setdefault(
+        call_id,
+        {
+            "ai_is_speaking": False,
+            "barge_in_active": False,
+            "consecutive_speech_pkts": 0,
+            "phone": "unknown",
+            "stream_sid": None,
+        },
+    )
+
+def exotel_to_gemini_pcm16(payload_b64: str, call_id: str) -> tuple[bytes, int]:
+    """Exotel 8 kHz raw PCM16 -> Gemini 16 kHz raw PCM16 + RMS calculation."""
     raw_pcm8k = base64.b64decode(payload_b64)
     if len(raw_pcm8k) % 2:
         raw_pcm8k = raw_pcm8k[:-1]
+    
+    rms = audioop.rms(raw_pcm8k, 2) if raw_pcm8k else 0
     state = _audio_state(call_id)
     pcm16k, state["in"] = audioop.ratecv(
         raw_pcm8k, 2, EXOTEL_CHANNELS,
         EXOTEL_SAMPLE_RATE, 16000,
         state["in"],
     )
-    return pcm16k
+    return pcm16k, rms
 
 def gemini_to_exotel_chunks(pcm24k: bytes, call_id: str, flush=False):
     """Gemini 24 kHz PCM16 -> buffered 8 kHz PCM16 base64 chunks."""
@@ -101,37 +120,51 @@ def gemini_to_exotel_chunks(pcm24k: bytes, call_id: str, flush=False):
 
 def clear_audio_state(call_id: str):
     AUDIO_STATE.pop(call_id, None)
+    CALL_STATE.pop(call_id, None)
 
 # ── Gemini Client ──
 gemini_client = genai.Client(api_key=GEMINI_API_KEY)
 
-# ── BIS Knowledge System Prompt ──
+# ── Natural Multilingual System Prompt ──
 SYSTEM_PROMPT = """
-You are "BISVEDA" (बिसवेदा), the official AI Voice Assistant for the Bureau of Indian Standards (BIS), Ministry of Consumer Affairs, Food & Public Distribution, Government of India.
-You are speaking live on a telephone call with an Indian consumer, citizen, or MSME business owner.
+You are "BISVEDA" (बिसवेदा), the official AI Voice Assistant for the Bureau of Indian Standards (BIS), Ministry of Consumer Affairs, Government of India.
+You are speaking live on a phone call with an Indian citizen, consumer, or MSME business owner.
 
-CORE CONVERSATIONAL GUIDELINES:
-1. Speak naturally, warmly, and concisely (1 to 2 sentences per turn). This is a voice phone call, so avoid long paragraphs, bullet lists, or markdown symbols.
-2. In the opening greeting:
-   "Namaste! BISVEDA AI Helpline mein aapka swagat hai. Welcome to the Bureau of Indian Standards AI helpline. Aap Hindi, English, ya apni kisi bhi bhasha mein sawaal pooch sakte hain. How can I help you today?"
-3. Adapt seamlessly to the caller's language (Hindi, English, Hinglish, Marathi, Tamil, etc.).
-4. After answering any query, politely invite the caller: "Kya aapka koi aur sawaal hai?" or "Is there anything else I can help you with?"
-5. NEVER hang up or end the call prematurely. Always remain listening for the caller's next question until they say goodbye.
+CRITICAL CONVERSATIONAL RULES (NATURAL PHONE CALL):
+1. Speak naturally, warmly, and concisely (1 to 2 sentences per turn). This is a real-time phone call. Never give long lectures, never recite bullet points, and never sound like a robotic IVR script.
+2. DO NOT REPEAT ANNOYING CATCHPHRASES:
+   - NEVER say "क्या आपका कोई और सवाल है?" or "Is there anything else?" at the end of every answer.
+   - Answer the question directly and simply stop talking so the caller can speak naturally.
+3. NEVER recite unprompted philosophical monologues or irrelevant commentary. Stay focused solely on the user's inquiry.
+4. Let the conversation breathe. Answer what is asked, accurately and helpfully.
 
-COMPREHENSIVE BIS KNOWLEDGE FOR IMMEDIATE ANSWERS:
-- Two-Wheeler Helmets: Governed by IS 4151. Mandatory certification under the Two-Wheeler Helmets Quality Control Order (QCO). Selling non-ISI helmets is illegal.
-- Gold Hallmarking: Governed by IS 1417. Mandatory for 14K, 18K, 20K, 22K (916), 23K, and 24K jewellery. Consists of 3 marks: BIS logo (triangle), purity grade (e.g., 22K916), and a 6-digit alphanumeric Hallmark Unique Identification (HUID) code.
-- How to Verify Gold HUID: Open the official "BIS Care" mobile app, tap 'Verify HUID', and enter the 6-character alphanumeric code to see the jeweller name, assaying centre, and registration status.
-- ISI Mark & CM/L Licence: Genuine ISI products display the ISI monogram with the Indian Standard number (e.g., IS 4151) on top and a 7 or 8 digit licence number (CM/L-XXXXXXX) at the bottom.
-- How to Verify ISI Mark: Open the "BIS Care" app, tap 'Verify Licence Details (CM/L)', and enter the licence number to check manufacturer name, product, brand, and validity.
-- Steel Pipes & Tubes: Governed by IS 1239 (mild steel tubes) and IS 1161 (structural steel tubes). Mandatory under Steel and Steel Products QCO.
-- Packaged Drinking Water: Governed by IS 14543 (packaged drinking water) and IS 13428 (packaged natural mineral water). Both are strictly mandatory under Scheme-I ISI mark.
-- Cement: Governed by IS 269 (Ordinary Portland Cement - 33, 43, 53 grade) and IS 1489 (Portland Pozzolana Cement). Compulsory certification under Cement QCO.
-- Toys for Children: Governed by IS 9873 (mechanical, flammability, and heavy metal safety) and IS 15644 (electric toys). Mandatory under Toys (Quality Control) Order.
-- Electrical Cables & Wires: Governed by IS 694 for PVC insulated cables.
-- Quality Control Orders (QCO): Mandatory orders notified by the Central Government under the BIS Act, 2016 making BIS certification compulsory before manufacture, import, or domestic sale.
-- Testing Laboratories: BIS has its Central Laboratory at Sahibabad (Ghaziabad / Delhi NCR), regional labs in Mumbai, Kolkata, Chennai, Chandigarh, and Guwahati, plus hundreds of BIS-recognized NABL accredited labs across India.
-- Reporting Counterfeits / Complaints: Consumers can file complaints about counterfeit ISI marks, substandard products, or misleading claims directly on the "BIS Care" app or via the National Consumer Helpline (1915).
+STRICT MULTILINGUAL LANGUAGE MIRRORING (22 INDIAN SCHEDULED LANGUAGES):
+- ALWAYS detect the caller's language and respond in that EXACT same language immediately!
+- MARATHI LANGUAGE RULES:
+  * If the caller speaks Marathi or asks if you speak Marathi ("तुम मराठी बोल सकते हो?", "तुम्ही मराठी बोलू शकता का?", "Can you speak in Marathi?"):
+    IMMEDIATELY switch and reply warmly in fluent Marathi:
+    "हो, नक्कीच! मी मराठीत बोलू शकतो. बीआयएस (BIS) मानके, आयएसआय मार्क किंवा सोन्याच्या हॉलमार्कबद्दल तुम्हाला काय माहिती हवी आहे?"
+  * If asked about helmets in Marathi ("मला हेल्मेटबद्दल माहिती हवी आहे" / "हेल्मेटसाठी कोणता स्टँडर्ड लागतो?"):
+    "दोन चाकी वाहनांच्या हेल्मेटसाठी IS 4151 हे मानक लागू आहे. या मानकाचा ISI मार्क असणे कायद्याने अनिवार्य आहे."
+  * If asked about testing labs in Marathi ("टेस्ट कुठे करू शकतो?"):
+    "बीआयएसची मध्यवर्ती प्रयोगशाळा साहिबाबादमध्ये आहे. याव्यतिरिक्त मुंबई आणि पुण्यातही बीआयएस मान्यताप्राप्त प्रयोगशाळा आहेत जिथे हेल्मेट आणि इतर वस्तूंची चाचणी केली जाते."
+- HINDI LANGUAGE RULES:
+  * If the caller speaks Hindi or Hinglish, reply in warm, natural conversational Hindi.
+- ENGLISH LANGUAGE RULES:
+  * If the caller speaks in English, reply in fluent, polite Indian English.
+- OTHER INDIAN LANGUAGES:
+  * If the caller speaks Gujarati, Bengali, Tamil, Telugu, Kannada, Malayalam, Punjabi, Odia, etc., detect and converse in that language with full fluency.
+
+CORE BIS FACTUAL KNOWLEDGE:
+- Two-Wheeler Helmets: IS 4151. Mandatory ISI certification under the Quality Control Order (QCO). Selling non-ISI helmets is illegal.
+- Testing Laboratories: BIS Central Laboratory at Sahibabad (Ghaziabad / Delhi NCR), regional laboratories in Mumbai, Kolkata, Chennai, Chandigarh, and accredited labs in Pune, Bengaluru, etc.
+- Gold Hallmarking: IS 1417. Mandatory for jewellery (14K, 18K, 20K, 22K (916), 24K). Three marks: BIS Logo, purity grade, and 6-digit alphanumeric HUID.
+- Verify Gold HUID: Check on the official "BIS Care" mobile app under 'Verify HUID'.
+- ISI Mark & CM/L Number: Genuine ISI marks have "IS [number]" on top and a 7 or 8 digit licence number (CM/L-XXXXXXX) at the bottom. Verify on the BIS Care app.
+- Steel Pipes & Tubes: IS 1239 (mild steel) and IS 1161 (structural). Mandatory under Steel QCO.
+- Packaged Drinking Water: IS 14543 (packaged drinking water) and IS 13428 (mineral water). Mandatory Scheme-I ISI mark.
+- Cement: IS 269 (Ordinary Portland Cement) and IS 1489 (PPC). Mandatory under Cement QCO.
+- Toys: IS 9873 (mechanical safety) and IS 15644 (electric toys). Mandatory under Toys QCO.
 """
 
 app = FastAPI(title="BISVEDA Exotel Voice Bridge")
@@ -247,6 +280,13 @@ async def bisveda_media(websocket: WebSocket):
         stream_sid = start_info["stream_sid"]
         phone = start_info["phone"]
 
+        c_state = _call_state(call_id)
+        c_state["phone"] = phone
+        c_state["stream_sid"] = stream_sid
+        c_state["ai_is_speaking"] = False
+        c_state["barge_in_active"] = False
+        c_state["consecutive_speech_pkts"] = 0
+
         ACTIVE_CALLS[call_id] = {"stream_sid": stream_sid, "phone": phone, "started_at": started_at}
         log.info(f"[{call_id}] EXOTEL_START verified | stream_sid={stream_sid} | phone={phone}")
 
@@ -265,7 +305,7 @@ async def bisveda_media(websocket: WebSocket):
         ) as gemini:
             log.info(f"[{call_id}] Gemini Live session connected!")
 
-            # ── Exotel -> Gemini (Caller live voice audio) ──
+            # ── Exotel -> Gemini (Caller live voice audio + Barge-In VAD) ──
             async def exotel_to_gemini():
                 nonlocal stream_sid, call_id
                 in_packets = 0
@@ -284,13 +324,33 @@ async def bisveda_media(websocket: WebSocket):
                             payload = media.get("payload")
                             if payload:
                                 in_packets += 1
-                                if in_packets == 1:
-                                    log.info(f"[{call_id}] Caller audio started streaming in")
-                                elif in_packets % 100 == 0:
-                                    log.info(f"[{call_id}] Inbound audio: {in_packets} packets received")
+                                pcm16k, rms = exotel_to_gemini_pcm16(payload, call_id)
 
-                                # Resample 8kHz PCM16 -> 16kHz PCM16 for Gemini Live
-                                pcm16k = exotel_to_gemini_pcm16(payload, call_id)
+                                # ── Barge-In / Interruption Engine ──
+                                # If the AI is currently outputting audio and caller speaks (RMS > threshold)
+                                if c_state["ai_is_speaking"]:
+                                    if rms >= SPEECH_RMS_THRESHOLD:
+                                        c_state["consecutive_speech_pkts"] += 1
+                                    else:
+                                        c_state["consecutive_speech_pkts"] = 0
+
+                                    if c_state["consecutive_speech_pkts"] >= CONSECUTIVE_VOICED_PACKETS:
+                                        # Voice detected! Interrupt the AI immediately!
+                                        log.info(f"[{call_id}] ⚡ BARGE-IN DETECTED (RMS: {rms}) -> Purging Exotel playout buffer!")
+                                        c_state["ai_is_speaking"] = False
+                                        c_state["barge_in_active"] = True
+                                        c_state["consecutive_speech_pkts"] = 0
+
+                                        # 1. Clear local buffered audio
+                                        _audio_state(call_id)["out_buffer"].clear()
+
+                                        # 2. Tell Exotel to clear playout buffer on caller's phone handset
+                                        await websocket.send_text(json.dumps({
+                                            "event": "clear",
+                                            "stream_sid": stream_sid,
+                                        }))
+
+                                # Stream audio into Gemini Live
                                 await gemini.send_realtime_input(
                                     audio=types.Blob(data=pcm16k, mime_type="audio/pcm;rate=16000")
                                 )
@@ -324,14 +384,23 @@ async def bisveda_media(websocket: WebSocket):
 
                             # Handle spoken audio streaming back from Gemini
                             if server_content and getattr(server_content, "model_turn", None):
+                                # If interrupted, skip playing remainder of this turn's chunks
+                                if c_state["barge_in_active"]:
+                                    continue
+
+                                c_state["ai_is_speaking"] = True
+
                                 for part in server_content.model_turn.parts:
                                     inline_data = getattr(part, "inline_data", None)
                                     if inline_data and getattr(inline_data, "data", None):
+                                        if c_state["barge_in_active"]:
+                                            continue
+
                                         chunks = gemini_to_exotel_chunks(inline_data.data, call_id)
                                         for payload in chunks:
+                                            if c_state["barge_in_active"]:
+                                                break
                                             out_packets += 1
-                                            if out_packets == 1:
-                                                log.info(f"[{call_id}] First AI audio packet sent to caller!")
                                             await websocket.send_text(json.dumps({
                                                 "event": "media",
                                                 "stream_sid": stream_sid,
@@ -339,15 +408,20 @@ async def bisveda_media(websocket: WebSocket):
                                             }))
 
                             if server_content and getattr(server_content, "turn_complete", False):
-                                # Flush remaining audio buffer at turn end
-                                flush_chunks = gemini_to_exotel_chunks(b"", call_id, flush=True)
-                                for payload in flush_chunks:
-                                    await websocket.send_text(json.dumps({
-                                        "event": "media",
-                                        "stream_sid": stream_sid,
-                                        "media": {"payload": payload},
-                                    }))
-                                log.info(f"[{call_id}] Turn {turn} completed (cumulative out packets: {out_packets}). Listening for caller...")
+                                # Reset speaking and barge-in state at turn completion
+                                if not c_state["barge_in_active"]:
+                                    flush_chunks = gemini_to_exotel_chunks(b"", call_id, flush=True)
+                                    for payload in flush_chunks:
+                                        await websocket.send_text(json.dumps({
+                                            "event": "media",
+                                            "stream_sid": stream_sid,
+                                            "media": {"payload": payload},
+                                        }))
+
+                                c_state["ai_is_speaking"] = False
+                                c_state["barge_in_active"] = False
+                                c_state["consecutive_speech_pkts"] = 0
+                                log.info(f"[{call_id}] Turn {turn} completed. Listening for caller...")
 
                     except Exception as e:
                         msg = str(e).lower()
@@ -362,18 +436,19 @@ async def bisveda_media(websocket: WebSocket):
             in_task = asyncio.create_task(exotel_to_gemini())
             out_task = asyncio.create_task(gemini_to_exotel())
 
-            # Trigger opening greeting immediately while receiver loop is active
+            # Trigger clean opening greeting immediately
             async def send_greeting():
                 try:
-                    await asyncio.sleep(0.2)
+                    await asyncio.sleep(0.3)
                     await gemini.send_client_content(
                         turns={
                             "role": "user",
                             "parts": [{
                                 "text": (
                                     "The caller has answered the call. Please speak your opening greeting out loud now: "
-                                    "Greet them warmly in Hindi first and then in English as BISVEDA AI Helpline, "
-                                    "and invite them to ask their question about Indian Standards, ISI marks, or gold hallmarking."
+                                    "Warmly welcome them in Hindi and English as the BISVEDA AI Helpline, mention that they can speak in "
+                                    "Marathi, Hindi, English, or any Indian language, and ask how you can help them today. "
+                                    "DO NOT ask 'क्या आपका कोई और सवाल है?'."
                                 )
                             }],
                         },
@@ -435,6 +510,7 @@ def main():
 
     print("=" * 70)
     print("  BISVEDA Voice Call Assistant — Exotel + Gemini Live Bridge")
+    print("  Natural Multilingual Indic AI with Real-Time Barge-In (VAD)")
     print("=" * 70)
     print(f"Exotel Account SID: {EXOTEL_ACCOUNT_SID}")
     print(f"Exotel Caller ID:   {EXOTEL_CALLER_ID}")
@@ -465,7 +541,6 @@ def main():
     print(f"EXOTEL STREAM WSS  : {EXOTEL_STREAM_URL}")
     print(f"HEALTH CHECK       : {PUBLIC_HTTPS_URL}/health")
     print("=" * 70)
-    print("Ready to receive calls from Exotel or initiate outbound via Next.js portal.")
 
     uvicorn.run(app, host="0.0.0.0", port=PORT, log_level="warning")
 
