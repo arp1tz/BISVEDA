@@ -117,8 +117,8 @@ export async function POST(req: NextRequest) {
         const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Calls.json`;
         const authHeader = `Basic ${Buffer.from(`${twilioAccountSid}:${twilioAuthToken}`).toString("base64")}`;
 
-        // Determine TwiML URL: custom env URL, or public origin twiml route, or twilio demo voice
-        const fallbackUrl = "http://demo.twilio.com/docs/voice.xml";
+        // Determine TwiML URL: custom env URL, or public origin twiml route, or twilio voice demo
+        const fallbackUrl = "https://demo.twilio.com/welcome/voice/";
         const reqOrigin = req.nextUrl?.origin;
         const localTwimlUrl = reqOrigin && !reqOrigin.includes("localhost")
           ? `${reqOrigin}/api/helpline/twiml`

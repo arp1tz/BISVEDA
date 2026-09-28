@@ -66,7 +66,7 @@ export function HelplineCallCard({ card }: HelplineCallCardProps) {
   };
 
   return (
-    <div className="rounded-2xl border-2 border-[#0B2A4A]/20 bg-linear-to-b from-[#0B2A4A]/5 to-transparent p-4 shadow-sm space-y-3">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-[#0B2A4A]/10 pb-2.5">
         <div className="flex items-center gap-2">

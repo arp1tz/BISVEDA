@@ -84,10 +84,7 @@ export function HelplineModal({ isOpen, onClose, initialPhone = "" }: HelplineMo
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative overflow-hidden">
-        {/* Top Header Background Accent */}
-        <div className="absolute top-0 left-0 right-0 h-2 bg-linear-to-r from-[#0B2A4A] via-[#E8710A] to-[#228f4a]" />
-
+      <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 relative overflow-hidden">
         {/* Close Button */}
         <button
           onClick={onClose}
