@@ -18,13 +18,18 @@ One conversational BIS assistant whose answers are cited only from the employee-
 - [x] P6: Chat UI integration + home -> Status: Complete (cards, persistence, geolocation, home page standards coverage)
 - [x] P7: Employee dashboard (Obsidian graph, docs, directories) -> Status: Complete (auth, dark canvas graph, docs PDF/chunks, directory tables)
 - [x] P8: Eval suite + demo script -> Status: Complete (docs/DEMO.md, clean audit, typecheck & build green)
+- [x] P9: User-requested fixes & enhancements -> Status: Complete (Labs Near Me geolocation & manual city select, Canonical FAQ speedgate layer without UI leaks, Form I multi-line field extraction & acknowledgement, /standards, /labs, /certification pages, /admin & cookie fixes)
+- [ ] P10: Helpline call support -> Status: Deferred (awaiting user inputs)
 
 ## 🧠 Current Context & Active State
-- **Latest State**: All phases P0–P8 code-complete and production-verified. `npm run typecheck` passes with 0 errors. `npm run build` succeeds across all 13 routes and middleware with 0 errors. Dev server running on `http://localhost:3000`.
-- **In-Chat Feature Tools (P5)**: `findLabs` (LIMS scope + haversine distance), `findAhc` (Manak Online status + geocoding), `processHallmarkOrMark` (IS 1417 purity + HUID regex format check + CM/L), `stepFormI` (13-field conversational draft state progression), and `/form-i/print` (official print layout with `@media print`).
-- **Chat UI & Persistence (P6)**: `localStorage` persistence in `src/lib/conversations.ts`, auto-submit `?q=`, geolocation prompted only on nearby labs/AHC queries, all 6 cards rendered (`LabsCard`, `AhcCard`, `HallmarkCard`, `MarkCard`, `ImageReadCard`, `FormICard`), and home page reworked with verified coverage of 8 Indian Standards.
-- **Employee Console (P7)**: Protected by `ADMIN_PASSWORD` and httpOnly cookie middleware, Obsidian-style dark canvas `#1e1e1e` knowledge graph with NodeInspector, Documents tab with 9 real PDFs and full-text chunk browser, and Directory tab with 29 labs and 1,651 AHCs.
-- **Audit & Demo (P8)**: 5-minute live demo walkthrough documented in `docs/DEMO.md`. Zero forbidden words in user-facing source code. Fully verified closed corpus without hallucinations or fabricated data.
+- **Latest State**: All user-requested features and bug fixes complete and production-verified. `npm run typecheck` passes with 0 errors. `npm run build` succeeds across all 19 routes and middleware. Dev server running on `http://localhost:3000`.
+- **Git State**: Local repository confirmed private with 0 remotes (`git remote -v` outputs nothing).
+- **Labs Near Me (P9.2)**: `LabsCard` and `/labs` page now feature live browser geolocation, real-time haversine distance calculation in km, nearest-first sorting, distance tags (`⚡ 14 km away`), and a manual city selection tray (Delhi NCR, Mumbai, Pune, Nagpur, Wardha, Bengaluru, Chennai, etc. + text search).
+- **Canonical FAQ Layer (P9.3)**: `src/lib/pipeline/speedgate.ts` provides instant, fully verified answers with official citations for high-frequency queries like "what is hallmarking", "what is HUID", "what is 916 gold", and "is helmet mandatory under QCO". Zero references to "speedgate" appear on the frontend.
+- **Form I Conversational Drafting (P9.5)**: Deterministic parser `parseFormInputsFromText` recognizes multi-line and conversational inputs like `name utkarsh kale` and `adress wardha 442001`, saves them to form state, prints `✅ Recorded Details:`, and prompts for remaining missing fields.
+- **Top Navigation (P9.6)**: Built rich interactive pages for `/standards` (Standards Catalogue), `/labs` (LIMS Laboratories Directory with map and near-me sorting), `/testing` (redirect), and `/certification` (Scheme I & Hallmarking pathways).
+- **Admin Console (P9.7)**: Added `/admin/knowledge` redirect to `/admin`, fixed localhost cookie security condition, and added demo credentials hint (`bisveda2026`).
+- **Helpline**: Intentionally untouched and deferred awaiting user inputs.
 - **Latest State Blocks**:
   - P0 done: git init, snapshot commit, ~150 files/dirs moved to C:\BISVEDA_archive (V8 pages/APIs/components, legacy pipeline libs, services/, repos/, all fabricated seed JSON, scratch files). Root now: CLAUDE.md, progress.md, TODO.md, docs/, example docs/, prototype/, .env*, .gitignore.
   - Repointed 4 files (graph-repository.ts, fuse.ts, package.ts, retrieve.ts) from archived `local-db` to new stub `src/lib/kb/store.ts` (empty-result stubs, real impl in P2.1).

@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
         path: "/",
         sameSite: "lax",
         maxAge: 60 * 60 * 24, // 24 hours
-        secure: process.env.NODE_ENV === "production",
+        secure: process.env.NODE_ENV === "production" && req.nextUrl.protocol === "https:",
       });
       return res;
     }

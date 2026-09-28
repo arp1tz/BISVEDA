@@ -21,7 +21,7 @@ export function AppHeader({ onLanguageToggle, currentLang = "en" }: AppHeaderPro
 
   const navLinks = [
     { label: "Standards", href: "/standards" },
-    { label: "Labs", href: "/testing" },
+    { label: "Labs", href: "/labs" },
     { label: "Certification", href: "/certification" },
   ];
 

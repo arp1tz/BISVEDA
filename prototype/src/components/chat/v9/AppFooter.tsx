@@ -16,7 +16,7 @@ export function AppFooter() {
           </Link>
           <span>·</span>
           <Link
-            href="/admin/knowledge"
+            href="/admin"
             className="hover:text-[#0F172A] hover:underline transition-colors font-medium text-[#0B2A4A]"
           >
             Staff login

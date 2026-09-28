@@ -93,6 +93,9 @@ function AdminLoginForm() {
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
+          <p className="mt-1.5 text-[11px] text-[#64748B]">
+            Internal access key: <code className="bg-slate-100 text-[#0B2A4A] px-1.5 py-0.5 rounded font-mono font-bold">bisveda2026</code>
+          </p>
         </div>
 
         <button

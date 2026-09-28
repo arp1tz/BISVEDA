@@ -57,6 +57,8 @@ export interface UnderstandResult {
   usedFallback: boolean;
 }
 
+import { parseFormInputsFromText } from "../tools/form_i";
+
 const SYSTEM_PROMPT = `You are the intent router for BISVEDA, a BIS (Bureau of Indian Standards) assistant whose knowledge base covers exactly 8 standards: IS 4151 & IS 2925 (helmets), IS 15644 & IS 9873 Part 1 & Part 3 (toys), IS 1417, IS 1418 & IS 15820 (gold hallmarking), plus a Form I (jeweller hallmarking registration) template.
 
 Given the user's message, the recent conversation, and an optional image summary, output strict JSON:
@@ -65,7 +67,8 @@ Given the user's message, the recent conversation, and an optional image summary
   "standalone_query": "the question rewritten to stand alone without needing the conversation history",
   "standards": ["IS 4151"],
   "product": "helmet" or null,
-  "city": "Pune" or null
+  "city": "Pune" or null,
+  "form_updates": { "name_of_jeweller": "...", "outlet_address": "..." } or null
 }
 
 Rules:
@@ -73,11 +76,12 @@ Rules:
 - "find_ahc": user asks for hallmarking / assaying centres.
 - "hallmark": user asks about gold purity, HUID, or hallmark marks specifically.
 - "mark_check": user asks to verify an ISI mark or CM/L licence number.
-- "form_i": user wants to register as a jeweller / fill Form I.
+- "form_i": user wants to register as a jeweller, draft Form I, or is providing registration details (name, address, constitution, turnover, contact).
 - "smalltalk": greetings, thanks, pure chit-chat.
 - "out_of_scope": genuinely unrelated to products, standards, or certification — weather, sports, recipes, entertainment, general trivia. BIS certifies a huge range of everyday products, so a real product/safety/certification question is presumptively "kb_question" even if it's a product we don't happen to hold a document for (retrieval will honestly report that separately) — do NOT classify a plausible product-safety or certification question as "out_of_scope" just because it isn't one of the 8 standards above.
 - "clarify": the product is too ambiguous to search (e.g. bare "helmet" with no other context and no prior turn already established which kind).
 - Otherwise "kb_question".
+- If the user provides business details like name or address while a Form I application is in progress or implied, populate "form_updates" with corresponding keys and choose "form_i".
 - If the current message doesn't name a product/standard but the conversation clearly continues one, carry it into "standalone_query" and "standards".
 - Never invent a standard id. Only use ids from the 8 above, or one explicitly given in the message.`;
 
@@ -139,6 +143,8 @@ export async function understandTurn(input: UnderstandInput): Promise<Understand
       { model: "fast", temperature: 0, maxTokens: 500 }
     );
 
+    const deterministicFormInputs = parseFormInputsFromText(input.message);
+
     const validIntents: Intent[] = [
       "kb_question",
       "find_labs",
@@ -150,7 +156,21 @@ export async function understandTurn(input: UnderstandInput): Promise<Understand
       "out_of_scope",
       "clarify",
     ];
-    const intent: Intent = validIntents.includes(parsed.intent as Intent) ? (parsed.intent as Intent) : "kb_question";
+    let intent: Intent = validIntents.includes(parsed.intent as Intent) ? (parsed.intent as Intent) : "kb_question";
+
+    // If deterministic form fields were found or formState is actively being drafted, keep in form_i
+    const hasFormInputs =
+      Object.keys(deterministicFormInputs).length > 0 ||
+      (parsed.form_updates && Object.keys(parsed.form_updates).length > 0);
+
+    if (hasFormInputs || (input.formState && Object.keys(input.formState).length > 0 && intent !== "smalltalk")) {
+      intent = "form_i";
+    }
+
+    const mergedFormUpdates = {
+      ...((parsed.form_updates as Record<string, unknown>) || {}),
+      ...deterministicFormInputs,
+    };
 
     return {
       intent,
@@ -161,15 +181,22 @@ export async function understandTurn(input: UnderstandInput): Promise<Understand
       standards: Array.isArray(parsed.standards) ? parsed.standards.filter((s) => typeof s === "string") : normalized.canonicalStandards.map((c) => c.id),
       product: typeof parsed.product === "string" ? parsed.product : undefined,
       city: typeof parsed.city === "string" ? parsed.city : undefined,
+      form_updates: Object.keys(mergedFormUpdates).length > 0 ? mergedFormUpdates : undefined,
       language: normalized.detectedLanguage,
       usedFallback: false,
     };
   } catch (err) {
     console.warn("[understand] LLM routing failed, falling back to kb_question:", err instanceof Error ? err.message : err);
+    const deterministicFormInputs = parseFormInputsFromText(input.message);
+    const isForm =
+      Object.keys(deterministicFormInputs).length > 0 ||
+      Boolean(input.formState && Object.keys(input.formState).length > 0);
+
     return {
-      intent: "kb_question",
+      intent: isForm ? "form_i" : "kb_question",
       standalone_query: normalized.workingEnglishText,
       standards: normalized.canonicalStandards.map((c) => c.id),
+      form_updates: Object.keys(deterministicFormInputs).length > 0 ? deterministicFormInputs : undefined,
       language: normalized.detectedLanguage,
       usedFallback: true,
     };

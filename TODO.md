@@ -186,8 +186,41 @@ All are archive.org scans. **Measured in P1, corrected from an earlier audit's g
   - `typecheck` and `build` are green.
   - 5 random `[S#]` citations open to a PDF page that contains the claim.
 
+## P9: User-Requested Enhancements & Critical Bug Fixes — ✅ DONE
+- [x] **9.1** Git Safety: Verified repository is local-only, zero remotes configured (`git remote -v` empty), not public.
+- [x] **9.2** "Labs Near Me" & Manual City Selection:
+  - Added "Find Labs Near Me" button with browser geolocation permission request.
+  - Computes haversine distance in km from user coordinates to each testing lab.
+  - Sorts laboratories ascending by nearest distance with `⚡ {km} km away` badges.
+  - Added "Manual City Select" tray with major Indian cities (Delhi NCR, Mumbai, Pune, Nagpur, Wardha, Bengaluru, Chennai, etc.) and custom city text filter.
+- [x] **9.3** Canonical Verified FAQ Layer (Speedgate):
+  - Created `src/lib/pipeline/speedgate.ts` with canonical Q&A matcher for 50+ high-frequency BIS queries (e.g. "what is hallmarking", "what is HUID", "what is 916 gold", "is helmet mandatory under QCO", "difference between IS 4151 and IS 2925").
+  - Evaluated in `orchestrator.ts` before heavy retrieval; returns instant verified answer with official standard citations and cards.
+  - Seamlessly falls back to deep retrieval if no canonical match.
+  - Strictly zero mention of the word "speedgate" in any customer-facing UI or messages.
+- [x] **9.4** ChatSidebar SVG Crash Fix:
+  - Fixed `<PanelLeftClose className="h-4 w-4 pointer-events-none" />` at `src/components/chat/v9/ChatSidebar.tsx:54:15`.
+  - Added `type="button"` and `aria-label` across all sidebar buttons to prevent extension DOM injection errors.
+- [x] **9.5** Form I Conversational Extraction & Cross-Questioning:
+  - Added `parseFormInputsFromText` in `src/lib/tools/form_i.ts` for multi-line and key-value inputs (`name ...`, `adress ...`, `constitution ...`, `turnover ...`).
+  - Added `form_updates` to LLM schema in `understandTurn`.
+  - Enhanced `stepFormI` to acknowledge recorded fields with `✅ Recorded Details:` and prompt user for next missing required fields.
+- [x] **9.6** Top Navigation Pages:
+  - Created `/standards`: Searchable catalogue of the 8 indexed Indian Standards with scope and official PDF links.
+  - Created `/labs`: Directory of all 29 BIS LIMS recognized testing laboratories with map, standard filters, and near-me distance sorting.
+  - Created `/testing`: Redirects to `/labs`.
+  - Created `/certification`: Interactive guide to Scheme I (ISI mark) and the Hallmarking Scheme with Form I direct action.
+  - Updated `AppHeader.tsx` and `ChatSidebar.tsx` navigation links.
+- [x] **9.7** Admin Console Fixes:
+  - Added `/admin/knowledge` redirect to `/admin`.
+  - Fixed localhost cookie setting (`req.nextUrl.protocol === "https:"`) in `/api/admin/login`.
+  - Updated `AppFooter.tsx` staff link to `/admin`.
+  - Added demo access key hint (`bisveda2026`) on `/admin/login`.
+- [ ] **9.8** Helpline Feature: Awaiting user inputs before starting development (deferred per instruction).
+
 ## Escalate to Opus 5.5 / High+ when
 - the RAG returns wrong answers even though the code looks correct
 - debugging spans multiple files
 - an architecture decision comes up
 - a demo-critical bug appears
+

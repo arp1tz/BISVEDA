@@ -26,7 +26,8 @@ import { inspectImage, normalizeCmlNumber, validateHuid, parsePurity, VisionInsp
 import { findLabs } from "../tools/labs";
 import { findAhc } from "../tools/ahc";
 import { processHallmarkOrMark } from "../tools/hallmark";
-import { stepFormI } from "../tools/form_i";
+import { stepFormI, parseFormInputsFromText } from "../tools/form_i";
+import { matchCanonicalFaq } from "./speedgate";
 
 export type { BisvedaResponse, StageEvent, PipelineStage };
 export { STAGE_LABELS, buildFollowUps };
@@ -326,6 +327,22 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
 
   const normalized = normalizeQuery(effectiveQuery);
 
+  // ── Canonical Verified FAQ Match (Speedgate Layer) ───────────────────────
+  if (
+    understood.intent !== "smalltalk" &&
+    understood.intent !== "gibberish" &&
+    understood.intent !== "out_of_scope" &&
+    understood.intent !== "form_i"
+  ) {
+    const canonicalFaqMatch = matchCanonicalFaq(effectiveQuery, understood.language, conversationId);
+    if (canonicalFaqMatch) {
+      return {
+        ...canonicalFaqMatch,
+        cards: { ...buildCards(), ...(canonicalFaqMatch.cards || {}) },
+      };
+    }
+  }
+
   // ── Branch: identifier (exact IS/CM-L/HUID pattern) ──────────────────────
   if (understood.intent === "identifier") {
     const stdId = understood.standards[0];
@@ -549,7 +566,12 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
 
   // ── Branch: form_i (P5.4) ────────────────────────────────────────────────
   if (understood.intent === "form_i") {
-    const stepResult = stepFormI(options.formState, understood.form_updates);
+    const deterministic = parseFormInputsFromText(effectiveQuery);
+    const combinedUpdates = {
+      ...(understood.form_updates || {}),
+      ...deterministic,
+    };
+    const stepResult = stepFormI(options.formState, combinedUpdates);
     formICard = stepResult.card;
 
     let sources: Source[] = [];

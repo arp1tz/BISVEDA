@@ -47,19 +47,22 @@ export function ChatSidebar({
               <span>BISVEDA</span>
             </Link>
             <button
+              type="button"
               onClick={onToggle}
               className="p-1 text-[#64748B] hover:text-[#0F172A] rounded-md hover:bg-[#E5E7EB] transition-colors cursor-pointer"
               title="Close Sidebar"
+              aria-label="Close Sidebar"
             >
-              <PanelLeftClose className="h-4 w-4" />
+              <PanelLeftClose className="h-4 w-4 pointer-events-none" />
             </button>
           </div>
 
           <button
+            type="button"
             onClick={onNewChat}
             className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-[#0B2A4A] text-white hover:bg-[#081e36] text-xs font-semibold shadow-xs transition-colors cursor-pointer"
           >
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className="h-3.5 w-3.5 pointer-events-none" />
             <span>New chat</span>
           </button>
         </div>
@@ -102,7 +105,7 @@ export function ChatSidebar({
             <span>Standards</span>
           </Link>
           <Link
-            href="/testing"
+            href="/labs"
             className="flex items-center gap-2 px-2 py-1.5 rounded text-[#0F172A] hover:bg-[#E5E7EB] transition-colors"
           >
             <FlaskConical className="h-3.5 w-3.5 text-[#64748B]" />
