@@ -75,12 +75,12 @@ export function SourceDrawer({
           </div>
 
           {/* Clause & Page */}
-          {(source.clause_id || source.page) && (
+          {(source.clause || source.page) && (
             <div className="flex items-center gap-3 py-1.5 px-2.5 rounded bg-[#F7F8FA] border border-[#E5E7EB] text-[#64748B]">
-              {source.clause_id && (
+              {source.clause && (
                 <div className="flex items-center gap-1">
                   <BookOpen className="h-3.5 w-3.5 text-[#0B2A4A]" />
-                  <span>Clause {source.clause_id}</span>
+                  <span>Clause {source.clause}</span>
                 </div>
               )}
               {source.page && (
@@ -104,18 +104,12 @@ export function SourceDrawer({
             </div>
           </div>
 
-          {/* PDF Viewer Availability */}
+          {/* Source Document */}
           <div className="p-3 rounded-lg border border-[#E5E7EB] bg-slate-50 text-slate-600 space-y-1">
-            <span className="font-semibold block text-[#0F172A]">Document Storage:</span>
-            {source.has_file ? (
-              <p className="text-[11px] text-[#228f4a]">
-                ✓ Full authenticated PDF document stored in BIS archive.
-              </p>
-            ) : (
-              <p className="text-[11px] italic text-[#64748B]">
-                The full PDF isn&apos;t stored in this prototype.
-              </p>
-            )}
+            <span className="font-semibold block text-[#0F172A]">Document:</span>
+            <p className="text-[11px] text-[#64748B]">
+              From the original PDF, page {source.page || "—"}.
+            </p>
           </div>
         </div>
 

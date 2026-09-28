@@ -1,22 +1,24 @@
 /**
- * BISVEDA V9 — Stage 11: Trust Gate (lib/pipeline/trust.ts)
- * 
- * Deterministic truth and hallucination filter:
+ * BISVEDA — Trust Gate (lib/pipeline/trust.ts, P3.4)
+ *
+ * Deterministic line-by-line filter over the generated markdown answer:
  *  1. Normalizes bracket variants (【S1】, ［S1］) to [S1].
- *  2. Drops any sentence citing standards NOT in package.standards.
- *  3. Number Support Check: Drops sentences containing numbers/percentages
- *     unsupported by the cited source text. (Fixes B6)
- *  4. Enforces valid source citations on every factual sentence.
- *  5. Reverts to evidence-only fallback if headline or >50% sentences are dropped.
+ *  2. Strips any [S#] that doesn't resolve to a real source in the package.
+ *  3. A line that states a number (with or without a unit) or an IS number
+ *     must cite a source whose text actually contains that value — dropped
+ *     otherwise.
+ *  4. A line with no digits and no IS reference passes through unchanged
+ *     (ordinary conversational prose needs no citation).
+ *  5. If every citation-requiring line gets dropped, the caller
+ *     (orchestrator) treats this as `allDropped` and returns an honest
+ *     refusal rather than an empty or evidence-free answer.
  */
 
 import { EvidencePackage, Source } from "./package";
-import { GeneratedProse, generateEvidenceOnlyProse } from "./generate";
 
-export interface TrustGateReport {
-  passed: boolean;
-  droppedSentences: Array<{ sentence: string; reason: string }>;
-  sanitizedProse: GeneratedProse;
+/** Collapses all Unicode space variants (regular, non-breaking, narrow no-break, etc.) to a plain space. LLM output sometimes uses typographic spaces (e.g. U+202F before a unit) that don't byte-match the source text's plain spaces. */
+function normalizeSpaces(s: string): string {
+  return s.replace(/\s+/g, " ");
 }
 
 function cleanNumber(n: string): string {
@@ -24,160 +26,141 @@ function cleanNumber(n: string): string {
 }
 
 function extractNumbersWithUnits(text: string): string[] {
-  const regex = /\b\d+(?:[.,]\d+)?(?:\s*(?:%|mm|cm|m|kg|g|N|°C|days|months|years|Rs|₹))?\b/gi;
-  const matches = text.match(regex);
-  return matches ? matches.map((m) => m.trim()) : [];
+  const regex = /\b\d+(?:[.,]\d+)?(?:\s*(?:%|mm|cm|m|kg|g|N|°C|days|months|years|Rs|₹|K|karat))?\b/gi;
+  return (text.match(regex) || []).map((m) => m.trim());
 }
 
 export function normalizeCitationBrackets(text: string): string {
-  return text
-    .replace(/[【［〔『]\s*S(\d+)\s*[】］〕』]/g, "[S$1]")
-    .replace(/\[\s*S(\d+)\s*\]/g, "[S$1]");
+  return text.replace(/[【［〔『]\s*S(\d+)\s*[】］〕』]/g, "[S$1]").replace(/\[\s*S(\d+)\s*\]/g, "[S$1]");
 }
 
-export function validateAndSanitizeSentence(
-  sentence: string,
-  pkg: EvidencePackage,
-  sourceMap: Map<string, Source>
-): { valid: boolean; reason?: string; sanitized: string } {
-  const normalized = normalizeCitationBrackets(sentence).trim();
-  if (!normalized) return { valid: false, reason: "empty", sanitized: "" };
+interface LineCheck {
+  valid: boolean;
+  reason?: string;
+  sanitized: string;
+  needsCitation: boolean;
+}
 
-  // 1. Extract citations [S1], [S2]
+function checkLine(line: string, pkg: EvidencePackage, sourceMap: Map<string, Source>): LineCheck {
+  const normalized = normalizeCitationBrackets(line).trim();
+  if (!normalized) return { valid: true, sanitized: "", needsCitation: false };
+
   const citationMatches = normalized.match(/\[S\d+\]/g) || [];
-  const validCitations = citationMatches.filter((c) => {
-    const label = c.replace(/[\[\]]/g, "");
-    return sourceMap.has(label);
-  });
+  const validCitations = citationMatches.filter((c) => sourceMap.has(c.replace(/[\[\]]/g, "")));
 
-  // If factual sentence has no valid citation, drop
-  if (validCitations.length === 0) {
-    return { valid: false, reason: "missing_valid_citation", sanitized: normalized };
-  }
+  // Strip any unresolved citation marker even if the line is otherwise kept.
+  const strippedUnresolved = normalized.replace(/\[S\d+\]/g, (m) =>
+    sourceMap.has(m.replace(/[\[\]]/g, "")) ? m : ""
+  ).replace(/\s+([.,])/g, "$1").trim();
 
-  // 2. Prohibited IS numbers check
-  const allowedStdNumbers = new Set(
-    pkg.standards.map((s) => s.id.replace(/[^a-zA-Z0-9]/g, "").toUpperCase())
+  const hasIsNumber = /\bIS\s*[:\-]?\s*\d{1,5}\b/i.test(normalized);
+  // Strip a leading list/step marker ("1.", "- ", "Step 2:") before extracting
+  // numbers, so the marker itself never counts as a "fact" needing a citation.
+  const withoutListMarker = normalized.replace(/^(?:[-*]\s+|\d{1,2}[.):]\s+|Step\s+\d+\s*[:.]?\s*)/i, "");
+  // IS numbers are validated separately (against the allowed-standards set,
+  // not against source text) — strip them here so e.g. the "4151" in
+  // "IS 4151" isn't ALSO treated as a bare technical figure that must
+  // literally appear in a cited source's text.
+  const withoutIsRefs = withoutListMarker.replace(/\bIS\s*[:\-]?\s*\d{1,5}(?:\s*\(Part\s*\d+\))?\b/gi, "");
+  const meaningfulNumbers = extractNumbersWithUnits(withoutIsRefs);
+
+  // A sentence that names only the already-adjudicated primary standard, with
+  // no other technical figures, is restating an identity fact the pipeline
+  // already verified before generation ever ran — it doesn't need its own
+  // citation the way a specific clause/number claim does.
+  const primaryCleanId = pkg.primary_standard?.id.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+  const mentionedIsIds = (normalized.match(/\bIS\s*[:\-]?\s*\d{1,5}(?:\s*\(Part\s*\d+\))?\b/gi) || []).map((m) =>
+    m.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()
   );
-  if (pkg.primary_standard) {
-    allowedStdNumbers.add(pkg.primary_standard.id.replace(/[^a-zA-Z0-9]/g, "").toUpperCase());
+  const onlyMentionsPrimaryIdentity =
+    hasIsNumber &&
+    meaningfulNumbers.length === 0 &&
+    primaryCleanId !== undefined &&
+    mentionedIsIds.every((id) => id === primaryCleanId);
+
+  const needsCitation = (hasIsNumber || meaningfulNumbers.length > 0) && !onlyMentionsPrimaryIdentity;
+
+  if (!needsCitation) {
+    return { valid: true, sanitized: strippedUnresolved, needsCitation: false };
   }
 
-  const isMatches = normalized.match(/\bIS\s*[:\-]?\s*(\d{1,5})\b/gi) || [];
-  for (const rawIs of isMatches) {
-    const cleanIs = rawIs.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
-    const isAllowed = Array.from(allowedStdNumbers).some(
-      (allowed) => allowed === cleanIs || allowed.includes(cleanIs) || cleanIs.includes(allowed)
-    );
-    if (!isAllowed) {
-      return {
-        valid: false,
-        reason: `unauthorized_standard_${rawIs}`,
-        sanitized: normalized,
-      };
+  if (validCitations.length === 0) {
+    return { valid: false, reason: "missing_valid_citation", sanitized: strippedUnresolved, needsCitation: true };
+  }
+
+  // Every mentioned IS number must belong to the adjudicated standard set.
+  const allowedStdIds = new Set(pkg.standards.map((s) => s.id.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()));
+  if (pkg.primary_standard) allowedStdIds.add(pkg.primary_standard.id.replace(/[^a-zA-Z0-9]/g, "").toUpperCase());
+
+  const isMatches = normalized.match(/\bIS\s*[:\-]?\s*\d{1,5}(?:\s*\(Part\s*\d+\))?\b/gi) || [];
+  for (const raw of isMatches) {
+    const cleanIs = raw.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+    const allowed = Array.from(allowedStdIds).some((a) => a === cleanIs || a.includes(cleanIs) || cleanIs.includes(a));
+    if (!allowed) {
+      return { valid: false, reason: `unauthorized_standard_${raw}`, sanitized: strippedUnresolved, needsCitation: true };
     }
   }
 
-  // 3. Number support check
-  const numbers = extractNumbersWithUnits(normalized);
-  if (numbers.length > 0) {
-    // Gather text from cited sources in this sentence (include title, text, and url)
-    const citedSourcesText = validCitations
-      .map((c) => {
-        const label = c.replace(/[\[\]]/g, "");
-        const s = sourceMap.get(label);
-        return `${s?.title || ""} ${s?.text || ""} ${s?.url || ""}`.toLowerCase();
-      })
-      .join(" ");
+  // Every other number must appear in the text of a cited source.
+  const citedText = normalizeSpaces(
+    validCitations
+      .map((c) => sourceMap.get(c.replace(/[\[\]]/g, ""))?.text || "")
+      .join(" ")
+      .toLowerCase()
+  );
 
-    for (const num of numbers) {
-      const cNum = cleanNumber(num);
-      // Allow single-digit list index if at beginning of sentence like "1." or "Step 1:"
-      if (/^(?:1|2|3|4)\.?$/i.test(num) && /^(?:Step\s*\d|\d\.)/i.test(normalized)) {
-        continue;
-      }
-      // A standard number is supported only if it appears in cited sources text/title for this sentence,
-      // or if it matches the primary standard and S1 is cited
-      const isPrimaryStd = pkg.primary_standard && cleanNumber(pkg.primary_standard.id).includes(cNum);
-      const citesS1 = validCitations.some((c) => c === "[S1]");
-      if (isPrimaryStd && citesS1) continue;
-
-      // Extract raw digits
-      const digits = cNum.replace(/\D/g, "");
-      if (digits && (citedSourcesText.includes(digits) || citedSourcesText.includes(cNum))) continue;
-
-      if (!citedSourcesText.includes(cNum)) {
-        return {
-          valid: false,
-          reason: `unsupported_number_${num}`,
-          sanitized: normalized,
-        };
-      }
-    }
+  for (const num of meaningfulNumbers) {
+    const cNum = cleanNumber(num);
+    const digits = cNum.replace(/\D/g, "");
+    // These BIS standards are often ISO-derived and some use a decimal comma
+    // ("4,5 kg" = 4.5 kg) — check both the raw form and a comma-as-decimal
+    // form against the source text, not just the comma-stripped one. Spaces
+    // are normalized because the model sometimes emits a typographic space
+    // (e.g. U+202F narrow no-break space before a unit) that won't otherwise
+    // byte-match the source's plain space.
+    const rawLower = normalizeSpaces(num.trim().toLowerCase());
+    const commaAsDecimal = rawLower.replace(",", ".");
+    if (digits && citedText.includes(digits)) continue;
+    if (citedText.includes(cNum)) continue;
+    if (citedText.includes(rawLower)) continue;
+    if (citedText.includes(commaAsDecimal)) continue;
+    return { valid: false, reason: `unsupported_number_${num}`, sanitized: strippedUnresolved, needsCitation: true };
   }
 
-  return { valid: true, sanitized: normalized };
+  return { valid: true, sanitized: strippedUnresolved, needsCitation: true };
 }
 
-export function runTrustGate(
-  prose: GeneratedProse,
-  pkg: EvidencePackage,
-  language: string = "en"
-): TrustGateReport {
-  const sourceMap = new Map<string, Source>();
-  for (const s of pkg.sources) {
-    sourceMap.set(s.label, s);
-  }
+export interface TrustGateReport {
+  text: string;
+  droppedLines: Array<{ line: string; reason: string }>;
+  allDropped: boolean; // true when every citation-requiring line was dropped — caller should refuse
+}
 
-  const dropped: Array<{ sentence: string; reason: string }> = [];
+export function runTrustGate(rawText: string, pkg: EvidencePackage): TrustGateReport {
+  const sourceMap = new Map(pkg.sources.map((s) => [s.label, s]));
+  const dropped: Array<{ line: string; reason: string }> = [];
 
-  // 1. Check Headline
-  const headlineCheck = validateAndSanitizeSentence(prose.headline, pkg, sourceMap);
-  let cleanHeadline = headlineCheck.valid ? headlineCheck.sanitized : "";
-  if (!headlineCheck.valid) {
-    dropped.push({ sentence: prose.headline, reason: headlineCheck.reason || "headline_invalid" });
-  }
+  const lines = rawText.split("\n");
+  const kept: string[] = [];
+  let citationRequiringLines = 0;
+  let citationRequiringKept = 0;
 
-  // 2. Check Points
-  const cleanPoints: string[] = [];
-  for (const p of prose.points) {
-    const check = validateAndSanitizeSentence(p, pkg, sourceMap);
+  for (const line of lines) {
+    const check = checkLine(line, pkg, sourceMap);
+    if (check.needsCitation) citationRequiringLines++;
     if (check.valid) {
-      cleanPoints.push(check.sanitized);
+      kept.push(check.sanitized);
+      if (check.needsCitation) citationRequiringKept++;
     } else {
-      dropped.push({ sentence: p, reason: check.reason || "point_invalid" });
+      dropped.push({ line, reason: check.reason || "invalid" });
     }
   }
 
-  // 3. Check Next Steps
-  const cleanSteps: string[] = [];
-  for (const st of prose.next_steps) {
-    const check = validateAndSanitizeSentence(st, pkg, sourceMap);
-    if (check.valid) {
-      cleanSteps.push(check.sanitized);
-    } else {
-      dropped.push({ sentence: st, reason: check.reason || "step_invalid" });
-    }
-  }
-
-  // Fallback to evidence-only template if headline failed or points fell below 1
-  const totalSentences = 1 + prose.points.length;
-  if (!cleanHeadline || cleanPoints.length === 0 || dropped.length >= totalSentences / 2) {
-    const fallback = generateEvidenceOnlyProse(pkg, language);
-    return {
-      passed: false,
-      droppedSentences: dropped,
-      sanitizedProse: fallback,
-    };
-  }
+  const allDropped = citationRequiringLines > 0 && citationRequiringKept === 0;
 
   return {
-    passed: dropped.length === 0,
-    droppedSentences: dropped,
-    sanitizedProse: {
-      headline: cleanHeadline,
-      points: cleanPoints,
-      next_steps: cleanSteps,
-    },
+    text: kept.join("\n").trim(),
+    droppedLines: dropped,
+    allDropped,
   };
 }

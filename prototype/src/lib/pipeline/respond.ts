@@ -1,52 +1,78 @@
 /**
- * BISVEDA V9 — Stage 12: Response Contract (lib/pipeline/respond.ts)
- * 
- * Defines the single, unified BisvedaResponse contract consumed by the UI and API.
- * Emits real stage events (understand, search, check, write).
+ * BISVEDA — Response Contract (lib/pipeline/respond.ts, P3.6)
+ *
+ * The single, unified response contract consumed by the UI and API.
+ * Replaces the old headline/points/next_steps + qco/certification/labs
+ * slots (which assumed data we don't have) with a single markdown `text`
+ * plus optional feature `cards` — labs/ahc/hallmark/mark/form_i are wired
+ * up in P5; their shapes are reserved here so the contract doesn't change
+ * again when P5 lands.
  */
 
 import { Source } from "./package";
+import type { LabRecord, AhcRecord } from "../kb/types";
+
+export type ResponseKind = "answer" | "clarify" | "refusal" | "smalltalk" | "form_question";
+export type Grounding = "verified" | "supported_inference" | "insufficient_evidence" | "none";
+
+export interface LabsCard {
+  standard_id: string;
+  labs: LabRecord[];
+  retrieved_note: string; // e.g. "BIS-recognised labs listing IS 4151 in scope (BIS LIMS, retrieved 2026-09-27)"
+}
+
+export interface AhcCard {
+  ahcs: AhcRecord[];
+}
+
+export interface HallmarkCard {
+  purity_karat?: string;
+  purity_fineness?: string;
+  huid?: string;
+  huid_format_valid?: boolean;
+}
+
+export interface MarkCard {
+  cml_number?: string;
+  huid?: string;
+  note: string; // e.g. "Licence number read: CM/L-3112329. Verify on the BIS Care app or Manak Online."
+}
+
+export interface FormICard {
+  fields: Record<string, string>;
+  missing_required: string[];
+  print_url?: string;
+}
+
+export interface ImageReadCard {
+  category?: string;
+  product_guess?: string;
+  description?: string;
+  label_text?: string;
+  isi_mark_seen?: boolean | "unclear";
+  bis_hallmark_seen?: boolean | "unclear";
+  purity_mark?: string | null;
+  huid?: string | null;
+  cml_number?: string | null;
+  confidence_note?: string;
+}
 
 export interface BisvedaResponse {
   conversation_id: string;
-  kind: "answer" | "clarify" | "refusal" | "smalltalk";
-  language: string;                           // 'en' | 'hi' | 'hinglish'
-  grounding: "verified" | "partial" | "none";
-  answer?: {
-    headline: string;
-    points: string[];
-    next_steps: string[];
-  };
-  primary_standard?: { id: string; title: string };
-  qco?: {
-    status: "mandatory" | "notified_not_in_force" | "unknown";
-    order_title?: string;
-    effective_on?: string;
-    source: string;
-  };
-  standards?: Array<{
-    id: string;
-    title: string;
-    class: "applies" | "may_apply" | "related";
-    why: string;
-    source: string;
-  }>;
-  certification?: {
-    scheme_name: string;
-    steps: Array<{ text: string; source: string }>;
-  } | null;
-  labs?: Array<{
-    id: string;
-    name: string;
-    city: string;
-    state: string;
-    distance_km?: number;
-    lat?: number;
-    lng?: number;
-    detail_url?: string;
-    source: string;
-  }> | null;
+  kind: ResponseKind;
+  language: string;
+  grounding: Grounding;
+  text: string; // markdown answer / clarify prompt / refusal message / smalltalk reply
+  standards?: Array<{ id: string; title: string; class: string; why: string }>;
   sources: Source[];
+  cards?: {
+    labs?: LabsCard;
+    ahc?: AhcCard;
+    hallmark?: HallmarkCard;
+    mark?: MarkCard;
+    image?: ImageReadCard;
+    form_i?: FormICard;
+  };
   clarify?: {
     question: string;
     options: Array<{ label: string; value: string }>;
@@ -56,13 +82,7 @@ export interface BisvedaResponse {
     message: string;
     next_steps: Array<{ text: string; url?: string }>;
   };
-  visual_evidence?: {
-    product_guess?: string;
-    label_text?: string;
-    licence_number?: string;
-    isi_mark_seen?: boolean | "unclear";
-  };
-  follow_ups: string[];                       // 0–3 suggestions built from what package can answer
+  follow_ups: string[];
 }
 
 export type PipelineStage = "understand" | "search" | "check" | "write";
@@ -76,29 +96,13 @@ export interface StageEvent {
 
 export const STAGE_LABELS: Record<PipelineStage, string> = {
   understand: "Understanding your question",
-  search: "Searching official BIS sources",
-  check: "Checking certification rules",
-  write: "Writing a clear answer",
+  search: "Searching official BIS documents",
+  check: "Checking the evidence",
+  write: "Writing a grounded answer",
 };
 
-/**
- * Builds realistic, package-grounded follow-up suggestions.
- */
-export function buildFollowUps(
-  primaryStd?: { id: string; title: string } | null,
-  hasLabs?: boolean,
-  hasScheme?: boolean
-): string[] {
-  const followUps: string[] = [];
-  if (!primaryStd) return followUps;
-
-  if (hasLabs) {
-    followUps.push(`Which labs can test ${primaryStd.id}?`);
-  }
-  if (hasScheme) {
-    followUps.push(`What are the certification steps for ${primaryStd.id}?`);
-  }
-  followUps.push(`What is the scope of ${primaryStd.id}?`);
-
-  return followUps.slice(0, 3);
+/** Builds realistic, package-grounded follow-up suggestions. Never suggests anything not in our KB. */
+export function buildFollowUps(primaryStd?: { id: string; title: string } | null): string[] {
+  if (!primaryStd) return [];
+  return [`What is the scope of ${primaryStd.id}?`, `Where can I get ${primaryStd.id} tested?`].slice(0, 2);
 }

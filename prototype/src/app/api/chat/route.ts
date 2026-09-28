@@ -10,6 +10,7 @@ export async function POST(req: NextRequest) {
     const history = Array.isArray(body.history) ? body.history : [];
     const userLocation = body.userLocation || undefined;
     const attachment = body.attachment || undefined;
+    const formState = body.formState || undefined;
     const wantsStream = body.stream !== false && req.headers.get("accept")?.includes("text/event-stream") !== false;
 
     if (!query && !attachment) {
@@ -24,6 +25,7 @@ export async function POST(req: NextRequest) {
         history,
         userLocation,
         attachment,
+        formState,
       });
       return NextResponse.json(response);
     }
@@ -51,6 +53,7 @@ export async function POST(req: NextRequest) {
           history,
           userLocation,
           attachment,
+          formState,
           onStageEvent: (event: StageEvent) => {
             sendEvent("stage", event);
           },

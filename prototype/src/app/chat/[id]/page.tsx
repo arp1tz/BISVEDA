@@ -218,6 +218,38 @@ export default function ChatWorkspacePage() {
               } catch (e) {
                 // ignore parse error
               }
+            } else if (eventType === "error") {
+              let errMessage = "An error occurred while processing your question. Please try again.";
+              try {
+                const parsed = JSON.parse(dataStr);
+                if (parsed?.message) errMessage = parsed.message;
+              } catch {
+                // keep default message
+              }
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.id === assistantMsgId
+                    ? {
+                        ...msg,
+                        isStreaming: false,
+                        response: {
+                          conversation_id: conversationId,
+                          kind: "refusal",
+                          language: "en",
+                          grounding: "none",
+                          text: "",
+                          refusal: {
+                            reason: "not_in_sources",
+                            message: errMessage,
+                            next_steps: [{ text: "Visit BIS official portal", url: "https://www.bis.gov.in" }],
+                          },
+                          sources: [],
+                          follow_ups: [],
+                        },
+                      }
+                    : msg
+                )
+              );
             }
           }
         }
@@ -245,13 +277,14 @@ export default function ChatWorkspacePage() {
                   kind: "refusal",
                   language: "en",
                   grounding: "none",
+                  text: "",
                   refusal: {
                     reason: "not_in_sources",
-                    message: "An error occurred while connecting to the official database. Please try again.",
+                    message: "An error occurred while connecting to the server. Please try again.",
                     next_steps: [{ text: "Visit BIS official portal", url: "https://www.bis.gov.in" }],
                   },
                   sources: [],
-                  follow_ups: ["Can I check IS 4151 for helmets?"],
+                  follow_ups: ["Which standard applies to helmets?"],
                 },
               }
             : msg

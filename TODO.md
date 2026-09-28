@@ -15,24 +15,26 @@ The `[model/effort]` tag says which model and effort to run the task with; switc
 - IS 9873 Part 3 (toys, element migration, 1999)
 - Form I (jeweller registration for hallmarking): 2 pages, 13 fields
 
-All are archive.org scans with an OCR layer. IS 1417 has 10 of 12 pages with no text, so it needs RapidOCR.
+All are archive.org scans. **Measured in P1, corrected from an earlier audit's guess: all 9 PDFs are real digital text — 0 pages needed OCR.** Two real content-quality caveats found instead (not OCR): IS 1417 p.10 has genuine 2-column interleaving, and IS 15644 (+ a few IS 9873 Pt.1 pages) have a corrupted embedded font that garbles some clause numbers. See TODO.md P1's done-when block for detail.
+
+**P1 output (the actual knowledge base — read before touching retrieval):**
+- `prototype/data/kb/{chunks,standards,graph}.json`: 760 chunks / 8 standards / 320 graph nodes, all with real 768-d Gemini embeddings.
+- `prototype/data/directory/{labs,ahc}.json`: 29 labs (BIS LIMS), 1651 AHCs (Manak Online, 1490 geocoded).
+- `prototype/scripts/kb/*.ts` and `prototype/scripts/directory/*.ts`: the build/scrape code, rerunnable via `npm run kb:build` / `dir:labs` / `dir:ahc`.
 
 **Reusable code:**
-- `scripts/parse_pdf.py` and `parse_pdf_json.py` (PyMuPDF + tables + RapidOCR)
 - `lib/pipeline/{normalize,fuse,floor,trust,respond,context}.ts`
 - `components/chat/v9/*`
 - `components/admin/{GraphTab,NodeInspector}.tsx` (react-force-graph-2d)
 - `api/chat/route.ts` (SSE)
+- `scripts/kb/embed.ts`'s Gemini-call pattern (retry + no fallback) — the runtime `src/lib/embeddings.ts` still has the old silent hash fallback and needs the same fix, used at query time by retrieval (P2.2).
 - `tsc` is currently clean.
 
-**Broken or fabricated (replace):**
-- the `local-db.ts` store (36 MB, re-parsed on every call; test docs; fake persona; about half the embeddings are hash vectors)
-- the silent hash fallback in `embeddings.ts`
-- `CLAUSE_RE` in `ingestion/pipeline.ts`
+**Still broken or fabricated (replace in P2/P3):**
+- the silent hash fallback in `src/lib/embeddings.ts` (the *runtime* one — `scripts/kb/embed.ts` is the separate, already-fixed offline-build version)
 - `product.ts` and the hard-coded maps in `adjudicate.ts` / `route.ts`
 - the templated S1/S2 sources in `package.ts`
-- all seed JSON, and the lab scopes invented by `seed-facts.ts`
-- `calibration.json`
+- `calibration.json` (stale, from the old local-db corpus — floor 0.5 rejected almost nothing)
 - the vision model ids `gemini-3.8/3.6-flash`
 - the `"IS "` substring bug (orchestrator ~L171)
 - HUID and purity never being surfaced
@@ -41,11 +43,6 @@ All are archive.org scans with an OCR layer. IS 1417 has 10 of 12 pages with no 
 - MarkVerifier's fake "OPERATIVE" result
 - the Form I mock
 - hard-coded admin passwords
-
-**Official directories (server-rendered HTML):**
-- Lab scope: `https://lims.bis.gov.in/home_lab_scope/{labId}/?page=N`. Columns: IS No. (year) · Product · Grade/Type · Testing charges · Validity · Remark.
-- AHCs: `https://www.manakonline.in/MANAK/AHCListForWebsite`. It has Region/State/District filters. Columns: Recognition No · Validity · Name · Address · Metals · Contact · Status.
-- The archived `laboratories.json` has 430 rows (OSL code, name, city, state, validity, lat/lng city centroids). Use it only for the join.
 
 ---
 
@@ -102,6 +99,7 @@ All are archive.org scans with an OCR layer. IS 1417 has 10 of 12 pages with no 
   - Fixed 2 real bugs found during build: (a) the chunk-merge direction was backward instead of forward (fixed in `chunk.ts`, see `mergeTinyForward`); (b) Gemini's free-tier embedding quota (~100 req/min) needed sequential pacing instead of concurrency-5 (fixed in `embed.ts`/`build.ts`).
 
 ## P2: L3 store and L4 hybrid retrieval `[Sonnet 5 / High]`
+**>>> See `C:\BISVEDA\HANDOFF.md` for exact current state, the next command to run, and every bug found/fixed. This section's checkboxes are stale until that doc's "immediate next step" is done and folded back in here. <<<**
 - [ ] **2.1** Write `src/lib/kb/store.ts`: load `data/kb/*.json` and `data/directory/*.json` **once** (module-level cache, paths from `process.cwd()`). Export typed getters.
 - [ ] **2.2** Write `src/lib/kb/bm25.ts`:
   - A real BM25 (k1=1.2, b=0.75), with IS tokens like `is4151` kept intact.

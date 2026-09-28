@@ -14,12 +14,11 @@ interface RefusalMessageProps {
   onSelectSuggestion?: (query: string) => void;
 }
 
+// Only topics we actually hold documents for — see CLAUDE.md's hard rules.
 const DEFAULT_RECOMMENDED_TOPICS = [
-  { label: "Helmets (IS 4151)", query: "Is BIS certification mandatory for helmets?" },
-  { label: "Pressure Cookers (IS 2347)", query: "Domestic pressure cooker certification requirements" },
-  { label: "Toys Safety (IS 9873)", query: "Which standards apply to children toys?" },
-  { label: "Packaged Water (IS 14543)", query: "Packaged drinking water BIS standard" },
-  { label: "Gold Hallmarking (IS 1417)", query: "Gold jewellery hallmarking rules" },
+  { label: "Helmets (IS 4151 / IS 2925)", query: "Which standard applies to motorcycle helmets?" },
+  { label: "Toys Safety (IS 9873 / IS 15644)", query: "Which standards apply to children's toys?" },
+  { label: "Gold Hallmarking (IS 1417)", query: "What are the gold hallmarking fineness grades?" },
 ];
 
 export function RefusalMessage({

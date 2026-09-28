@@ -1,19 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-  Check,
-  Copy,
-  ThumbsUp,
-  ThumbsDown,
-  Sparkles,
-  ExternalLink,
-  AlertTriangle,
-  Volume2,
-  VolumeX,
-} from "lucide-react";
+import { Check, Copy, ThumbsUp, ThumbsDown, Sparkles, Volume2, VolumeX } from "lucide-react";
 import type { BisvedaResponse } from "@/lib/pipeline/respond";
-import { QcoLine } from "./QcoLine";
 import { CitationPill } from "./CitationPill";
 import { DetailTabs } from "./DetailTabs";
 
@@ -47,34 +36,8 @@ export function AnswerCard({
     };
   }, []);
 
-  // Check if standard or query refers to a superseded edition
-  const isSuperseded =
-    query.includes("14543:2004") ||
-    query.includes("4151:1993") ||
-    query.includes("2347:2006") ||
-    query.includes("1293:2005") ||
-    query.includes("9873:2012") ||
-    response.primary_standard?.id === "IS 14543:2004" ||
-    (response.answer?.headline && response.answer.headline.toLowerCase().includes("superseded"));
-
-  const supersededTarget =
-    query.includes("14543") || response.primary_standard?.id?.includes("14543")
-      ? "IS 14543:2024"
-      : query.includes("4151")
-      ? "IS 4151:2020"
-      : query.includes("2347")
-      ? "IS 2347:2017"
-      : "current edition";
-
   const handleCopy = () => {
-    const textParts: string[] = [];
-    if (response.answer?.headline) textParts.push(response.answer.headline);
-    if (response.answer?.points) textParts.push(...response.answer.points);
-    if (response.answer?.next_steps) {
-      textParts.push("\nNext steps:");
-      response.answer.next_steps.forEach((s, i) => textParts.push(`${i + 1}. ${s}`));
-    }
-    navigator.clipboard.writeText(textParts.join("\n"));
+    navigator.clipboard.writeText(response.text || "");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -91,15 +54,8 @@ export function AnswerCard({
       return;
     }
 
-    const parts: string[] = [];
-    if (response.answer?.headline) parts.push(response.answer.headline);
-    if (response.answer?.points) parts.push(...response.answer.points);
-    if (response.answer?.next_steps) {
-      parts.push("What to do next: " + response.answer.next_steps.join(". "));
-    }
-
     // Strip bracketed citations like [S1], [S2] before reading
-    const textToRead = parts.join(". ").replace(/\[S\d+\]/g, "");
+    const textToRead = (response.text || "").replace(/\[S\d+\]/g, "");
     const utterance = new SpeechSynthesisUtterance(textToRead);
     utterance.lang = response.language === "hi" ? "hi-IN" : "en-IN";
     utterance.rate = 1.0;
@@ -112,7 +68,19 @@ export function AnswerCard({
     setIsSpeaking(true);
   };
 
-  // Helper to parse citations like [S1], [S2] in points and render CitationPill
+  // Renders "**bold**" spans within a plain-text segment.
+  const renderInlineBold = (text: string, keyPrefix: string): React.ReactNode[] => {
+    const parts = text.split(/(\*\*[^*]+\*\*)/g).filter(Boolean);
+    return parts.map((part, i) =>
+      part.startsWith("**") && part.endsWith("**") ? (
+        <strong key={`${keyPrefix}-b${i}`}>{part.slice(2, -2)}</strong>
+      ) : (
+        <React.Fragment key={`${keyPrefix}-t${i}`}>{part}</React.Fragment>
+      )
+    );
+  };
+
+  // Helper to parse citations like [S1], [S2] and **bold** in a line, rendering CitationPill/<strong>.
   const renderPointWithCitations = (point: string) => {
     const regex = /\[S(\d+)\]/g;
     const elements: React.ReactNode[] = [];
@@ -121,7 +89,7 @@ export function AnswerCard({
 
     while ((match = regex.exec(point)) !== null) {
       if (match.index > lastIndex) {
-        elements.push(point.substring(lastIndex, match.index));
+        elements.push(...renderInlineBold(point.substring(lastIndex, match.index), `seg-${match.index}`));
       }
       const sourceIdx = parseInt(match[1], 10);
       elements.push(
@@ -135,100 +103,82 @@ export function AnswerCard({
     }
 
     if (lastIndex < point.length) {
-      elements.push(point.substring(lastIndex));
+      elements.push(...renderInlineBold(point.substring(lastIndex), `seg-end`));
     }
 
     return elements;
   };
 
-  const hasPoints = response.answer?.points && response.answer.points.length > 0;
-  const hasNextSteps = response.answer?.next_steps && response.answer.next_steps.length > 0;
+  const primaryStandard = response.standards?.find((s) => s.class === "applies") || response.standards?.[0];
+  const imageCard = response.cards?.image;
 
-  return (
-    <div className="bg-white rounded-2xl border border-[#E5E7EB] p-5 shadow-sm space-y-4">
-      {/* Primary Standard Badge & Superseded Warning Header */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        {response.primary_standard && (
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#0B2A4A]/5 border border-[#0B2A4A]/15 text-xs font-medium text-[#0B2A4A]">
-            <span className="h-2 w-2 rounded-full bg-[#228f4a]" />
-            <span className="font-mono font-bold">{response.primary_standard.id}</span>
-            <span className="text-[#64748B]">—</span>
-            <span className="truncate max-w-[260px]">{response.primary_standard.title}</span>
-          </div>
-        )}
-
-        {isSuperseded && (
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#B45309]/10 border border-[#B45309]/20 text-[#B45309] text-xs font-semibold">
-            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-            <span>Superseded by {supersededTarget}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Answer Headline */}
-      {response.answer?.headline && (
-        <h3 className="text-base md:text-lg font-bold text-[#0F172A] leading-snug">
-          {response.answer.headline}
-        </h3>
-      )}
-
-      {/* QCO Line */}
-      <QcoLine
-        qco={response.qco}
-        onOpenSource={onOpenSourceDrawer}
-        citationIndex={response.sources?.length ? 1 : undefined}
-      />
-
-      {/* What we read on the label (honest verbatim OCR box) */}
-      {response.visual_evidence &&
-        (response.visual_evidence.label_text || response.visual_evidence.licence_number) && (
-          <div className="p-3.5 rounded-xl bg-[#F7F8FA] border border-[#E5E7EB] space-y-1.5 text-xs">
-            <div className="font-bold text-[#0B2A4A] flex items-center gap-1.5">
-              <span>What we read on the label</span>
-            </div>
-            {response.visual_evidence.label_text && (
-              <div className="font-mono text-[11px] text-[#0F172A] bg-white p-2.5 rounded-lg border border-[#E5E7EB] whitespace-pre-wrap leading-relaxed">
-                {response.visual_evidence.label_text}
-              </div>
-            )}
-            {response.visual_evidence.licence_number && (
-              <div className="text-[11px] text-[#64748B] pt-0.5">
-                Licence number read:{" "}
-                <strong className="text-[#0B2A4A]">{response.visual_evidence.licence_number}</strong>. Check
-                it on the official BIS Care app or Manak Online portal.
-              </div>
-            )}
-          </div>
-        )}
-
-      {/* Bulleted Points (Max 4) */}
-      {hasPoints && (
-        <ul className="space-y-2 text-sm text-[#0F172A] leading-relaxed">
-          {response.answer!.points.slice(0, 4).map((pt, idx) => (
-            <li key={idx} className="flex items-start gap-2.5">
+  // Render the markdown-lite answer text: bullets grouped into a <ul>, [S#] citation pills.
+  const renderAnswerText = (text: string) => {
+    const lines = text.split("\n").filter((l) => l.trim().length > 0);
+    const blocks: React.ReactNode[] = [];
+    let bulletBuf: string[] = [];
+    const flushBullets = () => {
+      if (bulletBuf.length === 0) return;
+      blocks.push(
+        <ul key={`ul-${blocks.length}`} className="space-y-2">
+          {bulletBuf.map((content, i) => (
+            <li key={i} className="flex items-start gap-2.5 text-sm text-[#0F172A] leading-relaxed">
               <span className="h-1.5 w-1.5 rounded-full bg-[#0B2A4A] mt-2 shrink-0" />
-              <div className="flex-1">{renderPointWithCitations(pt)}</div>
+              <div className="flex-1">{renderPointWithCitations(content)}</div>
             </li>
           ))}
         </ul>
-      )}
+      );
+      bulletBuf = [];
+    };
 
-      {/* Next Steps in soft callout box */}
-      {hasNextSteps && (
-        <div className="p-3.5 rounded-xl bg-[#F7F8FA] border border-[#E5E7EB] space-y-2">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-[#64748B]">
-            What to do next
+    for (const line of lines) {
+      const isBullet = /^[-*]\s+/.test(line);
+      if (isBullet) {
+        bulletBuf.push(line.replace(/^[-*]\s+/, ""));
+        continue;
+      }
+      flushBullets();
+      blocks.push(
+        <p key={`p-${blocks.length}`} className="text-sm text-[#0F172A] leading-relaxed">
+          {renderPointWithCitations(line)}
+        </p>
+      );
+    }
+    flushBullets();
+    return blocks;
+  };
+
+  return (
+    <div className="bg-white rounded-2xl border border-[#E5E7EB] p-5 shadow-sm space-y-4">
+      {/* Primary Standard Badge */}
+      {primaryStandard && (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#0B2A4A]/5 border border-[#0B2A4A]/15 text-xs font-medium text-[#0B2A4A]">
+            <span className="h-2 w-2 rounded-full bg-[#228f4a]" />
+            <span className="font-mono font-bold">{primaryStandard.id}</span>
+            <span className="text-[#64748B]">—</span>
+            <span className="truncate max-w-[260px]">{primaryStandard.title}</span>
           </div>
-          <ol className="space-y-1.5 text-xs text-[#0F172A] leading-relaxed">
-            {response.answer!.next_steps.map((step, idx) => (
-              <li key={idx} className="flex items-start gap-2">
-                <span className="font-bold text-[#0B2A4A] shrink-0">{idx + 1}.</span>
-                <span>{step}</span>
-              </li>
-            ))}
-          </ol>
         </div>
       )}
+
+      {/* What we read on the label (honest verbatim OCR box) — image inputs only */}
+      {imageCard && (imageCard.label_text || imageCard.product_guess) && (
+        <div className="p-3.5 rounded-xl bg-[#F7F8FA] border border-[#E5E7EB] space-y-1.5 text-xs">
+          <div className="font-bold text-[#0B2A4A] flex items-center gap-1.5">
+            <span>What we read from your photo</span>
+          </div>
+          {imageCard.label_text && (
+            <div className="font-mono text-[11px] text-[#0F172A] bg-white p-2.5 rounded-lg border border-[#E5E7EB] whitespace-pre-wrap leading-relaxed">
+              {imageCard.label_text}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Answer text (markdown-lite: bullets, bold, [S#] citation pills) */}
+      <div className="space-y-2">{response.text ? renderAnswerText(response.text) : null}</div>
 
       {/* Grounding Status Indicator */}
       <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-[#E5E7EB]/60 text-xs">
@@ -236,7 +186,7 @@ export function AnswerCard({
           <div className="flex items-center gap-1.5 text-[#228f4a] font-medium">
             <span>✓ Every fact is from official BIS sources</span>
           </div>
-        ) : response.grounding === "partial" ? (
+        ) : response.grounding === "supported_inference" ? (
           <div className="flex items-center gap-1.5 text-[#B45309] font-medium">
             <span>Some details could not be confirmed in official sources</span>
           </div>
@@ -263,11 +213,9 @@ export function AnswerCard({
         )}
       </div>
 
-      {/* Inline Detail Tabs (Standards, Certification, Labs, Sources) */}
+      {/* Inline Detail Tabs (Standards, Sources — Certification/Labs return in P5) */}
       <DetailTabs
         standards={response.standards}
-        certification={response.certification}
-        labs={response.labs}
         sources={response.sources}
         onOpenSourceDrawer={onOpenSourceDrawer}
         onRequestLocation={onRequestLocation}

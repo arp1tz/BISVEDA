@@ -1,0 +1,427 @@
+{
+  "timestamp": "2026-09-27T18:26:54.556Z",
+  "totalCases": 32,
+  "passedCount": 19,
+  "wrongStandardCount": 1,
+  "kindAccuracy": "21/32",
+  "primaryAccuracy": "15/16",
+  "citationValidity": "42/42",
+  "numberSupport": "41/41",
+  "results": [
+    {
+      "id": "helmet-01",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": false,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": [
+        "Leaked prohibited standard: IS 2925"
+      ]
+    },
+    {
+      "id": "helmet-02",
+      "pass": true,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "helmet-03",
+      "pass": true,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "helmet-04",
+      "pass": true,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "helmet-05",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": false,
+      "mustIncludePass": false,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": [
+        "Primary mismatch: expected IS 2925, got IS 4151",
+        "Missing required standard: IS 2925"
+      ]
+    },
+    {
+      "id": "helmet-06",
+      "pass": true,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "toys-01",
+      "pass": true,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "toys-02",
+      "pass": true,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "toys-03",
+      "pass": false,
+      "actualKind": "refusal_not_in_sources",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": false,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": [
+        "Kind mismatch: expected answer, got refusal_not_in_sources",
+        "Missing required standard: IS 9873 (Part 3)"
+      ]
+    },
+    {
+      "id": "toys-04",
+      "pass": false,
+      "actualKind": "gibberish",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": false,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": [
+        "Kind mismatch: expected answer, got gibberish",
+        "Missing required standard: IS 9873 (Part 1)"
+      ]
+    },
+    {
+      "id": "gold-01",
+      "pass": true,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "gold-02",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "identifier",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": [
+        "Kind mismatch: expected identifier, got answer"
+      ]
+    },
+    {
+      "id": "gold-03",
+      "pass": false,
+      "actualKind": "refusal_not_in_sources",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": false,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": [
+        "Kind mismatch: expected answer, got refusal_not_in_sources",
+        "Missing required standard: IS 15820"
+      ]
+    },
+    {
+      "id": "gold-04",
+      "pass": false,
+      "actualKind": "refusal_not_in_sources",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": false,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": [
+        "Kind mismatch: expected answer, got refusal_not_in_sources",
+        "Missing required standard: IS 1418"
+      ]
+    },
+    {
+      "id": "formi-01",
+      "pass": false,
+      "actualKind": "refusal_not_in_sources",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": [
+        "Kind mismatch: expected answer, got refusal_not_in_sources"
+      ]
+    },
+    {
+      "id": "id-01",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "identifier",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": [
+        "Kind mismatch: expected identifier, got answer"
+      ]
+    },
+    {
+      "id": "id-02",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "identifier",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": [
+        "Kind mismatch: expected identifier, got answer"
+      ]
+    },
+    {
+      "id": "id-03",
+      "pass": false,
+      "actualKind": "answer",
+      "expectedKind": "identifier",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": [
+        "Kind mismatch: expected identifier, got answer"
+      ]
+    },
+    {
+      "id": "clarify-01",
+      "pass": true,
+      "actualKind": "clarify",
+      "expectedKind": "clarify",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "clarify-02",
+      "pass": true,
+      "actualKind": "clarify",
+      "expectedKind": "clarify",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "follow-01",
+      "pass": true,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "follow-02",
+      "pass": true,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "topic-switch-01",
+      "pass": true,
+      "actualKind": "answer",
+      "expectedKind": "answer",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "oos-01",
+      "pass": true,
+      "actualKind": "refusal_out_of_scope",
+      "expectedKind": "refusal_out_of_scope",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "oos-02",
+      "pass": true,
+      "actualKind": "refusal_out_of_scope",
+      "expectedKind": "refusal_out_of_scope",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "nis-01",
+      "pass": false,
+      "actualKind": "refusal_out_of_scope",
+      "expectedKind": "refusal_not_in_sources",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": [
+        "Kind mismatch: expected refusal_not_in_sources, got refusal_out_of_scope"
+      ]
+    },
+    {
+      "id": "nis-02",
+      "pass": false,
+      "actualKind": "refusal_out_of_scope",
+      "expectedKind": "refusal_not_in_sources",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": [
+        "Kind mismatch: expected refusal_not_in_sources, got refusal_out_of_scope"
+      ]
+    },
+    {
+      "id": "nis-03",
+      "pass": true,
+      "actualKind": "refusal_out_of_scope",
+      "expectedKind": "any",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "gib-01",
+      "pass": true,
+      "actualKind": "gibberish",
+      "expectedKind": "gibberish",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "inj-01",
+      "pass": true,
+      "actualKind": "refusal_out_of_scope",
+      "expectedKind": "any",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "hi-01",
+      "pass": true,
+      "actualKind": "smalltalk",
+      "expectedKind": "smalltalk",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    },
+    {
+      "id": "hi-02",
+      "pass": true,
+      "actualKind": "smalltalk",
+      "expectedKind": "smalltalk",
+      "primaryPass": true,
+      "mustIncludePass": true,
+      "mustNotIncludePass": true,
+      "citationValidityPass": true,
+      "numberSupportPass": true,
+      "details": []
+    }
+  ]
+}

@@ -1,20 +1,21 @@
 /**
- * BISVEDA V9 — Stage 6: Reciprocal Rank Fusion (lib/pipeline/fuse.ts)
- * 
- * Combines ranked result lists from multiple retrievers using RRF (k = 60).
- * Produces two distinct ranked lists:
- *  1. Ranked Standards (with chunk hits rolled up to standard level)
- *  2. Ranked Evidence Chunks (for grounding and citation)
- * 
- * Exact matches are pinned at Rank 1.
+ * BISVEDA — Stage 6: Reciprocal Rank Fusion (lib/pipeline/fuse.ts)
+ *
+ * Combines the exact/bm25/dense/graph chunk lists with RRF (k = 60) into one
+ * ranked chunk list and one ranked standard list. Exact hits are pinned to
+ * the top.
+ *
+ * Fix vs. the old version: merging hits for the same chunk_id across sources
+ * used to let a later source silently overwrite an earlier one (a lexical
+ * hit replacing a semantic hit lost that chunk's `similarity`, which is what
+ * floor.ts reads). Here a chunk keeps its `similarity` if ANY source that
+ * found it set one, however many other sources also matched it.
  */
 
 import { MultiStoreRetrievalResult, RetrievalHit } from "./retrieve";
-import { ChunkRow } from "../kb/store";
+import type { KbChunk } from "../kb/types";
 
-/**
- * Standard Reciprocal Rank Fusion (RRF).
- */
+/** Standard Reciprocal Rank Fusion (RRF). */
 export function rrf(lists: string[][], k = 60): Map<string, number> {
   const scoreMap = new Map<string, number>();
   for (const list of lists) {
@@ -25,83 +26,76 @@ export function rrf(lists: string[][], k = 60): Map<string, number> {
   return scoreMap;
 }
 
-export interface FusedResults {
-  rankedStandards: string[];         // Standard IDs in order of fused relevance
-  rankedChunks: ChunkRow[];          // Chunks in order of fused relevance
-  standardScores: Map<string, number>;
+export interface FusedChunk extends KbChunk {
+  similarity?: number;
+  rrfScore: number;
 }
 
-export function fuseRetrievalResults(
-  raw: MultiStoreRetrievalResult,
-  k = 60
-): FusedResults {
-  // 1. Standard-level rank lists
-  // Roll up chunk hits to standard level
-  const semanticChunkStds = raw.semanticChunkHits.map((h) => h.standardId);
-  const lexicalChunkStds = raw.lexicalChunkHits.map((h) => h.standardId);
+export interface FusedResults {
+  rankedStandards: string[];
+  rankedChunks: FusedChunk[];
+}
 
-  const standardRankLists: string[][] = [
-    raw.graphHits,
-    raw.semanticStdHits,
-    semanticChunkStds,
-    lexicalChunkStds,
-    raw.trigramStdHits,
-  ];
+export function fuseRetrievalResults(raw: MultiStoreRetrievalResult, k = 60, topN = 8): FusedResults {
+  const chunkLists: RetrievalHit[][] = [raw.exactChunkHits, raw.graphChunkHits, raw.bm25Hits, raw.denseHits];
 
-  const standardScores = rrf(standardRankLists, k);
-
-  // Pin exact matches with maximal boost
-  for (let i = 0; i < raw.exactHits.length; i++) {
-    const exactStd = raw.exactHits[i];
-    standardScores.set(exactStd, 1000 - i);
+  const chunkScores = rrf(chunkLists.map((list) => list.map((h) => h.key)), k);
+  for (const h of raw.exactChunkHits) {
+    chunkScores.set(h.key, (chunkScores.get(h.key) ?? 0) + 1000); // pin exact matches
   }
 
-  // Pin preferred standard if determined by product resolution
-  if (raw.preferredStandardId) {
-    standardScores.set(raw.preferredStandardId, (standardScores.get(raw.preferredStandardId) ?? 0) + 500);
-  }
-
-  const sortedStandards = Array.from(standardScores.entries())
-    .sort((a, b) => b[1] - a[1])
-    .map(([key]) => key)
-    .filter((id) => id && id !== "UNKNOWN");
-
-  // 2. Chunk-level rank lists
-  const chunkMap = new Map<string, ChunkRow>();
-  for (const h of raw.semanticChunkHits) {
-    if (h.chunk) chunkMap.set(h.key, h.chunk);
-  }
-  for (const h of raw.lexicalChunkHits) {
-    if (h.chunk) chunkMap.set(h.key, h.chunk);
-  }
-
-  const chunkRankLists: string[][] = [
-    raw.semanticChunkHits.map((h) => h.key),
-    raw.lexicalChunkHits.map((h) => h.key),
-  ];
-
-  const chunkScores = rrf(chunkRankLists, k);
-
-  // Boost chunks belonging to the top-ranked standard
-  const topStandard = sortedStandards[0];
-  if (topStandard) {
-    const cleanTop = topStandard.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
-    for (const [cid, chunk] of chunkMap.entries()) {
-      const cleanStd = (chunk.standard_number || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
-      if (cleanStd === cleanTop || cleanStd.includes(cleanTop) || cleanTop.includes(cleanStd)) {
-        chunkScores.set(cid, (chunkScores.get(cid) ?? 0) + 1.0);
+  // Merge duplicate hits for the same chunk across sources, keeping any similarity found.
+  const merged = new Map<string, RetrievalHit>();
+  for (const list of chunkLists) {
+    for (const h of list) {
+      const existing = merged.get(h.key);
+      if (!existing) {
+        merged.set(h.key, h);
+      } else if (existing.similarity === undefined && h.similarity !== undefined) {
+        merged.set(h.key, { ...existing, similarity: h.similarity });
       }
     }
   }
 
-  const sortedChunks = Array.from(chunkScores.entries())
+  const rankedChunks: FusedChunk[] = Array.from(merged.entries())
+    .map(([key, h]) => ({ ...h.chunk, similarity: h.similarity, rrfScore: chunkScores.get(key) ?? 0 }))
+    .sort((a, b) => b.rrfScore - a.rrfScore)
+    .slice(0, topN);
+
+  // Standard-level ranking. Dedupe each retriever's chunk list down to one
+  // entry per standard (its best-ranked chunk) BEFORE running RRF — otherwise
+  // a document with many chunks in the top-30 (e.g. a 249-chunk standard)
+  // racks up RRF score just from volume and can outrank a document with one
+  // strongly-matching chunk. This is the "resists chunk-volume bias"
+  // requirement from the architecture spec's adjudicator design.
+  const dedupeToStandards = (hits: RetrievalHit[]): string[] => {
+    const seen = new Set<string>();
+    const ordered: string[] = [];
+    for (const h of hits) {
+      if (!seen.has(h.standardId)) {
+        seen.add(h.standardId);
+        ordered.push(h.standardId);
+      }
+    }
+    return ordered;
+  };
+
+  const standardLists: string[][] = [
+    raw.exactHits,
+    raw.graphHits,
+    dedupeToStandards(raw.bm25Hits),
+    dedupeToStandards(raw.denseHits),
+  ];
+  const standardScores = rrf(standardLists, k);
+  raw.exactHits.forEach((id, i) => standardScores.set(id, 1000 - i));
+  if (raw.preferredStandardId) {
+    standardScores.set(raw.preferredStandardId, (standardScores.get(raw.preferredStandardId) ?? 0) + 500);
+  }
+
+  const rankedStandards = Array.from(standardScores.entries())
     .sort((a, b) => b[1] - a[1])
-    .map(([cid]) => chunkMap.get(cid)!)
+    .map(([id]) => id)
     .filter(Boolean);
 
-  return {
-    rankedStandards: sortedStandards,
-    rankedChunks: sortedChunks,
-    standardScores,
-  };
+  return { rankedStandards, rankedChunks };
 }

@@ -1,42 +1,28 @@
 /**
- * BISVEDA V9 — Master Pipeline Orchestrator (lib/pipeline/orchestrator.ts)
- * 
- * Chains the 12 pure stages:
- *  1. normalize
- *  2. route
- *  3. resolveContext
- *  4. resolveProduct
- *  5. retrieve (multi-store parallel)
- *  6. fuse (RRF, k=60)
- *  7. floorCheck (calibrated semantic threshold)
- *  8. adjudicate (deterministic, default not_applicable)
- *  9. buildPackage (frozen evidence package, S1..Sn)
- * 10. generate (LLM slot filling, temp 0.1)
- * 11. trustGate (number support & hallucination drop)
- * 12. respond (unified BisvedaResponse contract)
+ * BISVEDA — Conversational Orchestrator (lib/pipeline/orchestrator.ts, P3.5)
+ *
+ * runTurn() chains: understand -> (vision) -> retrieve -> fuse -> floor ->
+ * adjudicate -> package -> answer -> trust -> respond. Stage events are
+ * emitted only for stages that actually ran (A16).
+ *
+ * `find_labs` / `find_ahc` / `hallmark` / `mark_check` / `form_i` intents
+ * fall back to the kb_question path until P5 builds their tools — an
+ * honest "search what we have" rather than a broken feature.
  */
 
-import { normalizeQuery, NormalizedInput } from "./normalize";
-import { routeQuery, RouteOutcome } from "./route";
+import { normalizeQuery } from "./normalize";
 import { resolveContext, ConversationContext, ConversationTurn } from "./context";
-import { resolveProduct, ProductResolution } from "./product";
-import { retrieveMultiStore, MultiStoreRetrievalResult } from "./retrieve";
-import { fuseRetrievalResults, FusedResults } from "./fuse";
-import { checkRelevanceFloor, FloorCheckResult } from "./floor";
-import { adjudicateCandidates, AdjudicationPackage } from "./adjudicate";
+import { understandTurn, ConversationTurnSummary } from "./understand";
+import { retrieveMultiStore } from "./retrieve";
+import { fuseRetrievalResults } from "./fuse";
+import { checkRelevanceFloor } from "./floor";
+import { adjudicateCandidates } from "./adjudicate";
 import { buildEvidencePackage, EvidencePackage } from "./package";
-import { generateAnswerProse, GeneratedProse } from "./generate";
-import { runTrustGate, TrustGateReport } from "./trust";
-import {
-  BisvedaResponse,
-  StageEvent,
-  STAGE_LABELS,
-  PipelineStage,
-  buildFollowUps,
-} from "./respond";
-import { graphRepo } from "../knowledge/graph-repository";
-import { checkOutdatedReference } from "../outdated-checker";
-import { runRealVisionOcr, normalizeCmlNumber } from "../vision-inspector";
+import { generateAnswer, evidenceOnlyAnswer } from "./answer";
+import { runTrustGate } from "./trust";
+import { BisvedaResponse, StageEvent, STAGE_LABELS, PipelineStage, buildFollowUps, ImageReadCard, MarkCard, HallmarkCard } from "./respond";
+import { getAllStandards, getChunksByStandard, getStandardById, isScopeChunk } from "../kb/store";
+import { inspectImage, normalizeCmlNumber, validateHuid, parsePurity, VisionInspectionResult } from "../vision";
 
 export type { BisvedaResponse, StageEvent, PipelineStage };
 export { STAGE_LABELS, buildFollowUps };
@@ -44,452 +30,394 @@ export { STAGE_LABELS, buildFollowUps };
 export interface PipelineOptions {
   query: string;
   conversation_id?: string;
-  sessionId?: string; // backwards compatibility
+  sessionId?: string; // backwards compatibility with older callers
   history?: ConversationTurn[];
   userLocation?: { lat: number; lng: number };
   attachment?: { name: string; base64: string; type?: string };
+  formState?: Record<string, unknown>;
   onStageEvent?: (event: StageEvent) => void;
+}
+
+function knownStandardsList(): string {
+  return getAllStandards()
+    .map((s) => s.id)
+    .join(", ");
+}
+
+function summarizeHistoryForLLM(history: ConversationTurn[] = [], maxTurns = 3): ConversationTurnSummary[] {
+  const recent = history.slice(-maxTurns);
+  const out: ConversationTurnSummary[] = [];
+  for (const turn of recent) {
+    if (turn.query) out.push({ role: "user", text: turn.query });
+    const respText = turn.response?.text;
+    if (typeof respText === "string" && respText.trim()) {
+      out.push({ role: "assistant", text: respText.slice(0, 200) });
+    }
+  }
+  return out;
+}
+
+function refusalNotInSources(conversationId: string, language: string, extra?: string): BisvedaResponse {
+  return {
+    conversation_id: conversationId,
+    kind: "refusal",
+    language,
+    grounding: "none",
+    text: "",
+    sources: [],
+    refusal: {
+      reason: "not_in_sources",
+      message:
+        (extra ? `${extra} ` : "") +
+        `We couldn't find this in the documents we hold. Our knowledge base currently covers: ${knownStandardsList()}.`,
+      next_steps: [
+        { text: "Search the official BIS Standards Catalogue", url: "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails" },
+        { text: "National Consumer Helpline", url: "https://consumerhelpline.gov.in/" },
+      ],
+    },
+    follow_ups: [],
+  };
+}
+
+async function answerForStandard(
+  conversationId: string,
+  question: string,
+  standardId: string,
+  language: string,
+  historyText?: string,
+  userProvidedText?: string
+): Promise<BisvedaResponse | null> {
+  const std = getStandardById(standardId);
+  if (!std) return null;
+
+  const chunks = getChunksByStandard(std.id);
+  const scopeChunks = chunks.filter((c) => isScopeChunk(c.clause, c.clause_title)).slice(0, 4);
+  const evidenceChunks = (scopeChunks.length > 0 ? scopeChunks : chunks.slice(0, 4)).map((c, i) => ({ ...c, similarity: undefined, rrfScore: 1000 - i }));
+
+  const pkg: EvidencePackage = buildEvidencePackage(
+    { primaryStandard: { id: std.id, title: std.title }, standards: [{ id: std.id, title: std.title, class: "applies", why: "Exact standard match.", source_url: `/api/docs/${std.doc_id}` }], grounding: "verified" },
+    evidenceChunks
+  );
+
+  const generated = await generateAnswer({ question, pkg, language, historyText, userProvidedText });
+  const trust = runTrustGate(generated.text, pkg);
+  const finalText = trust.allDropped ? evidenceOnlyAnswer(pkg, language) : trust.text;
+
+  return {
+    conversation_id: conversationId,
+    kind: "answer",
+    language,
+    grounding: "verified",
+    text: finalText,
+    standards: pkg.standards,
+    sources: pkg.sources,
+    follow_ups: buildFollowUps({ id: std.id, title: std.title }),
+  };
 }
 
 export async function runPipeline(options: PipelineOptions): Promise<BisvedaResponse> {
   const conversationId = options.conversation_id || options.sessionId || `conv-${Date.now()}`;
   const emit = (stage: PipelineStage, status: "active" | "done", duration_ms?: number) => {
-    if (options.onStageEvent) {
-      options.onStageEvent({
-        stage,
-        label: STAGE_LABELS[stage],
-        status,
-        duration_ms,
-      });
-    }
+    options.onStageEvent?.({ stage, label: STAGE_LABELS[stage], status, duration_ms });
   };
 
   const t0 = Date.now();
   let effectiveQuery = (options.query || "").trim();
-  let visualEvidence: BisvedaResponse["visual_evidence"] = undefined;
+  let imageCard: ImageReadCard | undefined;
+  let markCard: MarkCard | undefined;
+  let hallmarkCard: HallmarkCard | undefined;
+  let userProvidedText: string | undefined;
 
-  // ── Stage 0: Multimodal Visual Inspection (if image attached) ────────────────
+  const buildCards = (): BisvedaResponse["cards"] => {
+    const cards: Record<string, unknown> = {};
+    if (imageCard) cards.image = imageCard;
+    if (markCard) cards.mark = markCard;
+    if (hallmarkCard) cards.hallmark = hallmarkCard;
+    return Object.keys(cards).length > 0 ? (cards as BisvedaResponse["cards"]) : undefined;
+  };
+
+  // ── Stage 0: Vision (if an image is attached) ───────────────────────────
   if (options.attachment?.base64) {
     emit("understand", "active");
-    const visionOutput = await runRealVisionOcr(options.attachment.base64);
+    const vision = await inspectImage(options.attachment.base64, options.attachment.type);
 
-    if (!visionOutput) {
+    if (!vision) {
       emit("understand", "done", Date.now() - t0);
       return {
         conversation_id: conversationId,
         kind: "refusal",
         language: "en",
         grounding: "none",
+        text: "",
+        sources: [],
         refusal: {
           reason: "not_in_sources",
-          message:
-            "Could not read the uploaded image. Please provide a clear, well-lit photograph showing the product rating plate, packaging label, or ISI mark.",
-          next_steps: [
-            { text: "Take a closer photo of the product marking" },
-            { text: "Type the standard code (e.g. IS 4151) or product name directly" },
-          ],
+          message: "I couldn't read the uploaded image. Please provide a clear, well-lit photo of the product label, rating plate, or ISI/hallmark.",
+          next_steps: [{ text: "Take a clearer photo of the product marking" }],
         },
-        sources: [],
         follow_ups: [],
       };
     }
 
-    const isCoffeeOrNegative =
-      !visionOutput.is_product_image ||
-      visionOutput.product_guess.toLowerCase().includes("coffee") ||
-      visionOutput.product_guess.toLowerCase().includes("cup") ||
-      visionOutput.product_guess.toLowerCase().includes("landscape") ||
-      visionOutput.product_guess.toLowerCase().includes("blurry") ||
-      visionOutput.product_guess.toLowerCase().includes("scenery");
+    imageCard = {
+      category: vision.category,
+      product_guess: vision.product_guess,
+      description: vision.description,
+      label_text: vision.label_text,
+      isi_mark_seen: vision.isi_mark_seen,
+      bis_hallmark_seen: vision.bis_hallmark_seen,
+      purity_mark: vision.purity_mark,
+      huid: vision.huid,
+      cml_number: vision.cml_number,
+      confidence_note: vision.confidence_note,
+    };
 
-    const hasAnyBisMarkers =
-      visionOutput.is_numbers.length > 0 ||
-      visionOutput.licence_numbers.length > 0 ||
-      visionOutput.huid.length > 0 ||
-      visionOutput.isi_mark_seen === true;
-
-    if (isCoffeeOrNegative && !hasAnyBisMarkers) {
+    // 1. Not a product or unreadable
+    if (vision.category === "not_a_product" || vision.category === "unreadable") {
       emit("understand", "done", Date.now() - t0);
       return {
         conversation_id: conversationId,
         kind: "refusal",
         language: "en",
         grounding: "none",
+        text: "",
+        sources: [],
+        cards: buildCards(),
         refusal: {
           reason: "not_in_sources",
-          message: `I cannot identify an Indian Standard or BIS mark in this image. This appears to be ${visionOutput.product_guess || "an unknown object"}. Please provide a clear photo of the product rating plate, packaging label, or ISI mark.`,
-          next_steps: [
-            { text: "Upload a photo of a manufactured product or rating plate" },
-            { text: "Search by standard number or product name in the search bar" },
-          ],
+          message: `This image appears to be ${vision.product_guess || "an object without commercial product labeling"}. Please provide a clear, well-lit photo of a product label, rating plate, or official BIS certification mark.`,
+          next_steps: [{ text: "Upload a clear photo of a product label or BIS mark" }],
         },
-        sources: [],
         follow_ups: [],
       };
     }
 
-    // Check for Ambiguous Product (e.g. helmet without visible standard code)
+    // 2. Other product (outside our 3 domains)
+    if (vision.category === "other_product") {
+      emit("understand", "done", Date.now() - t0);
+      return {
+        conversation_id: conversationId,
+        kind: "refusal",
+        language: "en",
+        grounding: "none",
+        text: "",
+        sources: [],
+        cards: buildCards(),
+        refusal: {
+          reason: "not_in_sources",
+          message: `This looks like ${vision.product_guess}. We currently only hold official BIS standards for helmets (IS 4151, IS 2925), toys (IS 9873 series, IS 15644), and gold hallmarking (IS 1417, IS 1418, IS 15820).`,
+          next_steps: [
+            { text: "Search the official BIS Standards Catalogue", url: "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails" },
+          ],
+        },
+        follow_ups: [],
+      };
+    }
+
+    // 3. Helmet without standard number or mark
     if (
-      visionOutput.product_guess.toLowerCase().includes("helmet") &&
-      visionOutput.is_numbers.length === 0 &&
-      !effectiveQuery.toLowerCase().includes("2925") &&
-      !effectiveQuery.toLowerCase().includes("4151")
+      vision.category === "helmet" &&
+      vision.is_numbers.length === 0 &&
+      vision.isi_mark_seen !== true &&
+      !vision.cml_number &&
+      !/\bIS\s?\d/i.test(effectiveQuery)
     ) {
       emit("understand", "done", Date.now() - t0);
       return {
         conversation_id: conversationId,
         kind: "clarify",
         language: "en",
-        grounding: "verified",
+        grounding: "none",
+        text: "I see a helmet, but no standard number or ISI mark is clearly legible. Which type is it?",
+        sources: [],
+        cards: buildCards(),
         clarify: {
-          question:
-            "I see a helmet in the photo, but no standard number or ISI mark is clearly legible. Which type of helmet is this?",
+          question: "Which type of helmet is this?",
           options: [
-            { label: "Two-Wheeler Motorcycle Riding (IS 4151)", value: "Which standard applies to motorcycle rider helmets?" },
-            { label: "Industrial & Construction Safety (IS 2925)", value: "Which standard applies to industrial safety helmets?" },
+            { label: "Motorcycle / Two-Wheeler (IS 4151)", value: "Which standard applies to motorcycle rider helmets?" },
+            { label: "Industrial / Construction Safety (IS 2925)", value: "Which standard applies to industrial safety helmets?" },
           ],
         },
-        sources: [],
-        follow_ups: [
-          "Is IS 4151 mandatory for motorcycle helmets?",
-          "Is IS 2925 mandatory for industrial helmets?",
-        ],
+        follow_ups: [],
       };
     }
 
-    visualEvidence = {
-      product_guess: visionOutput.product_guess,
-      label_text: visionOutput.label_text,
-      licence_number: normalizeCmlNumber(visionOutput.licence_numbers[0]) || undefined,
-      isi_mark_seen: visionOutput.isi_mark_seen,
-    };
+    // 4. Gold jewellery
+    if (vision.category === "gold_jewellery") {
+      const parsedPurity = parsePurity(vision.purity_mark);
+      const huidValid = vision.huid ? validateHuid(vision.huid) : undefined;
+      hallmarkCard = {
+        purity_karat: parsedPurity?.carat,
+        purity_fineness: parsedPurity?.fineness,
+        huid: vision.huid || undefined,
+        huid_format_valid: huidValid?.valid,
+      };
 
-    if (!effectiveQuery) {
-      effectiveQuery = visionOutput.is_numbers[0]
-        ? `Which standard applies to ${visionOutput.is_numbers[0]} and is it mandatory?`
-        : `Which Indian Standard applies to ${visionOutput.product_guess}?`;
-    } else if (visionOutput.is_numbers[0] && !effectiveQuery.includes("IS ")) {
-      effectiveQuery = `${effectiveQuery} (${visionOutput.is_numbers[0]})`;
+      userProvidedText = [
+        vision.description ? `Visual observation: ${vision.description}` : "",
+        vision.label_text ? `Markings read from jewellery: ${vision.label_text}` : "",
+        vision.purity_mark ? `Purity mark: ${vision.purity_mark}${parsedPurity ? ` (${parsedPurity.standardGrade})` : ""}` : "",
+        vision.huid ? `HUID code: ${vision.huid} (format: ${huidValid?.valid ? "valid 6-character alphanumeric" : "invalid format"})` : "",
+        vision.bis_hallmark_seen === true ? "BIS hallmark triangular logo visible" : "",
+      ]
+        .filter(Boolean)
+        .join("\n");
+
+      if (!effectiveQuery) {
+        effectiveQuery = "What are the BIS gold jewellery hallmarking requirements, purity grades, and marking rules under IS 1417?";
+      }
+    }
+
+    // 5. Helmet or Toy with mark or CM/L
+    if (vision.category === "helmet" || vision.category === "toy") {
+      if (vision.cml_number) {
+        markCard = {
+          cml_number: vision.cml_number,
+          note: `Licence number read: ${vision.cml_number}. Verify authenticity on the BIS Care app or Manak Online portal.`,
+        };
+      }
+
+      userProvidedText = [
+        vision.description ? `Visual observation: ${vision.description}` : "",
+        vision.label_text ? `Label text read from photo: ${vision.label_text}` : "",
+        vision.cml_number ? `Licence number: ${vision.cml_number}` : "",
+        vision.isi_mark_seen === true ? "BIS Standard Mark (ISI) visible" : "",
+      ]
+        .filter(Boolean)
+        .join("\n");
+
+      if (!effectiveQuery) {
+        const isMatch = vision.is_numbers.find((n) => /\bIS\s?\d/i.test(n));
+        if (isMatch) {
+          effectiveQuery = `Which standard applies to ${isMatch} and what does it cover?`;
+        } else if (vision.category === "helmet") {
+          effectiveQuery = `Which standard applies to ${vision.product_guess}?`;
+        } else {
+          effectiveQuery = `Which standards apply to ${vision.product_guess}?`;
+        }
+      } else if (vision.is_numbers[0] && !/\bIS\s?\d/i.test(effectiveQuery)) {
+        effectiveQuery = `${effectiveQuery} (${vision.is_numbers[0]})`;
+      }
     }
   }
 
-  // ── Stage 1: Normalize ───────────────────────────────────────────────────────
-  emit("understand", "active");
+  // ── Stage 1: Context (multi-turn) ────────────────────────────────────────
+  const context: ConversationContext = resolveContext(conversationId, effectiveQuery, options.history);
+  const historyForLLM = summarizeHistoryForLLM(options.history);
+  const historyText = historyForLLM.map((h) => `${h.role}: ${h.text}`).join("\n");
+
+  // ── Stage 2: Understand ───────────────────────────────────────────────────
+  if (!options.attachment?.base64) emit("understand", "active");
+  const understood = await understandTurn({
+    message: effectiveQuery,
+    history: historyForLLM,
+    imageSummary: userProvidedText,
+    formState: options.formState,
+  });
+  emit("understand", "done", Date.now() - t0);
+
   const normalized = normalizeQuery(effectiveQuery);
 
-  // ── Stage 2: Route ───────────────────────────────────────────────────────────
-  const context = resolveContext(conversationId, effectiveQuery, options.history);
-  const route = routeQuery(normalized, Boolean(context.activeProduct));
-
-  // Branch 2.1: Identifier (Speed Gate)
-  if (route.kind === "identifier") {
-    emit("understand", "done", Date.now() - t0);
-    const std = await graphRepo.getStandard(route.identifier);
-    if (std) {
-      const qcos = await graphRepo.qcosForStandard(std.id);
-      const activeQco = qcos.find((q) => q.status === "in_force");
-      const schemes = await graphRepo.schemesForStandard(std.id);
-      const labs = await graphRepo.labsForStandard(std.id);
-
-      const s1 = {
-        label: "S1",
-        kind: "catalogue" as const,
-        standard_id: std.id,
-        title: `${std.id}${std.year ? `:${std.year}` : ""} — ${std.title}`,
-        has_file: false,
-        url: std.source_url,
-        text: `${std.id}${std.year ? `:${std.year}` : ""} establishes the official Indian Standard requirements for ${std.title}.`,
-      };
-
-      return {
-        conversation_id: conversationId,
-        kind: "answer",
-        language: normalized.detectedLanguage,
-        grounding: "verified",
-        primary_standard: { id: std.id, title: std.title },
-        qco: activeQco ? { status: "mandatory", order_title: activeQco.title, source: activeQco.source_url } : { status: "unknown", source: std.source_url },
-        standards: [{ id: std.id, title: std.title, class: "applies", why: `Exact standard number match for ${std.id}.`, source: std.source_url }],
-        certification: schemes[0] ? { scheme_name: schemes[0].name, steps: schemes[0].steps } : null,
-        labs: labs.slice(0, 3).map((l) => ({ id: l.id, name: l.name, city: l.city, state: l.state, source: l.source_url })),
-        sources: [s1],
-        answer: {
-          headline: `The operative Indian Standard is ${std.id} — ${std.title} [S1].`,
-          points: [
-            `Standard status: ${std.status.toUpperCase()} under technical committee ${std.committee || "BIS"} [S1].`,
-            activeQco ? `BIS certification is mandatory under the ${activeQco.title} [S1].` : `Check official BIS notifications for mandatory certification status [S1].`,
-          ],
-          next_steps: schemes[0]?.steps?.slice(0, 2).map((s) => s.text) || [],
-        },
-        follow_ups: buildFollowUps({ id: std.id, title: std.title }, labs.length > 0, Boolean(schemes[0])),
-        visual_evidence: visualEvidence,
-      };
-    }
+  // ── Branch: identifier (exact IS/CM-L/HUID pattern) ──────────────────────
+  if (understood.intent === "identifier") {
+    const stdId = understood.standards[0];
+    const resp = stdId ? await answerForStandard(conversationId, effectiveQuery, stdId, understood.language, historyText, userProvidedText) : null;
+    if (resp) return { ...resp, cards: buildCards() };
+    return refusalNotInSources(conversationId, understood.language, `"${stdId}" is not one of the standards we hold.`);
   }
 
-  // Branch 2.2: Smalltalk
-  if (route.kind === "smalltalk") {
-    emit("understand", "done", Date.now() - t0);
+  // ── Branch: smalltalk / gibberish / out_of_scope ─────────────────────────
+  if (understood.intent === "smalltalk" || understood.intent === "gibberish" || understood.intent === "out_of_scope") {
     return {
       conversation_id: conversationId,
-      kind: "smalltalk",
-      language: route.lang,
+      kind: understood.intent === "smalltalk" ? "smalltalk" : "refusal",
+      language: understood.language,
       grounding: "none",
-      answer: {
-        headline: route.reply,
-        points: [],
-        next_steps: [],
-      },
+      text: understood.intent === "smalltalk" ? understood.fastReply || "" : "",
       sources: [],
-      follow_ups: [
-        "Which standard applies to two-wheeler helmets?",
-        "Is BIS mandatory for pressure cookers?",
-        "What are the standards for children's toys?",
-      ],
+      refusal:
+        understood.intent === "smalltalk"
+          ? undefined
+          : {
+              reason: understood.intent,
+              message: understood.fastReply || "This is outside what BISVEDA covers.",
+              next_steps: [{ text: "Visit the official BIS Portal", url: "https://www.bis.gov.in/" }],
+            },
+      follow_ups: understood.intent === "smalltalk" ? [`Which standard applies to helmets?`, `What are the gold hallmarking grades?`] : [],
     };
   }
 
-  // Branch 2.3: Gibberish
-  if (route.kind === "gibberish") {
-    emit("understand", "done", Date.now() - t0);
-    return {
-      conversation_id: conversationId,
-      kind: "refusal",
-      language: normalized.detectedLanguage,
-      grounding: "none",
-      refusal: {
-        reason: "gibberish",
-        message: route.message,
-        next_steps: [
-          { text: "Ask about a specific product, such as helmets, toys, or pressure cookers." },
-        ],
-      },
-      sources: [],
-      follow_ups: [],
-    };
-  }
-
-  // Branch 2.4: Out of Scope
-  if (route.kind === "out_of_scope") {
-    emit("understand", "done", Date.now() - t0);
-    return {
-      conversation_id: conversationId,
-      kind: "refusal",
-      language: normalized.detectedLanguage,
-      grounding: "none",
-      refusal: {
-        reason: "out_of_scope",
-        message: route.message,
-        next_steps: [
-          { text: "Visit National Consumer Helpline", url: "https://consumerhelpline.gov.in/" },
-          { text: "Visit Official BIS Portal", url: "https://www.bis.gov.in/" },
-        ],
-      },
-      sources: [],
-      follow_ups: [],
-    };
-  }
-
-  // Branch 2.5: Needs Clarification (Fixes B3)
-  if (route.kind === "needs_clarification") {
-    emit("understand", "done", Date.now() - t0);
+  // ── Branch: needs clarification ──────────────────────────────────────────
+  if (understood.intent === "clarify" && understood.clarify) {
     return {
       conversation_id: conversationId,
       kind: "clarify",
-      language: normalized.detectedLanguage,
+      language: understood.language,
       grounding: "none",
-      clarify: {
-        question: route.prompt,
-        options: route.options,
-      },
+      text: understood.clarify.prompt,
       sources: [],
+      clarify: { question: understood.clarify.prompt, options: understood.clarify.options },
       follow_ups: [],
     };
   }
 
-  // Branch 2.6: Explain Simply Follow-up
-  const isExplainSimply = /\b(?:explain\s*(?:this\s*)?(?:simply|in\s*simple|plain)|simplify|everyday\s*language|without\s*technical\s*jargon|samjhao|samjhaiye)\b/i.test(normalized.normalizedText);
-  if (isExplainSimply && context.activeStandards.length > 0) {
-    const std = await graphRepo.getStandard(context.activeStandards[0]);
-    if (std) {
-      emit("understand", "done", Date.now() - t0);
-      const qcos = await graphRepo.qcosForStandard(std.id);
-      const activeQco = qcos.find((q) => q.status === "in_force");
-      const schemes = await graphRepo.schemesForStandard(std.id);
-      const labs = await graphRepo.labsForStandard(std.id);
-
-      return {
-        conversation_id: conversationId,
-        kind: "answer",
-        language: normalized.detectedLanguage,
-        grounding: "verified",
-        primary_standard: { id: std.id, title: std.title },
-        qco: activeQco
-          ? { status: "mandatory", order_title: activeQco.title, source: activeQco.source_url }
-          : { status: "unknown", source: std.source_url },
-        standards: [{ id: std.id, title: std.title, class: "applies", why: `Current operative Indian Standard for ${std.title}.`, source: std.source_url }],
-        certification: schemes[0] ? { scheme_name: schemes[0].name, steps: schemes[0].steps } : null,
-        labs: labs.slice(0, 5).map((l) => ({ id: l.id, name: l.name, city: l.city, state: l.state, source: l.source_url })),
-        sources: [{
-          label: "S1",
-          kind: "catalogue",
-          standard_id: std.id,
-          title: `${std.id} — ${std.title}`,
-          has_file: false,
-          url: std.source_url,
-          text: `Official Indian Standard ${std.id} establishes safety requirements for ${std.title}.`,
-        }],
-        answer: {
-          headline: `In Simple Everyday Terms: What You Need to Know About ${std.id}`,
-          points: [
-            `If you make, import, or sell this product in India, it must strictly meet Indian Standard ${std.id}.`,
-            activeQco
-              ? `BIS certification is legally mandatory under government orders. You cannot sell this item without the official ISI mark.`
-              : `Compliance ensures consumer safety and durability.`,
-            `To get certified, a manufacturer submits test samples to a BIS recognized lab, undergoes a factory inspection, and receives a CM/L licence number.`,
-          ],
-          next_steps: [
-            `Obtain the official specifications for ${std.id} from the BIS portal.`,
-            `Contact an accredited lab from the list below to test sample batches.`,
-            `Apply online on the Manakonline portal under Scheme-I for factory verification.`,
-          ],
-        },
-        follow_ups: [
-          `Which labs can test ${std.id}?`,
-          `What are the certification steps for ${std.id}?`,
-          `How much does BIS certification cost?`,
-        ],
-      };
-    }
-  }
-
-  emit("understand", "done", Date.now() - t0);
-
-  // ── Stage 4: Product Resolution ──────────────────────────────────────────────
-  const productRes = resolveProduct(normalized.workingEnglishText);
-  // Follow-up context inheritance: if query names no product, inherit from context
-  if (!productRes.preferredStandardId && context.activeStandards.length > 0) {
-    productRes.preferredStandardId = context.activeStandards[0];
-  }
-  if (!productRes.matchedTerm && context.activeProduct) {
-    productRes.matchedTerm = context.activeProduct;
-  }
-
-  // ── Stage 5: Multi-Store Retrieval ───────────────────────────────────────────
+  // ── Branch: kb_question and the not-yet-built P5 tool intents (fall back honestly) ──
   emit("search", "active");
   const tSearch = Date.now();
-  const rawRetrieval = await retrieveMultiStore(
-    normalized.workingEnglishText,
-    normalized.canonicalStandards,
-    productRes,
-    context.activeStandards
-  );
+  const standardsFromUnderstand = understood.standards.filter((id) => getStandardById(id));
+  const canonicalForRetrieval = standardsFromUnderstand.length > 0 ? standardsFromUnderstand.map((id) => ({ id } as any)) : normalized.canonicalStandards;
 
-  // ── Stage 6: Reciprocal Rank Fusion ─────────────────────────────────────────
+  const rawRetrieval = await retrieveMultiStore(understood.standalone_query || effectiveQuery, canonicalForRetrieval, context.activeStandards);
   const fused = fuseRetrievalResults(rawRetrieval, 60);
   emit("search", "done", Date.now() - tSearch);
 
-  // ── Stage 7: Semantic Floor Check ───────────────────────────────────────────
   const floorCheck = checkRelevanceFloor(fused, rawRetrieval);
   if (!floorCheck.passed) {
     return {
-      conversation_id: conversationId,
-      kind: "refusal",
-      language: normalized.detectedLanguage,
-      grounding: "none",
-      refusal: {
-        reason: "not_in_sources",
-        message: floorCheck.refusalMessage || "I couldn't find this in the BIS sources I have in this prototype.",
-        next_steps: floorCheck.officialRoutes || [],
-      },
-      sources: [],
-      follow_ups: [
-        "Search BIS Standards Catalogue",
-        "Which product categories are mandatory under BIS?",
-      ],
+      ...refusalNotInSources(conversationId, understood.language),
+      cards: buildCards(),
     };
   }
 
-  // ── Stage 8: Adjudicate Candidates ──────────────────────────────────────────
   emit("check", "active");
   const tCheck = Date.now();
-  const adjudicated = await adjudicateCandidates(
-    normalized.workingEnglishText,
-    fused,
-    productRes,
-    normalized.canonicalStandards,
-    options.userLocation,
-    context.activeStandards
-  );
+  const adjudicated = adjudicateCandidates(fused, rawRetrieval);
   emit("check", "done", Date.now() - tCheck);
 
-  if (!adjudicated.primaryStandard && adjudicated.standards.length === 0) {
-    return {
-      conversation_id: conversationId,
-      kind: "refusal",
-      language: normalized.detectedLanguage,
-      grounding: "none",
-      refusal: {
-        reason: "not_in_sources",
-        message: "No applicable Indian Standard was confirmed for this product in our current verified sources.",
-        next_steps: [
-          { text: "Check the official BIS Catalogue", url: "https://www.services.bis.gov.in/" },
-        ],
-      },
-      sources: [],
-      follow_ups: [],
-    };
+  if (!adjudicated.primaryStandard) {
+    return { ...refusalNotInSources(conversationId, understood.language), cards: buildCards() };
   }
 
-  // ── Stage 9: Build Evidence Package ─────────────────────────────────────────
-  const evidencePkg = buildEvidencePackage(adjudicated, fused.rankedChunks);
+  const pkg = buildEvidencePackage(adjudicated, fused.rankedChunks);
+  if (pkg.sources.length === 0) {
+    return { ...refusalNotInSources(conversationId, understood.language), cards: buildCards() };
+  }
 
-  // ── Stage 10: Generate Prose Slots ──────────────────────────────────────────
   emit("write", "active");
   const tWrite = Date.now();
-  const rawProse = await generateAnswerProse(
-    effectiveQuery,
-    evidencePkg,
-    normalized.detectedLanguage
-  );
-
-  // ── Stage 11: Trust Gate Filtering ──────────────────────────────────────────
-  const trustReport = runTrustGate(rawProse, evidencePkg, normalized.detectedLanguage);
+  const generated = await generateAnswer({
+    question: understood.standalone_query || effectiveQuery,
+    pkg,
+    language: understood.language,
+    historyText,
+    userProvidedText,
+  });
+  const trust = runTrustGate(generated.text, pkg);
   emit("write", "done", Date.now() - tWrite);
 
-  // ── Stage 12: Unified Response ──────────────────────────────────────────────
-  const finalProse = trustReport.sanitizedProse;
-  const outdatedAlert = checkOutdatedReference(effectiveQuery);
-  if (outdatedAlert) {
-    finalProse.headline = `${outdatedAlert.queriedStandard} is superseded by ${outdatedAlert.currentStandard}.`;
-    finalProse.points = [
-      outdatedAlert.enforcementNotice,
-      ...finalProse.points,
-    ].slice(0, 4);
+  if (trust.allDropped) {
+    return { ...refusalNotInSources(conversationId, understood.language), cards: buildCards() };
   }
 
   return {
     conversation_id: conversationId,
     kind: "answer",
-    language: normalized.detectedLanguage,
+    language: understood.language,
     grounding: adjudicated.grounding,
-    answer: finalProse,
-    primary_standard: adjudicated.primaryStandard || undefined,
-    qco: adjudicated.qco || undefined,
-    standards: adjudicated.standards.map((s) => ({
-      id: s.id,
-      title: s.title,
-      class: s.class as any,
-      why: s.why,
-      source: s.source,
-    })),
-    certification: adjudicated.scheme,
-    labs: adjudicated.labs.length > 0 ? adjudicated.labs : null,
-    sources: evidencePkg.sources,
-    follow_ups: buildFollowUps(
-      adjudicated.primaryStandard,
-      adjudicated.labs.length > 0,
-      Boolean(adjudicated.scheme)
-    ),
-    visual_evidence: visualEvidence,
+    text: trust.text,
+    standards: pkg.standards,
+    sources: pkg.sources,
+    cards: buildCards(),
+    follow_ups: buildFollowUps(adjudicated.primaryStandard),
   };
 }
