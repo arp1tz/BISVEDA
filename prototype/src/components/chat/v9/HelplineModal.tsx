@@ -116,16 +116,19 @@ export function HelplineModal({ isOpen, onClose, initialPhone = "" }: HelplineMo
               </p>
             </div>
 
-            <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-left space-y-1.5 text-slate-600">
-              <div className="flex items-center gap-2 font-semibold text-[#0B2A4A]">
-                <Volume2 className="h-3.5 w-3.5 text-[#E8710A]" />
-                <span>What to expect on the call:</span>
+            <div className="p-3.5 bg-amber-50 rounded-xl border border-amber-300 text-xs text-left flex items-start gap-2.5">
+              <span className="text-xl">📱</span>
+              <div className="space-y-1">
+                <p className="font-bold text-amber-950 text-xs">
+                  Important: Press 1 on your keypad when you answer!
+                </p>
+                <p className="text-[11px] text-amber-900 leading-relaxed">
+                  Because this is a trial line, you will hear: <em>"This is a test call from Twilio..."</em>. <strong>Press 1 (or any key) on your phone dialpad</strong> immediately to connect directly to BISVEDA AI.
+                </p>
+                <p className="text-[11px] text-amber-800">
+                  Once connected, Gemini Live AI will greet you and answer your questions in Hindi or English!
+                </p>
               </div>
-              <ul className="list-disc pl-5 space-y-1 text-[11px] text-slate-600">
-                <li className="font-semibold text-amber-800">Answer the call and press any key (e.g. 1) to connect to BISVEDA AI.</li>
-                <li>BISVEDA AI Assistant will greet you in Hindi or English.</li>
-                <li>Speak naturally: ask about Indian Standards, ISI marks, or hallmarking.</li>
-              </ul>
             </div>
 
             <div className="pt-2 flex items-center justify-center gap-2">

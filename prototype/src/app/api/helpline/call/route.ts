@@ -155,6 +155,12 @@ export async function POST(req: NextRequest) {
         params.append("From", twilioPhoneNumber);
         params.append("Url", effectiveTwimlUrl);
 
+        console.log("[Twilio Call Dispatch]", {
+          to: e164Number,
+          from: twilioPhoneNumber,
+          url: effectiveTwimlUrl,
+        });
+
         const response = await fetch(twilioUrl, {
           method: "POST",
           headers: {

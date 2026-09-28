@@ -160,6 +160,8 @@ async def bisveda_twiml(request: Request):
     connect = Connect()
     connect.stream(url=stream_url)
     response.append(connect)
+    response.pause(length=120)
+
     log.info(f"TwiML requested. Connecting stream to: {stream_url}")
     return Response(content=str(response), media_type="application/xml")
 
@@ -178,6 +180,7 @@ async def bisveda_media(websocket: WebSocket):
     await websocket.accept()
     call_id = "call_" + str(int(time.time()))
     stream_sid = None
+    stream_ready = asyncio.Event()
     CALLS[call_id] = {"should_end": False}
     log.info(f"[{call_id}] Twilio WebSocket connected!")
 
@@ -197,99 +200,126 @@ async def bisveda_media(websocket: WebSocket):
         ) as gemini:
             log.info(f"[{call_id}] Gemini Live session connected!")
 
-            # Trigger opening greeting immediately so caller hears voice as soon as they answer
-            await gemini.send_client_content(
-                turns={
-                    "role": "user",
-                    "parts": [{"text": "The caller has answered the call. Please greet them warmly in Hindi first and then in English as instructed, and invite their question."}],
-                },
-                turn_complete=True,
-            )
-
             async def twilio_to_gemini():
                 nonlocal stream_sid
-                while True:
-                    raw = await websocket.receive_text()
-                    try:
-                        event = json.loads(raw)
-                    except json.JSONDecodeError:
-                        continue
+                try:
+                    while True:
+                        raw = await websocket.receive_text()
+                        try:
+                            event = json.loads(raw)
+                        except json.JSONDecodeError:
+                            continue
 
-                    event_type = event.get("event")
-                    if event_type == "start":
-                        start = event.get("start", {})
-                        stream_sid = event.get("streamSid") or start.get("streamSid")
-                        log.info(f"[{call_id}] Media stream started: {stream_sid}")
-                    elif event_type == "media":
-                        payload = event.get("media", {}).get("payload")
-                        if payload:
-                            pcm16k = twilio_to_gemini_pcm16(payload, call_id)
-                            await gemini.send_realtime_input(
-                                audio=types.Blob(data=pcm16k, mime_type="audio/pcm;rate=16000")
-                            )
-                    elif event_type == "stop":
-                        log.info(f"[{call_id}] Twilio stream stopped")
-                        return
+                        event_type = event.get("event")
+                        if event_type == "connected":
+                            log.info(f"[{call_id}] Twilio protocol connected")
+                        elif event_type == "start":
+                            start = event.get("start", {})
+                            stream_sid = event.get("streamSid") or start.get("streamSid")
+                            log.info(f"[{call_id}] Media stream started: {stream_sid}")
+                            stream_ready.set()
+                        elif event_type == "media":
+                            payload = event.get("media", {}).get("payload")
+                            if payload:
+                                pcm16k = twilio_to_gemini_pcm16(payload, call_id)
+                                await gemini.send_realtime_input(
+                                    audio=types.Blob(data=pcm16k, mime_type="audio/pcm;rate=16000")
+                                )
+                        elif event_type == "stop":
+                            log.info(f"[{call_id}] Twilio stream stopped")
+                            return
+                except WebSocketDisconnect:
+                    log.info(f"[{call_id}] Twilio websocket disconnected in receiver")
+                    return
+                except Exception as e:
+                    log.warn(f"[{call_id}] twilio_to_gemini exception: {e}")
+                    return
 
             async def gemini_to_twilio():
                 nonlocal stream_sid
-                while True:
-                    try:
-                        async for response in gemini.receive():
-                            # Handle tool calls
-                            tool_call = getattr(response, "tool_call", None)
-                            if tool_call and getattr(tool_call, "function_calls", None):
-                                f_resps = []
-                                for fc in tool_call.function_calls:
-                                    res = execute_tool_call(call_id, fc.name, dict(fc.args or {}))
-                                    f_resps.append(types.FunctionResponse(id=fc.id, name=fc.name, response=res))
-                                try:
-                                    await gemini.send_tool_response(function_responses=f_resps)
-                                except Exception as e:
-                                    log.error(f"[{call_id}] Tool response error: {e}")
+                # Wait until Twilio provides the active streamSid before sending anything
+                log.info(f"[{call_id}] Waiting for Twilio streamSid...")
+                await stream_ready.wait()
+                log.info(f"[{call_id}] streamSid ready ({stream_sid}). Starting conversation!")
 
-                            server_content = getattr(response, "server_content", None)
-                            if not server_content:
-                                continue
+                # Trigger opening greeting now that stream is confirmed active
+                await gemini.send_client_content(
+                    turns={
+                        "role": "user",
+                        "parts": [{"text": "The caller has answered and stream is live. Please greet them warmly in Hindi first and then in English, and ask how you can assist with BIS standards, ISI marks, or hallmarking."}],
+                    },
+                    turn_complete=True,
+                )
 
-                            # Handle barge-in
-                            if getattr(server_content, "interrupted", False):
+                try:
+                    async for response in gemini.receive():
+                        # Handle tool calls
+                        tool_call = getattr(response, "tool_call", None)
+                        if tool_call and getattr(tool_call, "function_calls", None):
+                            f_resps = []
+                            for fc in tool_call.function_calls:
+                                res = execute_tool_call(call_id, fc.name, dict(fc.args or {}))
+                                f_resps.append(types.FunctionResponse(id=fc.id, name=fc.name, response=res))
+                            try:
+                                await gemini.send_tool_response(function_responses=f_resps)
+                            except Exception as e:
+                                log.error(f"[{call_id}] Tool response error: {e}")
+
+                        server_content = getattr(response, "server_content", None)
+                        if not server_content:
+                            continue
+
+                        # Handle barge-in
+                        if getattr(server_content, "interrupted", False):
+                            if stream_sid:
                                 await websocket.send_text(json.dumps({
                                     "event": "clear",
                                     "streamSid": stream_sid,
                                 }))
                                 log.info(f"[{call_id}] Barge-in detected: cleared playback buffer")
 
-                            # Send model audio response
-                            model_turn = getattr(server_content, "model_turn", None)
-                            if model_turn:
-                                for part in (getattr(model_turn, "parts", None) or []):
-                                    inline_data = getattr(part, "inline_data", None)
-                                    if inline_data and getattr(inline_data, "data", None):
-                                        payload = gemini_to_twilio_payload(inline_data.data, call_id)
+                        # Send model audio response
+                        model_turn = getattr(server_content, "model_turn", None)
+                        if model_turn:
+                            for part in (getattr(model_turn, "parts", None) or []):
+                                inline_data = getattr(part, "inline_data", None)
+                                if inline_data and getattr(inline_data, "data", None):
+                                    payload = gemini_to_twilio_payload(inline_data.data, call_id)
+                                    if stream_sid:
                                         await websocket.send_text(json.dumps({
                                             "event": "media",
                                             "streamSid": stream_sid,
                                             "media": {"payload": payload},
                                         }))
-                    except Exception as e:
-                        log.error(f"[{call_id}] Gemini loop exception: {e}")
-                        await asyncio.sleep(0.5)
 
-                    if CALLS.get(call_id, {}).get("should_end"):
-                        log.info(f"[{call_id}] Closing call after farewell")
-                        try:
-                            await websocket.close()
-                        except Exception:
-                            pass
-                        return
+                        if CALLS.get(call_id, {}).get("should_end"):
+                            log.info(f"[{call_id}] Closing call after farewell")
+                            try:
+                                await websocket.close()
+                            except Exception:
+                                pass
+                            return
 
-            await asyncio.gather(twilio_to_gemini(), gemini_to_twilio())
+                except Exception as e:
+                    if "1000" in str(e) or "closed" in str(e).lower() or isinstance(e, asyncio.CancelledError):
+                        log.info(f"[{call_id}] Gemini stream closed cleanly")
+                    else:
+                        log.error(f"[{call_id}] Gemini loop exception: {type(e).__name__}: {e}")
+
+            # Run both concurrently, and cancel remaining when either finishes
+            input_task = asyncio.create_task(twilio_to_gemini())
+            output_task = asyncio.create_task(gemini_to_twilio())
+            done, pending = await asyncio.wait(
+                {input_task, output_task},
+                return_when=asyncio.FIRST_COMPLETED
+            )
+            for t in pending:
+                t.cancel()
 
     except WebSocketDisconnect:
         log.info(f"[{call_id}] Twilio disconnected")
     except Exception as e:
-        log.error(f"[{call_id}] Session exception: {e}")
+        log.error(f"[{call_id}] Session exception: {type(e).__name__}: {e}")
     finally:
         AUDIO_STATE.pop(call_id, None)
         CALLS.pop(call_id, None)
@@ -316,7 +346,6 @@ def sync_bridge_config(twiml_url: str, stream_url: str):
             log.warn(f"Could not write {p}: {e}")
 
 if __name__ == "__main__":
-    # Setup ngrok
     ngrok.set_auth_token(NGROK_AUTHTOKEN)
     try:
         ngrok.kill()
