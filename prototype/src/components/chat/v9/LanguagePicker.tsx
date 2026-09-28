@@ -9,18 +9,27 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Languages, Search, Check } from "lucide-react";
+import { Languages, Search, Check, Loader2 } from "lucide-react";
 import { UI_LANGUAGES, findLanguage } from "@/lib/ui-i18n/languages";
 import { useUiLanguage } from "@/lib/ui-i18n/LanguageContext";
+import { isTranslatingNow, onTranslatingChange } from "@/lib/ui-i18n/translatingStatus";
 
 export function LanguagePicker() {
   const { lang, setLang } = useUiLanguage();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [translating, setTranslating] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
   const current = findLanguage(lang);
+
+  // Reflects PageTranslator's live progress, so switching language never looks stuck while a
+  // batch is still being fetched in the background.
+  useEffect(() => {
+    setTranslating(isTranslatingNow());
+    return onTranslatingChange(setTranslating);
+  }, []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -58,11 +67,12 @@ export function LanguagePicker() {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-busy={translating}
         className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold text-[#0B2A4A] bg-[#F7F8FA] hover:bg-[#E5E7EB] transition-colors cursor-pointer border border-[#E5E7EB]"
-        title="Choose interface language"
+        title={translating ? "Translating the page..." : "Choose interface language"}
       >
-        <Languages className="h-3.5 w-3.5" />
-        <span>{current.native}</span>
+        {translating ? <Loader2 className="h-3.5 w-3.5 animate-spin text-[#E8710A]" /> : <Languages className="h-3.5 w-3.5" />}
+        <span>{translating ? "Translating..." : current.native}</span>
       </button>
 
       {open && (

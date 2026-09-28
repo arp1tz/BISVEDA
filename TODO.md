@@ -262,6 +262,9 @@ All are archive.org scans. **Measured in P1, corrected from an earlier audit's g
 - [x] **12.6** Docs: this section, progress.md Latest State, CLAUDE.md architecture line for `lib/ui-i18n`/`PageTranslator`.
 - Known: `npm run eval:rag` hit Groq's daily token quota mid-session (see progress.md); re-run once it resets for a real number. `npm run build` not run this pass (dev server shares `.next`).
 
+## Follow-ups (blocked, do when unblocked)
+- [ ] **Re-run `npm run eval:rag` and `npm run eval:multi` once Groq's daily token quota resets.** The P12 session's numbers (23/32 golden) were degraded by quota exhaustion (confirmed 429 "tokens per day" error from heavy interactive testing), not a real regression; re-run both and update `progress.md`/`data/eval/results/baseline.json` with the clean numbers.
+
 ## Escalate to Opus 5.5 / High+ when
 - the RAG returns wrong answers even though the code looks correct
 - debugging spans multiple files

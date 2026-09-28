@@ -9,6 +9,12 @@
  * returns to English. It never replaces or unmounts a DOM node (React keeps owning the tree), it
  * only edits `nodeValue`/attribute values, so React re-renders are safe.
  *
+ * Cached translations apply instantly and synchronously. New ones are fetched in a few small
+ * batches that run in parallel (capped) and each apply to the page the moment they land, rather
+ * than waiting for the whole page to finish — so it updates live instead of appearing stuck.
+ * `translatingStatus.ts` tracks how many batches are in flight so `LanguagePicker` can show a
+ * visible "Translating..." indicator instead of the switch looking like it did nothing.
+ *
  * What it never touches: anything under an element carrying `translate="no"` or
  * `data-no-translate` (the answer body, [S#] citation pills, standard pills, source drawer
  * excerpts, user messages — these already arrive in the right language, or are facts that must
@@ -19,12 +25,19 @@
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useUiLanguage } from "@/lib/ui-i18n/LanguageContext";
+import { beginTranslating, endTranslating } from "@/lib/ui-i18n/translatingStatus";
 
 const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "NOSCRIPT", "CODE", "PRE", "TEXTAREA"]);
 const TRANSLATABLE_ATTRS = ["placeholder", "title", "aria-label"] as const;
 const BATCH_SIZE = 40;
+const MAX_CONCURRENT_BATCHES = 3;
 const CACHE_PREFIX = "bisveda.uiTranslateCache.";
 const MUTATION_DEBOUNCE_MS = 400;
+
+interface TranslateTarget {
+  value: string;
+  apply: (translated: string) => void;
+}
 
 /** True for text that carries no meaning to translate: blank, or only digits/punctuation/symbols (no letter in any script). */
 function isUntranslatable(text: string): boolean {
@@ -64,24 +77,31 @@ function saveCache(lang: string, cache: Map<string, string>) {
   }
 }
 
-async function fetchTranslations(texts: string[], lang: string): Promise<string[]> {
-  const out: string[] = [];
-  for (let i = 0; i < texts.length; i += BATCH_SIZE) {
-    const slice = texts.slice(i, i + BATCH_SIZE);
-    try {
-      const res = await fetch("/api/translate-ui", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lang, texts: slice }),
-      });
-      const data = await res.json().catch(() => ({}));
-      const got = Array.isArray(data.texts) ? data.texts : slice;
-      out.push(...slice.map((s: string, j: number) => (typeof got[j] === "string" ? got[j] : s)));
-    } catch {
-      out.push(...slice); // fail open: keep English for this batch
-    }
+async function fetchBatch(texts: string[], lang: string): Promise<string[]> {
+  try {
+    const res = await fetch("/api/translate-ui", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lang, texts }),
+    });
+    const data = await res.json().catch(() => ({}));
+    const got = Array.isArray(data.texts) ? data.texts : texts;
+    return texts.map((s, j) => (typeof got[j] === "string" ? got[j] : s));
+  } catch {
+    return texts; // fail open: keep English for this batch
   }
-  return out;
+}
+
+/** Runs async `tasks` with at most `limit` running at once. */
+async function runWithConcurrency(tasks: Array<() => Promise<void>>, limit: number): Promise<void> {
+  let next = 0;
+  const workers = Array.from({ length: Math.min(limit, tasks.length) }, async () => {
+    while (next < tasks.length) {
+      const task = tasks[next++];
+      await task();
+    }
+  });
+  await Promise.all(workers);
 }
 
 export function PageTranslator() {
@@ -120,11 +140,10 @@ export function PageTranslator() {
       trackedAttrElements.current.clear();
     };
 
-    // Collect untracked, translatable text nodes and attributes currently in the DOM.
-    const collect = (): { texts: string[]; textNodes: Text[]; attrTargets: Array<{ el: Element; attr: string; value: string }> } => {
-      const texts: string[] = [];
-      const textNodes: Text[] = [];
-      const attrTargets: Array<{ el: Element; attr: string; value: string }> = [];
+    // Collect untracked, translatable text nodes and attributes currently in the DOM, each as a
+    // target with its own `apply` so a batch can update the page the moment it lands.
+    const collect = (): TranslateTarget[] => {
+      const targets: TranslateTarget[] = [];
 
       const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
         acceptNode(node) {
@@ -138,8 +157,16 @@ export function PageTranslator() {
       let n = walker.nextNode();
       while (n) {
         const textNode = n as Text;
-        texts.push(textNode.nodeValue || "");
-        textNodes.push(textNode);
+        const original = textNode.nodeValue || "";
+        targets.push({
+          value: original,
+          apply: (translated) => {
+            if (!textNode.isConnected) return;
+            if (!originalText.current.has(textNode)) originalText.current.set(textNode, original);
+            textNode.nodeValue = translated;
+            trackedTextNodes.current.add(textNode);
+          },
+        });
         n = walker.nextNode();
       }
 
@@ -149,60 +176,68 @@ export function PageTranslator() {
           const value = el.getAttribute(attr);
           if (!value || isUntranslatable(value)) continue;
           if (trackedAttrElements.current.has(el) && originalAttrs.current.get(el)?.[attr] !== undefined) continue;
-          texts.push(value);
-          attrTargets.push({ el, attr, value });
+          targets.push({
+            value,
+            apply: (translated) => {
+              if (!el.isConnected) return;
+              const existing = originalAttrs.current.get(el) || {};
+              if (existing[attr] === undefined) existing[attr] = value;
+              originalAttrs.current.set(el, existing);
+              el.setAttribute(attr, translated);
+              trackedAttrElements.current.add(el);
+            },
+          });
         }
       });
 
-      return { texts, textNodes, attrTargets };
+      return targets;
     };
 
     const translatePass = async () => {
       if (lang === "en") return;
-      const { texts, textNodes, attrTargets } = collect();
-      if (texts.length === 0) return;
+      const targets = collect();
+      if (targets.length === 0) return;
 
       const cache = loadCache(lang);
-      const need: string[] = [];
-      const needIndex: number[] = [];
-      const resolved: string[] = new Array(texts.length);
-      texts.forEach((t, i) => {
-        const hit = cache.get(t);
-        if (hit) resolved[i] = hit;
-        else {
-          need.push(t);
-          needIndex.push(i);
+      const needFetch: TranslateTarget[] = [];
+
+      // Cached hits apply immediately, no network round trip, no flicker.
+      for (const target of targets) {
+        const hit = cache.get(target.value);
+        if (hit) target.apply(hit);
+        else needFetch.push(target);
+      }
+
+      if (needFetch.length === 0) return;
+
+      const batches: TranslateTarget[][] = [];
+      for (let i = 0; i < needFetch.length; i += BATCH_SIZE) batches.push(needFetch.slice(i, i + BATCH_SIZE));
+
+      let cacheDirty = false;
+      const tasks = batches.map((batch) => async () => {
+        beginTranslating();
+        try {
+          const translated = await fetchBatch(
+            batch.map((t) => t.value),
+            lang
+          );
+          if (runTokenRef.current !== myToken) return; // a newer language switch superseded this run
+          batch.forEach((target, i) => {
+            const result = translated[i];
+            if (!result) return;
+            target.apply(result);
+            if (result !== target.value) {
+              cache.set(target.value, result);
+              cacheDirty = true;
+            }
+          });
+        } finally {
+          endTranslating();
         }
       });
 
-      if (need.length > 0) {
-        const fetched = await fetchTranslations(need, lang);
-        fetched.forEach((t, i) => {
-          resolved[needIndex[i]] = t;
-          if (t && t !== need[i]) cache.set(need[i], t);
-        });
-        saveCache(lang, cache);
-      }
-
-      if (runTokenRef.current !== myToken) return; // language changed again while we were fetching
-
-      textNodes.forEach((node, i) => {
-        const translated = resolved[i];
-        if (!translated || !node.isConnected) return;
-        if (!originalText.current.has(node)) originalText.current.set(node, node.nodeValue || "");
-        node.nodeValue = translated;
-        trackedTextNodes.current.add(node);
-      });
-
-      attrTargets.forEach(({ el, attr, value }, i) => {
-        const translated = resolved[textNodes.length + i];
-        if (!translated || !el.isConnected) return;
-        const existing = originalAttrs.current.get(el) || {};
-        if (existing[attr] === undefined) existing[attr] = value;
-        originalAttrs.current.set(el, existing);
-        el.setAttribute(attr, translated);
-        trackedAttrElements.current.add(el);
-      });
+      await runWithConcurrency(tasks, MAX_CONCURRENT_BATCHES);
+      if (cacheDirty && runTokenRef.current === myToken) saveCache(lang, cache);
     };
 
     observerRef.current?.disconnect();
