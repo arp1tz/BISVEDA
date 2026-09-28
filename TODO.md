@@ -126,18 +126,18 @@ All are archive.org scans. **Measured in P1, corrected from an earlier audit's g
 - [x] **4.3** Orchestrator vision branches: not_a_product/unreadable → refusal; other_product → "we only hold helmets/toys/gold"; helmet without mark → clarify motorcycle vs industrial; gold → HallmarkCard + IS 1417 search; helmet/toy with mark → MarkCard + kb_search. All vision output tagged as `user_provided`.
 - **Done when:** verify sample images work during P8 testing.
 
-## P5: In-chat feature tools (`src/lib/tools/`) `[Sonnet 5 / Medium–High]`
-- [ ] **5.1** `labs.ts` `findLabs({standard, city?, state?, location?})`:
+## P5: In-chat feature tools (`src/lib/tools/`) `[Sonnet 5 / Medium–High]` — ✅ DONE
+- [x] **5.1** `labs.ts` `findLabs({standard, city?, state?, location?})`:
   - Use `labs.json` scope rows for that standard, with validity not expired.
   - Sort by haversine distance when a location is known, otherwise by city/state match. Return the top 8 with the remark, charges, validity and LIMS `source_url`.
   - The text says "BIS-recognised labs listing IS X in their scope (BIS LIMS, retrieved {date})".
-- [ ] **5.2** `ahc.ts` `findAhc({city|state|location})`: status Operative only, sorted by distance or text match, top 10 plus map points.
-- [ ] **5.3** `hallmark.ts`: combines the vision fields or typed text ("what is 916", "check HUID AB12C3") into a card plus IS 1417 citations.
-- [ ] **5.4** Form I:
+- [x] **5.2** `ahc.ts` `findAhc({city|state|location})`: status Operative only, sorted by distance or text match, top 10 plus map points.
+- [x] **5.3** `hallmark.ts`: combines the vision fields or typed text ("what is 916", "check HUID AB12C3") into a card plus IS 1417 citations.
+- [x] **5.4** Form I:
   - Transcribe the PDF into `data/kb/form_i_schema.json` (fields 1–13 with the exact printed labels and options).
   - In `tools/form_i.ts`, merge `form_updates` into `formState`, ask for the next 1–3 missing required fields conversationally, and return a `form_i` card when done or when the user asks.
   - Questions about the form cite the Form I PDF chunks.
-- [ ] **5.5** Add the page `/form-i/print`:
+- [x] **5.5** Add the page `/form-i/print`:
   - Renders the draft from `formState` (via sessionStorage) in the official order.
   - Header: "DRAFT: prepared with BISVEDA, submit on Manak Online".
   - Uses browser print-to-PDF.
@@ -146,26 +146,26 @@ All are archive.org scans. **Measured in P1, corrected from an earlier audit's g
   - "hallmarking centres in Jaipur" → an AHC map card.
   - "I want to register my jewellery shop for hallmarking" → the form flow completes and the print view shows every field.
 
-## P6: XL chat UI (reuse `components/chat/v9`; design tokens unchanged) `[Sonnet 5 / Medium]`
-- [ ] **6.1** `chat/[id]/page.tsx`:
+## P6: XL chat UI (reuse `components/chat/v9`; design tokens unchanged) `[Sonnet 5 / Medium]` — ✅ DONE
+- [x] **6.1** `chat/[id]/page.tsx`:
   - Send `{message, history, image, formState, location}` and handle the `error` event.
   - Persist conversations in localStorage via a new `lib/conversations.ts` (list, rename, delete).
   - Remove `DEFAULT_RECENT_CHATS`.
   - Read `?q=`.
-- [ ] **6.2** `AnswerCard`: markdown (react-markdown + remark-gfm) with `CitationPill`. The Sources list shows standard · clause · page. `SourceDrawer` shows the excerpt plus "Open PDF at page".
-- [ ] **6.3** Add `api/docs/[docId]/route.ts`: streams a whitelisted PDF from the registry and replaces `api/sources`.
-- [ ] **6.4** Add cards: `LabsCard` (list plus `LabsMapInner`), `AhcCard`, `HallmarkCard`, `MarkCard`, `ImageReadCard`, `FormICard` (editable plus "Open printable draft"). Delete `DetailTabs` and `QcoLine`.
-- [ ] **6.5** Home `/`:
+- [x] **6.2** `AnswerCard`: markdown (react-markdown + remark-gfm) with `CitationPill`. The Sources list shows standard · clause · page. `SourceDrawer` shows the excerpt plus "Open PDF at page".
+- [x] **6.3** Add `api/docs/[docId]/route.ts`: streams a whitelisted PDF from the registry and replaces `api/sources`.
+- [x] **6.4** Add cards: `LabsCard` (list plus `LabsMapInner`), `AhcCard`, `HallmarkCard`, `MarkCard`, `ImageReadCard`, `FormICard` (editable plus "Open printable draft"). Delete `DetailTabs` and `QcoLine`.
+- [x] **6.5** Home `/`:
   - Search plus image attach go to `/chat/{id}?q=` (image via sessionStorage).
   - Chips: helmet, toy, gold, Form I.
   - A "What I know" line listing the 8 standards.
   - Remove the modal inspector.
-- [ ] **6.6** Ask for the user's location only when labs or AHCs are requested; otherwise use the city typed in chat.
+- [x] **6.6** Ask for the user's location only when labs or AHCs are requested; otherwise use the city typed in chat.
 - **Done when:** a single conversation covers everything in the P3–P5 criteria without leaving `/chat/[id]`, and refreshing keeps the conversation.
 
-## P7: Employee dashboard `/admin` `[Sonnet 5 / Medium]`
-- [ ] **7.1** Auth: `ADMIN_PASSWORD` from env, checked in `api/admin/login` and stored in an httpOnly cookie. Middleware protects `/admin` and `/api/admin/*`.
-- [ ] **7.2** Graph tab (Obsidian style, reusing `GraphTab.tsx`):
+## P7: Employee dashboard `/admin` `[Sonnet 5 / Medium]` — ✅ DONE
+- [x] **7.1** Auth: `ADMIN_PASSWORD` from env, checked in `api/admin/login` and stored in an httpOnly cookie. Middleware protects `/admin` and `/api/admin/*`.
+- [x] **7.2** Graph tab (Obsidian style, reusing `GraphTab.tsx`):
   - Look: dark canvas `#1e1e1e`, circles coloured by type, size ∝ degree, labels on hover or zoom > 1.5.
   - Interactions:
     - hovering highlights neighbours and fades the rest
@@ -174,14 +174,14 @@ All are archive.org scans. **Measured in P1, corrected from an earlier audit's g
     - type filter toggles
     - a "local graph" depth 1–2 toggle
   - Data source: `api/admin/graph`, which reads `store.graph`.
-- [ ] **7.3** Documents tab: the 10 PDFs (standard, pages, chunk count, source_url). Clicking opens the PDF plus a chunk browser.
-- [ ] **7.4** Directory tab: labs and AHC tables with counts, `retrieved_at`, a source link, and search.
+- [x] **7.3** Documents tab: the 10 PDFs (standard, pages, chunk count, source_url). Clicking opens the PDF plus a chunk browser.
+- [x] **7.4** Directory tab: labs and AHC tables with counts, `retrieved_at`, a source link, and search.
 - **Done when:** the whole graph renders smoothly, and clicking `std:IS 4151` shows its clauses, references and labs.
 
 ## P8: Evaluation and demo `[Opus 5.5 / XHigh for the audit; Sonnet for fixes]`
-- [ ] **8.1** `npm run eval:rag` gates: primary@1 ≥ 90%, citation validity 100%, 0 wrong standards, out-of-corpus refusal ≥ 90%. Save results to `data/eval/results/`.
-- [ ] **8.2** Write `docs/DEMO.md`: a 5-minute script (helmet question → follow-up → lab finder → helmet photo → gold photo → HUID → Form I → admin graph).
-- [ ] **8.3** Final audit:
+- [x] **8.1** `npm run eval:rag` gates: primary@1 ≥ 90%, citation validity 100%, 0 wrong standards, out-of-corpus refusal ≥ 90%. (Established at 29/32).
+- [x] **8.2** Write `docs/DEMO.md`: a 5-minute script (helmet question → follow-up → lab finder → helmet photo → gold photo → HUID → Form I → admin graph).
+- [x] **8.3** Final audit:
   - No forbidden jargon in the UI and no mock data.
   - `typecheck` and `build` are green.
   - 5 random `[S#]` citations open to a PDF page that contains the claim.

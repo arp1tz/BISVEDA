@@ -1,0 +1,117 @@
+[
+  {
+    "field": 1,
+    "key": "name_of_jeweller",
+    "label": "Name of Jeweller",
+    "required": true,
+    "type": "text",
+    "prompt": "What is the official trade or legal Name of the Jeweller / Firm?"
+  },
+  {
+    "field": 2,
+    "key": "outlet_address",
+    "label": "Address of outlet(s) with PIN code, district, state, telephone, fax, email",
+    "required": true,
+    "type": "text",
+    "prompt": "Please provide the complete outlet address including PIN code, district, state, and contact details (email/phone)."
+  },
+  {
+    "field": 3,
+    "key": "near_landmark",
+    "label": "Near Landmark",
+    "required": false,
+    "type": "text",
+    "prompt": "Is there a nearby landmark for the outlet location?"
+  },
+  {
+    "field": 4,
+    "key": "constitution",
+    "label": "Whether Proprietorship / Partnership / Pvt. Ltd. Company / PSU",
+    "required": true,
+    "type": "select",
+    "options": [
+      "Proprietorship",
+      "Partnership",
+      "Private Limited Company",
+      "PSU"
+    ],
+    "prompt": "What is the constitution of the firm (Proprietorship, Partnership, Private Limited Company, or PSU)?"
+  },
+  {
+    "field": 5,
+    "key": "management_names",
+    "label": "Names of persons responsible for management",
+    "required": true,
+    "type": "text",
+    "prompt": "Who are the proprietor(s), partners, or directors responsible for management?"
+  },
+  {
+    "field": 6,
+    "key": "contact_person",
+    "label": "Name and designation of contact person",
+    "required": true,
+    "type": "text",
+    "prompt": "What is the name and designation of the primary contact person?"
+  },
+  {
+    "field": 7,
+    "key": "certificate_applied_for",
+    "label": "BIS Hallmarking Certificate applied for",
+    "required": true,
+    "type": "select",
+    "options": [
+      "Gold Jewellery (IS 1417)",
+      "Silver Jewellery (IS 2112)",
+      "Both"
+    ],
+    "prompt": "Which BIS Hallmarking Certificate are you applying for: Gold Jewellery (IS 1417), Silver Jewellery (IS 2112), or Both?"
+  },
+  {
+    "field": 8,
+    "key": "existing_certificates",
+    "label": "Whether already holds any other BIS Certificate",
+    "required": false,
+    "type": "text",
+    "prompt": "Do you already hold any other BIS Certificate or Licence (CM/L)?"
+  },
+  {
+    "field": 9,
+    "key": "annual_turnover",
+    "label": "Approximate annual turnover",
+    "required": true,
+    "type": "text",
+    "prompt": "What is your approximate annual turnover (in INR or turnover slab)?"
+  },
+  {
+    "field": 10,
+    "key": "corporate_details",
+    "label": "Corporate-level details and outlet list",
+    "required": false,
+    "type": "text",
+    "prompt": "Are there any additional branch outlets or corporate-level details?"
+  },
+  {
+    "field": 11,
+    "key": "cancellation_conviction",
+    "label": "Whether any previous cancellation / conviction",
+    "required": true,
+    "type": "text",
+    "prompt": "Has there been any previous BIS licence cancellation, conviction, or suspension (Yes/No with details)?"
+  },
+  {
+    "field": 12,
+    "key": "payment_details",
+    "label": "Payment details",
+    "required": false,
+    "type": "text",
+    "prompt": "Do you have any fee payment or transaction reference details?"
+  },
+  {
+    "field": 13,
+    "key": "identification_mark",
+    "label": "Identification mark used on articles",
+    "required": true,
+    "type": "text",
+    "prompt": "What is the jeweller's identification mark or logo applied on hallmarked articles?"
+  }
+]

@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function ChatIndexPage() {
+function ChatRedirect() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -21,5 +21,19 @@ export default function ChatIndexPage() {
     <div className="flex items-center justify-center min-h-[60vh]">
       <div className="animate-spin h-6 w-6 border-2 border-[#0B2A4A] border-t-transparent rounded-full" />
     </div>
+  );
+}
+
+export default function ChatIndexPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="animate-spin h-6 w-6 border-2 border-[#0B2A4A] border-t-transparent rounded-full" />
+        </div>
+      }
+    >
+      <ChatRedirect />
+    </Suspense>
   );
 }

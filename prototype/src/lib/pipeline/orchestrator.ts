@@ -17,12 +17,16 @@ import { retrieveMultiStore } from "./retrieve";
 import { fuseRetrievalResults } from "./fuse";
 import { checkRelevanceFloor } from "./floor";
 import { adjudicateCandidates } from "./adjudicate";
-import { buildEvidencePackage, EvidencePackage } from "./package";
+import { buildEvidencePackage, EvidencePackage, Source } from "./package";
 import { generateAnswer, evidenceOnlyAnswer } from "./answer";
 import { runTrustGate } from "./trust";
-import { BisvedaResponse, StageEvent, STAGE_LABELS, PipelineStage, buildFollowUps, ImageReadCard, MarkCard, HallmarkCard } from "./respond";
+import { BisvedaResponse, StageEvent, STAGE_LABELS, PipelineStage, buildFollowUps, ImageReadCard, MarkCard, HallmarkCard, LabsCard, AhcCard, FormICard } from "./respond";
 import { getAllStandards, getChunksByStandard, getStandardById, isScopeChunk } from "../kb/store";
 import { inspectImage, normalizeCmlNumber, validateHuid, parsePurity, VisionInspectionResult } from "../vision";
+import { findLabs } from "../tools/labs";
+import { findAhc } from "../tools/ahc";
+import { processHallmarkOrMark } from "../tools/hallmark";
+import { stepFormI } from "../tools/form_i";
 
 export type { BisvedaResponse, StageEvent, PipelineStage };
 export { STAGE_LABELS, buildFollowUps };
@@ -126,6 +130,8 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
   let imageCard: ImageReadCard | undefined;
   let markCard: MarkCard | undefined;
   let hallmarkCard: HallmarkCard | undefined;
+  let ahcCard: AhcCard | undefined;
+  let formICard: FormICard | undefined;
   let userProvidedText: string | undefined;
 
   const buildCards = (): BisvedaResponse["cards"] => {
@@ -133,6 +139,8 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
     if (imageCard) cards.image = imageCard;
     if (markCard) cards.mark = markCard;
     if (hallmarkCard) cards.hallmark = hallmarkCard;
+    if (ahcCard) cards.ahc = ahcCard;
+    if (formICard) cards.form_i = formICard;
     return Object.keys(cards).length > 0 ? (cards as BisvedaResponse["cards"]) : undefined;
   };
 
@@ -361,7 +369,220 @@ export async function runPipeline(options: PipelineOptions): Promise<BisvedaResp
     };
   }
 
-  // ── Branch: kb_question and the not-yet-built P5 tool intents (fall back honestly) ──
+  // ── Branch: find_labs (P5.1) ─────────────────────────────────────────────
+  if (understood.intent === "find_labs") {
+    let targetStd = understood.standards[0] || context.activeStandards[0];
+    if (!targetStd && understood.product) {
+      if (/helmet/i.test(understood.product)) targetStd = "IS 4151";
+      else if (/toy/i.test(understood.product)) targetStd = "IS 9873 (Part 1)";
+      else if (/gold/i.test(understood.product)) targetStd = "IS 1417";
+    }
+
+    const labsResult = findLabs({
+      standard: targetStd,
+      city: understood.city,
+      location: options.userLocation,
+    });
+
+    const labsCard: LabsCard = {
+      standard_id: labsResult.standardId || targetStd || "General",
+      labs: labsResult.labs,
+      retrieved_note: labsResult.retrievedNote,
+    };
+
+    let answerText = labsResult.textPrefix;
+    let sources: Source[] = [];
+    let standardsList = targetStd
+      ? [{ id: targetStd, title: getStandardById(targetStd)?.title || targetStd, class: "applies", why: "Standard in scope for lab testing." }]
+      : undefined;
+
+    try {
+      const canonicalForRetrieval = targetStd ? [{ id: targetStd } as any] : normalized.canonicalStandards;
+      const rawRetrieval = await retrieveMultiStore(
+        understood.standalone_query || effectiveQuery,
+        canonicalForRetrieval,
+        context.activeStandards
+      );
+      const fused = fuseRetrievalResults(rawRetrieval, 60);
+      const adjudicated = adjudicateCandidates(fused, rawRetrieval);
+      if (adjudicated.primaryStandard) {
+        const pkg = buildEvidencePackage(adjudicated, fused.rankedChunks);
+        if (pkg.sources.length > 0) {
+          const generated = await generateAnswer({
+            question: understood.standalone_query || effectiveQuery,
+            pkg,
+            language: understood.language,
+            historyText,
+            userProvidedText: labsResult.retrievedNote,
+          });
+          const trust = runTrustGate(generated.text, pkg);
+          if (!trust.allDropped && trust.text) {
+            answerText = `${labsResult.textPrefix}\n\n${trust.text}`;
+            sources = pkg.sources;
+            standardsList = pkg.standards;
+          }
+        }
+      }
+    } catch {
+      // Use clean text prefix
+    }
+
+    if (labsResult.labs.length === 0) {
+      answerText = `No active BIS-recognised laboratories listing ${targetStd || "this product"} in scope were found${understood.city ? ` near ${understood.city}` : ""}.`;
+    }
+
+    const allCards = {
+      ...buildCards(),
+      labs: labsCard,
+    };
+
+    return {
+      conversation_id: conversationId,
+      kind: "answer",
+      language: understood.language,
+      grounding: sources.length > 0 ? "verified" : "none",
+      text: answerText,
+      standards: standardsList,
+      sources,
+      cards: allCards,
+      follow_ups: targetStd ? [`What tests are required under ${targetStd}?`, `Where else can I test ${targetStd}?`] : [],
+    };
+  }
+
+  // ── Branch: find_ahc (P5.2) ──────────────────────────────────────────────
+  if (understood.intent === "find_ahc") {
+    const ahcResult = findAhc({
+      city: understood.city,
+      location: options.userLocation,
+    });
+
+    const ahcCardData: AhcCard = {
+      ahcs: ahcResult.ahcs,
+    };
+
+    let answerText = `${ahcResult.textPrefix}\n\n`;
+    if (ahcResult.ahcs.length > 0) {
+      answerText += ahcResult.ahcs
+        .slice(0, 5)
+        .map((a, i) => `${i + 1}. **${a.name}** — ${a.district || ""}, ${a.state || ""} (Status: ${a.status})`)
+        .join("\n");
+      answerText += `\n\n_${ahcResult.retrievedNote}_`;
+    } else {
+      answerText = `No Operative Assaying and Hallmarking Centres (AHCs) were found in the current directory${understood.city ? ` near ${understood.city}` : ""}.`;
+    }
+
+    const allCards = {
+      ...buildCards(),
+      ahc: ahcCardData,
+    };
+
+    return {
+      conversation_id: conversationId,
+      kind: "answer",
+      language: understood.language,
+      grounding: "none",
+      text: answerText,
+      sources: [],
+      cards: allCards,
+      follow_ups: [`What are the hallmarking competence requirements under IS 15820?`, `How do I register my jewellery shop for hallmarking?`],
+    };
+  }
+
+  // ── Branch: hallmark / mark_check (P5.3) ─────────────────────────────────
+  if (understood.intent === "hallmark" || understood.intent === "mark_check") {
+    const markResult = processHallmarkOrMark({
+      query: effectiveQuery,
+      purityRaw: imageCard?.purity_mark,
+      huidRaw: imageCard?.huid,
+      cmlRaw: imageCard?.cml_number,
+    });
+
+    if (markResult) {
+      if (markResult.hallmarkCard) hallmarkCard = markResult.hallmarkCard;
+      if (markResult.markCard) markCard = markResult.markCard;
+
+      let answerText = markResult.text;
+      let sources: Source[] = [];
+      let standardsList: BisvedaResponse["standards"] = undefined;
+
+      const stdToRetrieve = markResult.targetStandardId || "IS 1417";
+      const stdObj = getStandardById(stdToRetrieve);
+      if (stdObj) {
+        try {
+          const rawRetrieval = await retrieveMultiStore(effectiveQuery, [{ id: stdObj.id } as any], [stdObj.id]);
+          const fused = fuseRetrievalResults(rawRetrieval, 60);
+          const adjudicated = adjudicateCandidates(fused, rawRetrieval);
+          if (adjudicated.primaryStandard) {
+            const pkg = buildEvidencePackage(adjudicated, fused.rankedChunks);
+            if (pkg.sources.length > 0) {
+              const generated = await generateAnswer({
+                question: effectiveQuery,
+                pkg,
+                language: understood.language,
+                historyText,
+                userProvidedText: markResult.text,
+              });
+              const trust = runTrustGate(generated.text, pkg);
+              if (!trust.allDropped && trust.text) {
+                answerText = `${markResult.text}\n\n${trust.text}`;
+                sources = pkg.sources;
+                standardsList = pkg.standards;
+              }
+            }
+          }
+        } catch {}
+      }
+
+      return {
+        conversation_id: conversationId,
+        kind: "answer",
+        language: understood.language,
+        grounding: sources.length > 0 ? "verified" : "none",
+        text: answerText,
+        standards: standardsList,
+        sources,
+        cards: buildCards(),
+        follow_ups: [`What are the gold purity grades under IS 1417?`, `How to verify HUID in the BIS Care app?`],
+      };
+    }
+  }
+
+  // ── Branch: form_i (P5.4) ────────────────────────────────────────────────
+  if (understood.intent === "form_i") {
+    const stepResult = stepFormI(options.formState, understood.form_updates);
+    formICard = stepResult.card;
+
+    let sources: Source[] = [];
+    let standardsList: BisvedaResponse["standards"] = undefined;
+    try {
+      const rawRetrieval = await retrieveMultiStore(effectiveQuery, [{ id: "Form I" } as any], ["form-i-jeweller"]);
+      const fused = fuseRetrievalResults(rawRetrieval, 60);
+      const adjudicated = adjudicateCandidates(fused, rawRetrieval);
+      if (adjudicated.primaryStandard) {
+        const pkg = buildEvidencePackage(adjudicated, fused.rankedChunks);
+        if (pkg.sources.length > 0) {
+          sources = pkg.sources;
+          standardsList = pkg.standards;
+        }
+      }
+    } catch {}
+
+    return {
+      conversation_id: conversationId,
+      kind: stepResult.isComplete ? "answer" : "form_question",
+      language: understood.language,
+      grounding: sources.length > 0 ? "verified" : "none",
+      text: stepResult.text,
+      standards: standardsList,
+      sources,
+      cards: buildCards(),
+      follow_ups: stepResult.isComplete
+        ? [`How to submit Form I on Manak Online?`, `What fees are required for jeweller registration?`]
+        : [`What documents are needed for Form I?`, `Which standards apply to jeweller registration?`],
+    };
+  }
+
+  // ── Branch: kb_question ──
   emit("search", "active");
   const tSearch = Date.now();
   const standardsFromUnderstand = understood.standards.filter((id) => getStandardById(id));

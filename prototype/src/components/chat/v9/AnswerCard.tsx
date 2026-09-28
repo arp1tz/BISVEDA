@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { Check, Copy, ThumbsUp, ThumbsDown, Sparkles, Volume2, VolumeX } from "lucide-react";
 import type { BisvedaResponse } from "@/lib/pipeline/respond";
 import { CitationPill } from "./CitationPill";
-import { DetailTabs } from "./DetailTabs";
 
 interface AnswerCardProps {
   response: BisvedaResponse;
@@ -213,14 +212,56 @@ export function AnswerCard({
         )}
       </div>
 
-      {/* Inline Detail Tabs (Standards, Sources — Certification/Labs return in P5) */}
-      <DetailTabs
-        standards={response.standards}
-        sources={response.sources}
-        onOpenSourceDrawer={onOpenSourceDrawer}
-        onRequestLocation={onRequestLocation}
-        userLocation={userLocation}
-      />
+      {/* Standards Badges (if present) */}
+      {response.standards && response.standards.length > 0 && (
+        <div className="pt-3 border-t border-[#E5E7EB] mt-3">
+          <div className="flex flex-wrap items-center gap-1.5 text-xs">
+            <span className="text-[11px] font-semibold text-[#64748B] uppercase tracking-wider mr-1">
+              Standards:
+            </span>
+            {response.standards.map((std) => (
+              <span
+                key={std.id}
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold ${
+                  std.class === "applies"
+                    ? "bg-[#0B2A4A] text-white"
+                    : "bg-slate-100 text-slate-800 border border-slate-200"
+                }`}
+                title={std.title}
+              >
+                <span>{std.id}</span>
+                {std.class === "applies" && (
+                  <span className="text-[10px] text-emerald-300 font-normal">• Applies</span>
+                )}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Grounded Sources List (Standard · Clause · Page) */}
+      {response.sources && response.sources.length > 0 && (
+        <div className="pt-2.5 border-t border-[#E5E7EB] mt-2.5">
+          <div className="text-[11px] font-semibold text-[#64748B] uppercase tracking-wider mb-1.5">
+            Cited Evidence ({response.sources.length}):
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {response.sources.map((src, i) => (
+              <button
+                key={src.label || i}
+                onClick={() => onOpenSourceDrawer?.(i + 1)}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-[#E5E7EB] bg-[#F7F8FA] hover:bg-[#E5E7EB] text-xs font-mono text-[#0F172A] transition-colors cursor-pointer"
+                title={src.title || src.standard_id}
+              >
+                <span className="font-bold text-[#0B2A4A]">{src.label || `S${i + 1}`}</span>
+                <span className="text-[#64748B] font-sans">
+                  {src.standard_id} • Cl. {src.clause} (p.{src.page})
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Action / Overflow Menu */}
       <div className="flex items-center justify-between pt-2 border-t border-[#E5E7EB] text-xs text-[#64748B]">

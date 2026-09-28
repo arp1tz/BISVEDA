@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { PanelLeft, Sparkles } from "lucide-react";
 import { AppHeader } from "@/components/chat/v9/AppHeader";
@@ -14,6 +14,13 @@ import { RefusalMessage } from "@/components/chat/v9/RefusalMessage";
 import { FollowUps } from "@/components/chat/v9/FollowUps";
 import { Composer, AttachmentItem } from "@/components/chat/v9/Composer";
 import { SourceDrawer } from "@/components/chat/v9/SourceDrawer";
+import { LabsCard } from "@/components/chat/v9/LabsCard";
+import { AhcCard } from "@/components/chat/v9/AhcCard";
+import { HallmarkCard } from "@/components/chat/v9/HallmarkCard";
+import { MarkCard } from "@/components/chat/v9/MarkCard";
+import { ImageReadCard } from "@/components/chat/v9/ImageReadCard";
+import { FormICard } from "@/components/chat/v9/FormICard";
+import { listConversations, getConversation, saveConversation } from "@/lib/conversations";
 import type { BisvedaResponse, StageEvent } from "@/lib/pipeline/respond";
 import type { Source } from "@/lib/pipeline/package";
 
@@ -29,13 +36,7 @@ interface MessageItem {
   filename?: string;
 }
 
-const DEFAULT_RECENT_CHATS: ChatSessionItem[] = [
-  { id: "helmets-qco", title: "Helmets mandatory standard & QCO", timestamp: Date.now() - 3600000 * 2 },
-  { id: "toys-safety", title: "Toy safety testing under IS 9873", timestamp: Date.now() - 3600000 * 24 },
-  { id: "pressure-cooker", title: "Domestic Pressure Cooker Scheme I", timestamp: Date.now() - 3600000 * 48 },
-];
-
-export default function ChatWorkspacePage() {
+function ChatWorkspaceInner() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -43,12 +44,13 @@ export default function ChatWorkspacePage() {
 
   // Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [recentChats, setRecentChats] = useState<ChatSessionItem[]>(DEFAULT_RECENT_CHATS);
+  const [recentChats, setRecentChats] = useState<ChatSessionItem[]>([]);
 
   // Messages & conversation state
   const [messages, setMessages] = useState<MessageItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [formState, setFormState] = useState<Record<string, string>>({});
 
   // Source Drawer state
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -67,8 +69,31 @@ export default function ChatWorkspacePage() {
     scrollToBottom();
   }, [messages, isLoading]);
 
-  // Initial query and attachment handling from URL searchParams and sessionStorage
+  // Load sidebar conversations list
   useEffect(() => {
+    const list = listConversations().map((c) => ({
+      id: c.id,
+      title: c.title,
+      timestamp: c.updatedAt,
+    }));
+    setRecentChats(list);
+  }, []);
+
+  // Restore conversation or handle initial query/attachment
+  useEffect(() => {
+    const storedConv = getConversation(conversationId);
+    if (storedConv && Array.isArray(storedConv.messages) && storedConv.messages.length > 0) {
+      setMessages(storedConv.messages);
+      for (let i = storedConv.messages.length - 1; i >= 0; i--) {
+        const m = storedConv.messages[i];
+        if (m.response?.cards?.form_i?.fields) {
+          setFormState(m.response.cards.form_i.fields);
+          break;
+        }
+      }
+      return;
+    }
+
     const q = searchParams.get("q") || "";
     let pendingAttachment: AttachmentItem | null = null;
     if (typeof window !== "undefined") {
@@ -96,6 +121,29 @@ export default function ChatWorkspacePage() {
     const userMsgId = `user-${Date.now()}`;
     const assistantMsgId = `asst-${Date.now()}`;
 
+    // Geolocation handling: request location only if user explicitly asks for nearby labs/AHC
+    let activeLoc = userLocation;
+    if (
+      !activeLoc &&
+      /\b(near\s*me|nearby|closest|around\s*me)\b/i.test(trimmed) &&
+      typeof navigator !== "undefined" &&
+      "geolocation" in navigator
+    ) {
+      try {
+        const pos = await new Promise<GeolocationPosition | null>((resolve) => {
+          navigator.geolocation.getCurrentPosition(
+            (p) => resolve(p),
+            () => resolve(null),
+            { timeout: 3000 }
+          );
+        });
+        if (pos) {
+          activeLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          setUserLocation(activeLoc);
+        }
+      } catch {}
+    }
+
     // Append user message with optional attachment thumbnail
     const userMsg: MessageItem = {
       id: userMsgId,
@@ -120,7 +168,7 @@ export default function ChatWorkspacePage() {
       isStreaming: true,
     };
 
-    // Build history from current messages to maintain multi-turn context
+    // Build history from current messages to maintain multi-turn context (last 6 turns)
     const historyTurns: Array<{ query: string; response?: any }> = [];
     for (let i = 0; i < messages.length; i++) {
       const m = messages[i];
@@ -133,15 +181,9 @@ export default function ChatWorkspacePage() {
       }
     }
 
-    setMessages((prev) => [...prev, userMsg, assistantMsg]);
+    const updatedWithUser = [...messages, userMsg, assistantMsg];
+    setMessages(updatedWithUser);
     setIsLoading(true);
-
-    // Update recent chats title if it's the first query
-    setRecentChats((prev) => {
-      const exists = prev.find((c) => c.id === conversationId);
-      if (exists) return prev;
-      return [{ id: conversationId, title: trimmed.slice(0, 36) || "Chat Session", timestamp: Date.now() }, ...prev];
-    });
 
     try {
       const res = await fetch("/api/chat", {
@@ -150,9 +192,10 @@ export default function ChatWorkspacePage() {
         body: JSON.stringify({
           query: trimmed,
           conversation_id: conversationId,
-          history: historyTurns,
-          userLocation: userLocation || undefined,
+          history: historyTurns.slice(-6),
+          userLocation: activeLoc || undefined,
           attachment: attachment ? { name: attachment.name, base64: attachment.base64 } : undefined,
+          formState: Object.keys(formState).length > 0 ? formState : undefined,
         }),
       });
 
@@ -202,20 +245,34 @@ export default function ChatWorkspacePage() {
                     return { ...msg, workingSteps: updated };
                   })
                 );
-              } catch (e) {
+              } catch {
                 // ignore parse errors
               }
             } else if ((eventType === "result" || eventType === "response") && dataStr) {
               try {
                 const finalResp = JSON.parse(dataStr) as BisvedaResponse;
-                setMessages((prev) =>
-                  prev.map((msg) =>
+
+                if (finalResp.cards?.form_i?.fields) {
+                  setFormState((prev) => ({ ...prev, ...finalResp.cards!.form_i!.fields }));
+                }
+
+                setMessages((prev) => {
+                  const next = prev.map((msg) =>
                     msg.id === assistantMsgId
                       ? { ...msg, response: finalResp, isStreaming: false }
                       : msg
-                  )
-                );
-              } catch (e) {
+                  );
+                  saveConversation(conversationId, next);
+                  setRecentChats(
+                    listConversations().map((c) => ({
+                      id: c.id,
+                      title: c.title,
+                      timestamp: c.updatedAt,
+                    }))
+                  );
+                  return next;
+                });
+              } catch {
                 // ignore parse error
               }
             } else if (eventType === "error") {
@@ -226,20 +283,20 @@ export default function ChatWorkspacePage() {
               } catch {
                 // keep default message
               }
-              setMessages((prev) =>
-                prev.map((msg) =>
+              setMessages((prev) => {
+                const next = prev.map((msg) =>
                   msg.id === assistantMsgId
                     ? {
                         ...msg,
                         isStreaming: false,
                         response: {
                           conversation_id: conversationId,
-                          kind: "refusal",
+                          kind: "refusal" as const,
                           language: "en",
-                          grounding: "none",
+                          grounding: "none" as const,
                           text: "",
                           refusal: {
-                            reason: "not_in_sources",
+                            reason: "not_in_sources" as const,
                             message: errMessage,
                             next_steps: [{ text: "Visit BIS official portal", url: "https://www.bis.gov.in" }],
                           },
@@ -248,38 +305,53 @@ export default function ChatWorkspacePage() {
                         },
                       }
                     : msg
-                )
-              );
+                );
+                saveConversation(conversationId, next);
+                return next;
+              });
             }
           }
         }
       } else {
         // Fallback: standard JSON response
         const finalResp = (await res.json()) as BisvedaResponse;
-        setMessages((prev) =>
-          prev.map((msg) =>
+        if (finalResp.cards?.form_i?.fields) {
+          setFormState((prev) => ({ ...prev, ...finalResp.cards!.form_i!.fields }));
+        }
+
+        setMessages((prev) => {
+          const next = prev.map((msg) =>
             msg.id === assistantMsgId
               ? { ...msg, response: finalResp, isStreaming: false }
               : msg
-          )
-        );
+          );
+          saveConversation(conversationId, next);
+          setRecentChats(
+            listConversations().map((c) => ({
+              id: c.id,
+              title: c.title,
+              timestamp: c.updatedAt,
+            }))
+          );
+          return next;
+        });
       }
     } catch (err: any) {
       console.error("Chat query failed:", err);
-      setMessages((prev) =>
-        prev.map((msg) =>
+      setMessages((prev) => {
+        const next = prev.map((msg) =>
           msg.id === assistantMsgId
             ? {
                 ...msg,
                 isStreaming: false,
                 response: {
                   conversation_id: conversationId,
-                  kind: "refusal",
+                  kind: "refusal" as const,
                   language: "en",
-                  grounding: "none",
+                  grounding: "none" as const,
                   text: "",
                   refusal: {
-                    reason: "not_in_sources",
+                    reason: "not_in_sources" as const,
                     message: "An error occurred while connecting to the server. Please try again.",
                     next_steps: [{ text: "Visit BIS official portal", url: "https://www.bis.gov.in" }],
                   },
@@ -288,8 +360,10 @@ export default function ChatWorkspacePage() {
                 },
               }
             : msg
-        )
-      );
+        );
+        saveConversation(conversationId, next);
+        return next;
+      });
     } finally {
       setIsLoading(false);
     }
@@ -373,7 +447,12 @@ export default function ChatWorkspacePage() {
                     Ask about mandatory Quality Control Orders, testing laboratories, standard numbers, or certification procedures.
                   </p>
                   <div className="pt-4 flex flex-wrap justify-center gap-2">
-                    {["Is BIS mandatory for helmets?", "How to certify domestic pressure cookers?", "IS 9873 toy testing labs"].map((ex) => (
+                    {[
+                      "Is BIS mandatory for helmets under QCO?",
+                      "Find toy testing labs for IS 9873",
+                      "Gold jewellery hallmarking IS 1417",
+                      "Register jewellery shop Form I",
+                    ].map((ex) => (
                       <button
                         key={ex}
                         onClick={() => handleSendMessage(ex)}
@@ -424,8 +503,10 @@ export default function ChatWorkspacePage() {
                       />
                     )}
 
-                    {/* Grounded Answer Card */}
-                    {(msg.response?.kind === "answer" || msg.response?.kind === "smalltalk") && (
+                    {/* Grounded Answer Card or Form Question */}
+                    {(msg.response?.kind === "answer" ||
+                      msg.response?.kind === "smalltalk" ||
+                      msg.response?.kind === "form_question") && (
                       <AnswerCard
                         response={msg.response}
                         query={msg.userQuery}
@@ -434,6 +515,26 @@ export default function ChatWorkspacePage() {
                         onSendQuery={(q) => handleSendMessage(q)}
                         userLocation={userLocation}
                       />
+                    )}
+
+                    {/* In-chat Feature Cards */}
+                    {msg.response?.cards?.image && (
+                      <ImageReadCard card={msg.response.cards.image} />
+                    )}
+                    {msg.response?.cards?.hallmark && (
+                      <HallmarkCard card={msg.response.cards.hallmark} />
+                    )}
+                    {msg.response?.cards?.mark && (
+                      <MarkCard card={msg.response.cards.mark} />
+                    )}
+                    {msg.response?.cards?.labs && (
+                      <LabsCard card={msg.response.cards.labs} />
+                    )}
+                    {msg.response?.cards?.ahc && (
+                      <AhcCard card={msg.response.cards.ahc} />
+                    )}
+                    {msg.response?.cards?.form_i && (
+                      <FormICard card={msg.response.cards.form_i} />
                     )}
                   </div>
                 );
@@ -481,5 +582,22 @@ export default function ChatWorkspacePage() {
       {/* Global Footer */}
       <AppFooter />
     </div>
+  );
+}
+
+export default function ChatWorkspacePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-white text-xs text-[#64748B]">
+          <div className="flex items-center gap-2">
+            <div className="animate-spin h-4 w-4 border-2 border-[#0B2A4A] border-t-transparent rounded-full" />
+            <span>Loading BISVEDA Assistant…</span>
+          </div>
+        </div>
+      }
+    >
+      <ChatWorkspaceInner />
+    </Suspense>
   );
 }

@@ -12,30 +12,30 @@ export default function HomePage() {
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
 
   const productPills = [
-    { label: "Helmets", query: "Which Indian Standard applies to motorcycle helmets and is it mandatory?" },
-    { label: "Toys", query: "Safety requirements and standards for children's toys" },
-    { label: "Pressure Cooker", query: "Which BIS standard applies to domestic stainless steel pressure cookers?" },
-    { label: "Packaged Water", query: "Is BIS certification mandatory for packaged drinking water?" },
+    { label: "Helmets", query: "Which Indian Standard applies to motorcycle helmets and is it mandatory under QCO?" },
+    { label: "Toys", query: "What safety testing and mechanical requirements apply to toys under IS 9873?" },
+    { label: "Gold Jewellery & Hallmarking", query: "What are the hallmarking requirements and pure gold grades under IS 1417?" },
+    { label: "Form I", query: "How do I register my jewellery retail outlet for hallmarking using Form I?" },
   ];
 
   const actionCards = [
     {
       icon: BookOpen,
-      title: "Find your standard",
-      desc: "Discover applicable Indian Standard specifications for any product",
-      query: "Which Indian Standard applies to my product?",
-    },
-    {
-      icon: ShieldCheck,
-      title: "Check if BIS is mandatory",
-      desc: "Verify Quality Control Orders (QCO) published in the Official Gazette",
-      query: "Is BIS certification mandatory for my product under a QCO?",
+      title: "Find standard & QCO",
+      desc: "Discover mandatory Indian Standards and gazetted Quality Control Orders",
+      query: "Which Indian Standard applies to protective helmets and toys?",
     },
     {
       icon: FlaskConical,
-      title: "Find a lab near you",
-      desc: "Locate accredited laboratories capable of conformity testing",
-      query: "Which BIS-recognized laboratories can test my product?",
+      title: "Find testing labs & AHCs",
+      desc: "Locate BIS-recognised testing laboratories and hallmarking centres",
+      query: "Which BIS-recognized laboratories can test IS 4151 helmets?",
+    },
+    {
+      icon: ShieldCheck,
+      title: "Verify marks & Form I",
+      desc: "Check ISI / HUID mark formats or draft Form I jeweller registration",
+      query: "I want to apply for BIS hallmarking registration for my jewellery shop",
     },
   ];
 
@@ -203,6 +203,19 @@ export default function HomePage() {
               </button>
             );
           })}
+        </div>
+
+        {/* What I know coverage banner */}
+        <div className="mt-8 pt-5 border-t border-[#E5E7EB] text-center max-w-2xl w-full">
+          <div className="text-[11px] font-bold text-[#0B2A4A] uppercase tracking-wider mb-1.5 flex items-center justify-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#228f4a]" />
+            <span>Coverage · 8 Indian Standards</span>
+          </div>
+          <p className="text-xs text-[#64748B] leading-relaxed">
+            <strong className="text-[#0F172A]">Helmets:</strong> IS 4151, IS 2925 ·{" "}
+            <strong className="text-[#0F172A]">Toys:</strong> IS 9873 (Part 1 &amp; 3), IS 15644 ·{" "}
+            <strong className="text-[#0F172A]">Hallmarking:</strong> IS 1417, IS 1418, IS 15820
+          </p>
         </div>
       </main>
 

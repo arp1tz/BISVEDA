@@ -144,6 +144,10 @@ export function getDocById(docId: string): KbDoc | null {
   return load().docsById.get(docId) ?? null;
 }
 
+export function getAllDocs(): KbDoc[] {
+  return load().docs;
+}
+
 export function getGraphNode(id: string): GraphNode | undefined {
   return load().graph.nodes.find((n) => n.id === id);
 }
