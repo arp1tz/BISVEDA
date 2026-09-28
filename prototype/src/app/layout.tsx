@@ -10,10 +10,13 @@ import {
   Noto_Sans_Malayalam,
   Noto_Sans_Gurmukhi,
   Noto_Sans_Oriya,
+  Noto_Sans_Arabic,
 } from "next/font/google";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import { AccessibilityBar } from "@/components/a11y/AccessibilityBar";
+import { LanguageProvider } from "@/lib/ui-i18n/LanguageContext";
+import { PageTranslator } from "@/components/a11y/PageTranslator";
 
 // UX4G handbook (Typography, p.152): Noto is the recommended government typeface for
 // harmonious, accessible multilingual rendering across Indic scripts. Latin + Devanagari
@@ -87,6 +90,14 @@ const notoOriya = Noto_Sans_Oriya({
   display: "swap",
   preload: false,
 });
+// Perso-Arabic script, for Urdu/Kashmiri/Sindhi when translated via the language picker (P12.4).
+const notoArabic = Noto_Sans_Arabic({
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-noto-arabic",
+  display: "swap",
+  preload: false,
+});
 
 const notoFontVars = [
   notoSans.variable,
@@ -99,6 +110,7 @@ const notoFontVars = [
   notoMalayalam.variable,
   notoGurmukhi.variable,
   notoOriya.variable,
+  notoArabic.variable,
 ].join(" ");
 
 export const metadata: Metadata = {
@@ -118,8 +130,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={notoFontVars}>
       <body className="min-h-screen flex flex-col antialiased">
-        <AccessibilityBar />
-        {children}
+        <LanguageProvider>
+          <AccessibilityBar />
+          <PageTranslator />
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );

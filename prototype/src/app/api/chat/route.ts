@@ -11,6 +11,7 @@ export async function POST(req: NextRequest) {
     const userLocation = body.userLocation || undefined;
     const attachment = body.attachment || undefined;
     const formState = body.formState || undefined;
+    const preferredLanguage = typeof body.preferred_language === "string" ? body.preferred_language : undefined;
     const wantsStream = body.stream !== false && req.headers.get("accept")?.includes("text/event-stream") !== false;
 
     if (!query && !attachment) {
@@ -26,6 +27,7 @@ export async function POST(req: NextRequest) {
         userLocation,
         attachment,
         formState,
+        preferredLanguage,
       });
       return NextResponse.json(response);
     }
@@ -54,6 +56,7 @@ export async function POST(req: NextRequest) {
           userLocation,
           attachment,
           formState,
+          preferredLanguage,
           onStageEvent: (event: StageEvent) => {
             sendEvent("stage", event);
           },

@@ -28,7 +28,7 @@ export function UserMessage({ content, text, imageThumbnail, filename }: UserMes
           </div>
         )}
 
-        <p className="whitespace-pre-wrap leading-relaxed">{displayContent}</p>
+        <p className="whitespace-pre-wrap leading-relaxed" translate="no">{displayContent}</p>
       </div>
     </div>
   );

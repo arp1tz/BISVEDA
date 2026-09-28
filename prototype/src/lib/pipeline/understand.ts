@@ -54,6 +54,12 @@ export interface UnderstandInput {
   history?: ConversationTurnSummary[]; // last few turns, already trimmed by the caller
   imageSummary?: string; // e.g. "Photo shows a motorcycle helmet, IS 4151 visible on the label"
   formState?: Record<string, unknown>;
+  /**
+   * P12.4: the interface language chosen in the language picker (a base code like "mr", "ta",
+   * no "-Latn" suffix). Only takes effect when the message itself is in English — a message
+   * already typed in another language keeps replying in that language, as before.
+   */
+  preferredLanguage?: string;
 }
 
 export interface UnderstandResult {
@@ -176,6 +182,16 @@ function uniqueStandards(...groups: string[][]): string[] {
 }
 
 export async function understandTurn(input: UnderstandInput): Promise<UnderstandResult> {
+  const result = await understandTurnInner(input);
+  // P12.4: a picked interface language only overrides the reply language for an English message
+  // (a message already in some other language keeps replying in that language, as before).
+  if (input.preferredLanguage && baseLanguage(input.preferredLanguage) !== "en" && baseLanguage(result.language) === "en") {
+    return { ...result, language: baseLanguage(input.preferredLanguage) };
+  }
+  return result;
+}
+
+async function understandTurnInner(input: UnderstandInput): Promise<UnderstandResult> {
   const cleaned = cleanText(input.message).replace(/^\[(?:Attachment|Photo|File):\s*[^\]]+\]\s*/i, "");
   const det = detectLanguageInfo(cleaned);
   const hasHistory = Boolean(input.history && input.history.length > 0);

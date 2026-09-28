@@ -24,6 +24,7 @@ import { HelplineCallCard } from "@/components/chat/v9/HelplineCallCard";
 import { HelplineModal } from "@/components/chat/v9/HelplineModal";
 import { listConversations, getConversation, saveConversation } from "@/lib/conversations";
 import { useVoiceInput } from "@/lib/voice/useVoiceInput";
+import { useUiLanguage } from "@/lib/ui-i18n/LanguageContext";
 import { speak, stopSpeaking, onSpeakingChange, languageLabel } from "@/lib/voice/tts";
 import type { BisvedaResponse, StageEvent } from "@/lib/pipeline/respond";
 import type { Source } from "@/lib/pipeline/package";
@@ -45,6 +46,7 @@ function ChatWorkspaceInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const conversationId = (params?.id as string) || "default-chat";
+  const { lang: uiLang } = useUiLanguage();
 
   // Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -268,6 +270,7 @@ function ChatWorkspaceInner() {
           userLocation: activeLoc || undefined,
           attachment: attachment ? { name: attachment.name, base64: attachment.base64, type: attachment.type } : undefined,
           formState: Object.keys(formState).length > 0 ? formState : undefined,
+          preferred_language: uiLang !== "en" ? uiLang : undefined,
         }),
       });
 

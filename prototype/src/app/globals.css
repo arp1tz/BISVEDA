@@ -91,7 +91,8 @@ body {
   font-family: var(--font-noto-devanagari), var(--font-noto-bengali), var(--font-noto-tamil),
     var(--font-noto-telugu), var(--font-noto-gujarati), var(--font-noto-kannada),
     var(--font-noto-malayalam), var(--font-noto-gurmukhi), var(--font-noto-oriya),
-    var(--font-noto-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    var(--font-noto-arabic), var(--font-noto-sans), system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
   line-height: 1.5;
   overflow-x: hidden;
 }

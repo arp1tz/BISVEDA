@@ -41,6 +41,8 @@ export interface PipelineOptions {
   userLocation?: { lat: number; lng: number };
   attachment?: { name: string; base64: string; type?: string };
   formState?: Record<string, unknown>;
+  /** P12.4: the interface language chosen in the language picker; see understand.ts for how it's applied. */
+  preferredLanguage?: string;
   onStageEvent?: (event: StageEvent) => void;
 }
 
@@ -404,6 +406,7 @@ async function runPipelineInner(options: PipelineOptions): Promise<BisvedaRespon
     history: historyForLLM,
     imageSummary: userProvidedText,
     formState: options.formState,
+    preferredLanguage: options.preferredLanguage,
   });
   emit("understand", "done", Date.now() - t0);
 

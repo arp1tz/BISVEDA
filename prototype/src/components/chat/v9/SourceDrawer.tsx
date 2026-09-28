@@ -63,7 +63,7 @@ export function SourceDrawer({
         {/* Drawer Content */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
           {/* Title & Metadata */}
-          <div>
+          <div translate="no">
             <h3 className="font-bold text-sm text-[#0F172A] leading-snug">
               {source.title}
             </h3>
@@ -97,7 +97,7 @@ export function SourceDrawer({
             <h4 className="font-semibold text-[#0F172A] mb-1.5 text-[11px] text-[#64748B]">
               Verified excerpt
             </h4>
-            <div className="p-3 rounded-lg bg-[#F7F8FA] border border-[#E5E7EB] leading-relaxed text-[#0F172A] font-sans">
+            <div className="p-3 rounded-lg bg-[#F7F8FA] border border-[#E5E7EB] leading-relaxed text-[#0F172A] font-sans" translate="no">
               <span className="bg-[#FFF7ED] text-[#0F172A] px-0.5 rounded font-medium">
                 {source.text}
               </span>

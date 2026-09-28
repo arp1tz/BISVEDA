@@ -10,7 +10,7 @@
  * introduces a number that is not in the source, so figures can never drift.
  */
 
-import { groqChat } from "./llm";
+import { groqChat, groqChatJson } from "./llm";
 import { parseLanguageTag, toAsciiDigits, ScriptKind } from "./pipeline/normalize";
 
 export const LANGUAGE_NAMES: Record<string, string> = {
@@ -27,6 +27,17 @@ export const LANGUAGE_NAMES: Record<string, string> = {
   or: "Odia",
   ur: "Urdu",
   as: "Assamese",
+  // P12.4: the rest of the Eighth Schedule, for the UI language picker / page translator.
+  mai: "Maithili",
+  sat: "Santali",
+  ks: "Kashmiri",
+  ne: "Nepali",
+  sd: "Sindhi",
+  kok: "Konkani",
+  doi: "Dogri",
+  mni: "Manipuri",
+  sa: "Sanskrit",
+  brx: "Bodo",
 };
 
 const NATIVE_SCRIPT_NAMES: Record<string, string> = {
@@ -42,6 +53,16 @@ const NATIVE_SCRIPT_NAMES: Record<string, string> = {
   or: "Odia",
   ur: "Urdu (Nastaliq/Arabic)",
   as: "Assamese (Bengali-Assamese)",
+  mai: "Devanagari",
+  sat: "Ol Chiki (or Devanagari)",
+  ks: "Nastaliq (Perso-Arabic)",
+  ne: "Devanagari",
+  sd: "Perso-Arabic (or Devanagari)",
+  kok: "Devanagari",
+  doi: "Devanagari",
+  mni: "Meitei Mayek (or Bengali)",
+  sa: "Devanagari",
+  brx: "Devanagari",
 };
 
 export function baseLanguage(tag: string | undefined): string {
@@ -211,6 +232,71 @@ export async function tStatic(key: StaticKey, tag: string | undefined): Promise<
 export async function translateMany(texts: string[], tag: string | undefined): Promise<string[]> {
   if (isEnglish(tag)) return texts;
   return Promise.all(texts.map((t) => translateTo(t, tag)));
+}
+
+/**
+ * P12.4: translates a batch of short UI strings (button labels, headings, menu items) in ONE
+ * Groq call instead of one call per string — used by /api/translate-ui for the page translator.
+ * Shares translateTo's cache (same `lang|script|text` key), so a string translated once here is
+ * reused by translateTo and vice versa. Order-preserving; any item that fails validation (a
+ * number drifted, or Roman-script leaked native characters) falls back to the original English.
+ */
+export async function translateUiBatch(texts: string[], tag: string | undefined): Promise<string[]> {
+  const { language, script } = parseLanguageTag(tag);
+  if (language === "en" || texts.length === 0) return texts;
+
+  const cacheKeyPrefix = `${language}|${script}|`;
+  const results: string[] = new Array(texts.length);
+  const toFetch: Array<{ idx: number; text: string }> = [];
+  texts.forEach((t, i) => {
+    const hit = cache.get(cacheKeyPrefix + t);
+    if (hit) results[i] = hit;
+    else if (!t.trim()) results[i] = t;
+    else toFetch.push({ idx: i, text: t });
+  });
+  if (toFetch.length === 0) return results;
+
+  if (!process.env.GROQ_API_KEY) {
+    toFetch.forEach((f) => {
+      results[f.idx] = f.text;
+    });
+    return results;
+  }
+
+  try {
+    const payload = toFetch.map((f) => f.text);
+    const out = await groqChatJson<{ translations?: unknown }>(
+      [
+        {
+          role: "system",
+          content:
+            `You translate short user-interface strings (button labels, headings, menu items, short sentences) into ${languageInstruction(tag)}. ` +
+            `Return strict JSON: {"translations": [...]} with EXACTLY ${payload.length} items, in the SAME ORDER as the input array. ` +
+            "Keep IS standard numbers, digits, URLs, and product/scheme names (BIS, ISI, HUID, QCO, Form I, BISVEDA, Manak Online, BIS Care, CM/L, AHC) unchanged. " +
+            "Never use an em dash (—); use a comma or period instead. " +
+            (script === "roman" ? "Use ONLY Latin letters a-z, never native-script characters. " : "") +
+            "This is interface chrome, not prose: keep each translation concise, matching the original's tone and roughly its length.",
+        },
+        { role: "user", content: JSON.stringify(payload) },
+      ],
+      { model: "fast", temperature: 0, maxTokens: 4000, timeoutMs: 20000 }
+    );
+    const arr = Array.isArray(out?.translations) ? (out.translations as unknown[]) : [];
+    toFetch.forEach((f, i) => {
+      const raw = arr[i];
+      const candidate = typeof raw === "string" && raw.trim() ? raw.trim() : f.text;
+      const scriptOk = script !== "roman" || !/[ऀ-෿؀-ۿ]/.test(candidate);
+      const ok = scriptOk && numbersPreserved(f.text, candidate);
+      results[f.idx] = ok ? candidate : f.text;
+      if (ok) cache.set(cacheKeyPrefix + f.text, candidate);
+    });
+  } catch (err) {
+    console.warn("[i18n] batch UI translation failed, keeping English for this batch:", err instanceof Error ? err.message : err);
+    toFetch.forEach((f) => {
+      results[f.idx] = f.text;
+    });
+  }
+  return results;
 }
 
 export type { ScriptKind };

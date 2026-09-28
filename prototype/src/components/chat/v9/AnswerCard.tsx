@@ -198,8 +198,10 @@ export function AnswerCard({
         </div>
       )}
 
-      {/* Answer text (markdown-lite: bullets, bold, [S#] citation pills) */}
-      <div className="space-y-2">
+      {/* Answer text (markdown-lite: bullets, bold, [S#] citation pills). Already arrives in the
+          user's chosen language from the backend, and citations/figures must not be re-worded,
+          so the page translator skips this block. */}
+      <div className="space-y-2" translate="no">
         {response.text
           ? renderAnswerText(response.text)
           : response.refusal?.message
@@ -257,6 +259,7 @@ export function AnswerCard({
                     : "bg-slate-100 text-slate-800 border border-slate-200"
                 }`}
                 title={std.title}
+                translate="no"
               >
                 <span>{std.id}</span>
                 {std.class === "applies" && (

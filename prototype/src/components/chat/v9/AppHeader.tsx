@@ -1,26 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { PhoneCall } from "lucide-react";
+import { LanguagePicker } from "./LanguagePicker";
 
 interface AppHeaderProps {
-  onLanguageToggle?: (lang: "en" | "hi") => void;
-  currentLang?: "en" | "hi";
   onOpenHelpline?: () => void;
 }
 
-export function AppHeader({ onLanguageToggle, currentLang = "en", onOpenHelpline }: AppHeaderProps) {
+export function AppHeader({ onOpenHelpline }: AppHeaderProps) {
   const pathname = usePathname();
-  const [lang, setLang] = useState<"en" | "hi">(currentLang);
-
-  const toggleLang = () => {
-    const next = lang === "en" ? "hi" : "en";
-    setLang(next);
-    onLanguageToggle?.(next);
-  };
 
   const navLinks = [
     { label: "Standards", href: "/standards" },
@@ -78,14 +70,8 @@ export function AppHeader({ onLanguageToggle, currentLang = "en", onOpenHelpline
             </button>
           )}
 
-          {/* Language Toggle */}
-          <button
-            onClick={toggleLang}
-            className="px-2.5 py-1 rounded-md text-xs font-semibold text-[#0B2A4A] bg-[#F7F8FA] hover:bg-[#E5E7EB] transition-colors cursor-pointer border border-[#E5E7EB]"
-            title="Switch Language"
-          >
-            {lang === "en" ? "हिंदी" : "EN"}
-          </button>
+          {/* Language Picker */}
+          <LanguagePicker />
         </div>
       </div>
     </header>
