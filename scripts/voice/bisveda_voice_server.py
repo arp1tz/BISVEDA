@@ -45,10 +45,8 @@ PORT = int(get_env("VOICE_PORT", "8001"))
 
 EXOTEL_SAMPLE_RATE = 8000
 EXOTEL_CHANNELS = 1
-OUTGOING_CHUNK_BYTES = 1600  # 100ms at 8kHz 16-bit mono
 
 # Barge-In VAD Threshold (RMS amplitude on 8kHz linear PCM16)
-# Background line noise is typically 50-300 RMS. Voice is 1200-6000+ RMS.
 SPEECH_RMS_THRESHOLD = 900
 CONSECUTIVE_VOICED_PACKETS = 2
 
@@ -60,7 +58,7 @@ ACTIVE_CALLS = {}
 def _audio_state(call_id: str):
     return AUDIO_STATE.setdefault(
         call_id,
-        {"in": None, "out": None, "out_buffer": bytearray()},
+        {"in": None, "out": None},
     )
 
 def _call_state(call_id: str):
@@ -90,33 +88,19 @@ def exotel_to_gemini_pcm16(payload_b64: str, call_id: str) -> tuple[bytes, int]:
     )
     return pcm16k, rms
 
-def gemini_to_exotel_chunks(pcm24k: bytes, call_id: str, flush=False):
-    """Gemini 24 kHz PCM16 -> buffered 8 kHz PCM16 base64 chunks."""
+def gemini_to_exotel_pcm16(pcm24k: bytes, call_id: str) -> bytes:
+    """Gemini 24 kHz PCM16 -> Exotel 8 kHz PCM16 (direct unbuffered streaming as in reference notebook)."""
+    if not pcm24k:
+        return b""
+    if len(pcm24k) % 2:
+        pcm24k = pcm24k[:-1]
     state = _audio_state(call_id)
-    if pcm24k:
-        if len(pcm24k) % 2:
-            pcm24k = pcm24k[:-1]
-        pcm8k, state["out"] = audioop.ratecv(
-            pcm24k, 2, 1,
-            24000, EXOTEL_SAMPLE_RATE,
-            state["out"],
-        )
-        state["out_buffer"].extend(pcm8k)
-
-    chunks = []
-    while len(state["out_buffer"]) >= OUTGOING_CHUNK_BYTES:
-        chunk = bytes(state["out_buffer"][:OUTGOING_CHUNK_BYTES])
-        del state["out_buffer"][:OUTGOING_CHUNK_BYTES]
-        chunks.append(base64.b64encode(chunk).decode("ascii"))
-
-    if flush and state["out_buffer"]:
-        remaining = bytes(state["out_buffer"])
-        pad_to = max(320, ((len(remaining) + 319) // 320) * 320)
-        remaining += b"\x00" * (pad_to - len(remaining))
-        state["out_buffer"].clear()
-        chunks.append(base64.b64encode(remaining).decode("ascii"))
-
-    return chunks
+    pcm8k, state["out"] = audioop.ratecv(
+        pcm24k, 2, 1,
+        24000, EXOTEL_SAMPLE_RATE,
+        state["out"],
+    )
+    return pcm8k
 
 def clear_audio_state(call_id: str):
     AUDIO_STATE.pop(call_id, None)
@@ -128,7 +112,7 @@ gemini_client = genai.Client(api_key=GEMINI_API_KEY)
 # ── Natural Multilingual System Prompt ──
 SYSTEM_PROMPT = """
 You are "BISVEDA" (बिसवेदा), the official AI Voice Assistant for the Bureau of Indian Standards (BIS), Ministry of Consumer Affairs, Government of India.
-You are speaking live on a phone call with an Indian citizen, consumer, or MSME business owner.
+You are speaking live on a telephone call with an Indian citizen, consumer, or MSME business owner.
 
 CRITICAL CONVERSATIONAL RULES (NATURAL PHONE CALL):
 1. Speak naturally, warmly, and concisely (1 to 2 sentences per turn). This is a real-time phone call. Never give long lectures, never recite bullet points, and never sound like a robotic IVR script.
@@ -143,7 +127,7 @@ STRICT MULTILINGUAL LANGUAGE MIRRORING (22 INDIAN SCHEDULED LANGUAGES):
 - MARATHI LANGUAGE RULES:
   * If the caller speaks Marathi or asks if you speak Marathi ("तुम मराठी बोल सकते हो?", "तुम्ही मराठी बोलू शकता का?", "Can you speak in Marathi?"):
     IMMEDIATELY switch and reply warmly in fluent Marathi:
-    "हो, नक्कीच! मी मराठीत बोलू शकतो. बीआयएस (BIS) मानके, आयएसआय मार्क किंवा सोन्याच्या हॉलमार्कबद्दल तुम्हाला काय माहिती हवी आहे?"
+    "हो, नक्कीच! मी मराठीत बोलू शकतो. बीआयएस (BIS) हेल्पलाईनवर तुमचे स्वागत आहे. मी तुम्हाला कशी मदत करू?"
   * If asked about helmets in Marathi ("मला हेल्मेटबद्दल माहिती हवी आहे" / "हेल्मेटसाठी कोणता स्टँडर्ड लागतो?"):
     "दोन चाकी वाहनांच्या हेल्मेटसाठी IS 4151 हे मानक लागू आहे. या मानकाचा ISI मार्क असणे कायद्याने अनिवार्य आहे."
   * If asked about testing labs in Marathi ("टेस्ट कुठे करू शकतो?"):
@@ -290,12 +274,14 @@ async def bisveda_media(websocket: WebSocket):
         ACTIVE_CALLS[call_id] = {"stream_sid": stream_sid, "phone": phone, "started_at": started_at}
         log.info(f"[{call_id}] EXOTEL_START verified | stream_sid={stream_sid} | phone={phone}")
 
-        # Connect to Gemini Live Session
+        # Connect to Gemini Live Session with transcription configs
         async with gemini_client.aio.live.connect(
             model=GEMINI_MODEL,
             config=types.LiveConnectConfig(
                 response_modalities=["AUDIO"],
                 system_instruction=SYSTEM_PROMPT,
+                input_audio_transcription=types.AudioTranscriptionConfig(),
+                output_audio_transcription=types.AudioTranscriptionConfig(),
                 speech_config=types.SpeechConfig(
                     voice_config=types.VoiceConfig(
                         prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name="Aoede")
@@ -327,7 +313,7 @@ async def bisveda_media(websocket: WebSocket):
                                 pcm16k, rms = exotel_to_gemini_pcm16(payload, call_id)
 
                                 # ── Barge-In / Interruption Engine ──
-                                # If the AI is currently outputting audio and caller speaks (RMS > threshold)
+                                # If the AI is currently speaking and caller starts talking (RMS > threshold)
                                 if c_state["ai_is_speaking"]:
                                     if rms >= SPEECH_RMS_THRESHOLD:
                                         c_state["consecutive_speech_pkts"] += 1
@@ -335,16 +321,13 @@ async def bisveda_media(websocket: WebSocket):
                                         c_state["consecutive_speech_pkts"] = 0
 
                                     if c_state["consecutive_speech_pkts"] >= CONSECUTIVE_VOICED_PACKETS:
-                                        # Voice detected! Interrupt the AI immediately!
+                                        # Human voice detected! Interrupt the AI immediately!
                                         log.info(f"[{call_id}] ⚡ BARGE-IN DETECTED (RMS: {rms}) -> Purging Exotel playout buffer!")
                                         c_state["ai_is_speaking"] = False
                                         c_state["barge_in_active"] = True
                                         c_state["consecutive_speech_pkts"] = 0
 
-                                        # 1. Clear local buffered audio
-                                        _audio_state(call_id)["out_buffer"].clear()
-
-                                        # 2. Tell Exotel to clear playout buffer on caller's phone handset
+                                        # Send Exotel clear event to silence caller handset speaker instantly
                                         await websocket.send_text(json.dumps({
                                             "event": "clear",
                                             "stream_sid": stream_sid,
@@ -369,7 +352,7 @@ async def bisveda_media(websocket: WebSocket):
                     log.warn(f"[{call_id}] exotel_to_gemini error: {e}")
                     return
 
-            # ── Gemini -> Exotel (Continuous Multi-turn Spoken Audio) ──
+            # ── Gemini -> Exotel (Continuous Multi-turn Direct Spoken Audio) ──
             async def gemini_to_exotel():
                 nonlocal stream_sid, call_id
                 out_packets = 0
@@ -382,46 +365,53 @@ async def bisveda_media(websocket: WebSocket):
                         async for response in gemini.receive():
                             server_content = getattr(response, "server_content", None)
 
-                            # Handle spoken audio streaming back from Gemini
-                            if server_content and getattr(server_content, "model_turn", None):
-                                # If interrupted, skip playing remainder of this turn's chunks
-                                if c_state["barge_in_active"]:
-                                    continue
+                            if server_content:
+                                # Log caller speech transcription
+                                itx = getattr(server_content, "input_transcription", None)
+                                if itx and getattr(itx, "text", None):
+                                    caller_text = itx.text.strip()
+                                    if caller_text:
+                                        log.info(f"[{call_id}] 👤 CALLER: {caller_text}")
 
-                                c_state["ai_is_speaking"] = True
+                                # Log assistant speech transcription
+                                otx = getattr(server_content, "output_transcription", None)
+                                if otx and getattr(otx, "text", None):
+                                    ai_text = otx.text.strip()
+                                    if ai_text:
+                                        log.info(f"[{call_id}] 🤖 BISVEDA: {ai_text}")
 
-                                for part in server_content.model_turn.parts:
-                                    inline_data = getattr(part, "inline_data", None)
-                                    if inline_data and getattr(inline_data, "data", None):
-                                        if c_state["barge_in_active"]:
+                                # Handle spoken audio streaming back from Gemini
+                                model_turn = getattr(server_content, "model_turn", None)
+                                if model_turn:
+                                    if c_state["barge_in_active"]:
+                                        continue
+
+                                    c_state["ai_is_speaking"] = True
+
+                                    for part in (getattr(model_turn, "parts", None) or []):
+                                        inline_data = getattr(part, "inline_data", None)
+                                        if not inline_data:
+                                            continue
+                                        audio_data = getattr(inline_data, "data", None)
+                                        if not audio_data or c_state["barge_in_active"]:
                                             continue
 
-                                        chunks = gemini_to_exotel_chunks(inline_data.data, call_id)
-                                        for payload in chunks:
-                                            if c_state["barge_in_active"]:
-                                                break
+                                        # Resample 24kHz -> 8kHz directly and send immediately (as in BISVEDA_VoiceCall.ipynb)
+                                        pcm8k = gemini_to_exotel_pcm16(audio_data, call_id)
+                                        if pcm8k and not c_state["barge_in_active"]:
                                             out_packets += 1
+                                            payload = base64.b64encode(pcm8k).decode("ascii")
                                             await websocket.send_text(json.dumps({
                                                 "event": "media",
                                                 "stream_sid": stream_sid,
                                                 "media": {"payload": payload},
                                             }))
 
-                            if server_content and getattr(server_content, "turn_complete", False):
-                                # Reset speaking and barge-in state at turn completion
-                                if not c_state["barge_in_active"]:
-                                    flush_chunks = gemini_to_exotel_chunks(b"", call_id, flush=True)
-                                    for payload in flush_chunks:
-                                        await websocket.send_text(json.dumps({
-                                            "event": "media",
-                                            "stream_sid": stream_sid,
-                                            "media": {"payload": payload},
-                                        }))
-
-                                c_state["ai_is_speaking"] = False
-                                c_state["barge_in_active"] = False
-                                c_state["consecutive_speech_pkts"] = 0
-                                log.info(f"[{call_id}] Turn {turn} completed. Listening for caller...")
+                                if getattr(server_content, "turn_complete", False):
+                                    c_state["ai_is_speaking"] = False
+                                    c_state["barge_in_active"] = False
+                                    c_state["consecutive_speech_pkts"] = 0
+                                    log.info(f"[{call_id}] Turn {turn} completed (cumulative out packets: {out_packets}). Listening...")
 
                     except Exception as e:
                         msg = str(e).lower()
