@@ -108,7 +108,7 @@ export function SourceDrawer({
           <div className="p-3 rounded-lg border border-[#E5E7EB] bg-slate-50 text-slate-600 space-y-1">
             <span className="font-semibold block text-[#0F172A]">Document:</span>
             <p className="text-[11px] text-[#64748B]">
-              From the original PDF, page {source.page || "—"}.
+              From the original PDF, page {source.page || "n/a"}.
             </p>
           </div>
         </div>
