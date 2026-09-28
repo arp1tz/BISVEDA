@@ -1,22 +1,27 @@
 /**
- * BISVEDA — Canonical Verified FAQ Matcher (src/lib/pipeline/speedgate.ts)
+ * BISVEDA — Canonical Verified FAQ Matcher (src/lib/pipeline/speedgate.ts, P12.2)
  *
- * Fast canonical question-and-answer layer for frequent BIS consumer and industry
- * queries (e.g., "what is hallmarking", "what is HUID", "what is 916 gold",
- * "is helmet mandatory under QCO").
+ * Fast canonical question-and-answer layer for a handful of frequent BIS queries (e.g.
+ * "what is hallmarking"). Only entries marked `verified: true` are ever served, and only after
+ * two independent checks both pass: the static audit (`scripts/faq-verify.ts`, run by hand) and
+ * the runtime guard in `matchCanonicalFaq` below (which re-checks every source against the live
+ * KB and runs the answer through the trust gate on first use). Everything else in
+ * `CANONICAL_FAQS` — most entries — is `verified: false`: real topics people ask about, kept
+ * here for documentation, but never shortcut. Their questions run the full pipeline (retrieval
+ * -> adjudication -> trust gate), which either finds real evidence or refuses honestly; this is
+ * the intended behaviour, not a fallback path.
  *
- * Serves fully grounded, verified answers backed by official Indian Standards
- * (IS 1417, IS 1418, IS 15820, IS 4151, IS 2925, IS 9873, IS 15644).
- *
- * If a query does not match a canonical FAQ with high confidence, returns null,
- * allowing the pipeline to proceed seamlessly to deep hybrid retrieval.
+ * `matchCanonicalFaq` returns null whenever nothing verified matches, and the caller proceeds to
+ * that full pipeline exactly as it would for any other question.
  *
  * Note: Never expose internal layer names to end users.
  */
 
 import type { BisvedaResponse } from "./respond";
-import type { Source } from "./package";
+import type { EvidencePackage, Source } from "./package";
 import type { HallmarkCard, MarkCard } from "./respond";
+import { getChunksByStandard } from "../kb/store";
+import { runTrustGate } from "./trust";
 
 export interface StandardReference {
   id: string;
@@ -50,12 +55,25 @@ export interface CanonicalFaqEntry {
     hallmark?: HallmarkCard;
     mark?: MarkCard;
   };
+  /**
+   * P12.2: set to `false` when a source's cited text isn't a real excerpt from the KB (checked
+   * against `data/kb/chunks.json` by `scripts/faq-verify.ts` and re-checked at runtime below).
+   * An unverified entry is never served — `matchCanonicalFaq` skips it and the question runs
+   * through the full pipeline (retrieval -> trust gate), which either finds real evidence or
+   * gives an honest "not in our documents" refusal. The entry stays in this file rather than
+   * being deleted, so the topic and its trigger phrases are still documented here.
+   */
+  verified?: boolean;
 }
 
 export const CANONICAL_FAQS: CanonicalFaqEntry[] = [
   // ── 1. Gold Hallmarking & HUID ──────────────────────────────────────────
+  // Verified against data/kb/chunks.json by scripts/faq-verify.ts: both sources below are
+  // genuine excerpts from IS 15820, the standard that actually defines the term "hallmarking"
+  // (IS 1417, our other gold document, never uses that word in the edition we hold).
   {
     id: "what-is-hallmarking",
+    verified: true,
     triggers: [
       /\bwhat\s+(?:is|are)\s+(?:bis\s+)?hallmarking\b/i,
       /\bdefine\s+hallmarking\b/i,
@@ -64,35 +82,30 @@ export const CANONICAL_FAQS: CanonicalFaqEntry[] = [
       /\babout\s+hallmarking\b/i,
     ],
     keywords: ["hallmark", "hallmarking"],
-    question: "What is hallmarking of gold jewellery in India?",
+    question: "What is hallmarking of gold and silver articles?",
     standards: [
-      { id: "IS 1417", title: "Gold and Gold Alloys, Jewellery/Artefacts — Fineness and Marking", class: "applies", why: "Specifies purity fineness grades and official hallmark markings." },
-      { id: "IS 15820", title: "General Requirements for Competence of Assaying and Hallmarking Centres", class: "applies", why: "Governs recognition and operation of Assaying & Hallmarking Centres (AHCs)." },
+      { id: "IS 15820", title: "General Requirement for Competence of Assaying and Hallmarking Centres", class: "applies", why: "Defines hallmarking and sets the competence requirements for the centres that carry it out." },
+      { id: "IS 1417", title: "Gold and Gold Alloys, Jewellery/Artefacts: Fineness and Marking", class: "applies", why: "Specifies the gold fineness grades that get marked." },
     ],
     sources: [
-      { id: "S1", standard_id: "IS 1417", clause: "Cl. 4.1", title: "Fineness Grades for Gold", page: 2, text: "Gold jewellery and artefacts shall be designated by purity in karats and parts per thousand fineness.", source_url: "/api/docs/is-1417-2016" },
-      { id: "S2", standard_id: "IS 1417", clause: "Cl. 6.1", title: "Official Hallmarking Marks", page: 4, text: "Mandatory hallmarking consists of three marks: BIS standard logo, purity fineness grade, and 6-digit alphanumeric HUID.", source_url: "/api/docs/is-1417-2016" },
+      { id: "S1", standard_id: "IS 15820", clause: "3.1", title: "Hallmarking (definition)", page: 6, text: "The accurate determination and official recording of the proportionate content of precious metal in precious metal articles.", source_url: "/api/docs/is-15820" },
+      { id: "S2", standard_id: "IS 15820", clause: "3.2", title: "Fineness (definition)", page: 6, text: "The content of the named precious metal(s) measured in terms of parts per thousand by mass of alloy.", source_url: "/api/docs/is-15820" },
+      { id: "S3", standard_id: "IS 15820", clause: "1", title: "Scope", page: 6, text: "standard covers general requirements for competence of assaying and hallmarking centres.", source_url: "/api/docs/is-15820" },
     ],
-    answer: (lang) =>
-      lang === "hi"
-        ? `**हॉलमार्किंग (Hallmarking)** सोने और चांदी के आभूषणों की शुद्धता और गुणवत्ता का आधिकारिक प्रमाणन है। भारत में भारतीय मानक ब्यूरो (BIS) द्वारा **IS 1417** के तहत अनिवार्य हॉलमार्किंग लागू की गई है।\n\n### असली हॉलमार्क के 3 अनिवार्य चिह्न:\n1. **BIS लोगो (त्रिभुजाकार मानक चिह्न)** — प्रमाणित करता है कि उत्पाद भारतीय मानकों के अनुरूप है।\n2. **शुद्धता और कैरेट ग्रेड (Purity Grade)** — जैसे **22K916** (91.6% शुद्ध सोना), **18K750** (75.0% सोना), **14K585** (58.5% सोना)।\n3. **6-अंकीय HUID (Hallmark Unique Identification)** — प्रत्येक आभूषण पर लेजर द्वारा उकेरा गया अनूठा 6-अक्षरों का अल्फान्यूमेरिक कोड।\n\nउपभोक्ता **BIS Care App** में HUID डालकर आभूषण की शुद्धता, जांच केंद्र (AHC) और पंजीकरण विवरण तुरंत सत्यापित कर सकते हैं।`
-        : `**Hallmarking** is the official determination and certification of the proportionate purity of gold or silver in jewellery and artefacts. In India, it is regulated by the Bureau of Indian Standards (BIS) under **IS 1417** (*Gold and Gold Alloys, Jewellery/Artefacts — Fineness and Marking*).\n\n### The 3 Mandatory Hallmarking Marks:\nSince April 2023, every hallmarked gold article sold by registered jewellers in notified districts must bear three marks:\n1. **BIS Standard Mark (Triangular Logo)** — Confirms compliance with official Indian Standards.\n2. **Purity / Fineness Grade** — Displays both karatage and fineness in parts-per-thousand (e.g., **22K916**, **18K750**, **14K585**).\n3. **6-Digit HUID (Hallmark Unique Identification)** — A unique alphanumeric code laser-engraved at a BIS-recognized Assaying and Hallmarking Centre (AHC).\n\nConsumers can verify the authenticity, testing centre, jeweller registration, and stamping date by entering the HUID into the **BIS Care App**.`,
+    answer: () =>
+      `**Hallmarking** is the accurate determination and official recording of the proportionate content of precious metal in a precious metal article [S1]. The purity figure that gets marked, its fineness, is that content measured in parts per thousand by mass of alloy [S2].\n\nIn India, hallmarking is carried out by an Assaying and Hallmarking Centre (AHC) recognised by the Bureau of Indian Standards. **IS 15820** sets out the competence requirements such a centre must meet [S3], and **IS 1417** specifies the gold fineness grades that a jewellery article can be marked with.\n\nTo verify a specific piece of hallmarked jewellery, the official route is the BIS Care app or Manak Online, since checking an individual mark isn't something a standards document itself can tell you.`,
     follow_ups: [
-      "How do I verify a 6-digit HUID code in BIS Care?",
-      "What are the recognized gold purity grades under IS 1417?",
-      "Is hallmarking mandatory across all districts in India?",
+      "What gold fineness grades does IS 1417 specify?",
+      "What are Assaying and Hallmarking Centres required to do under IS 15820?",
     ],
-    cards: {
-      hallmark: {
-        purity_karat: "22K",
-        purity_fineness: "916",
-        huid_format_valid: true,
-      },
-    },
   },
 
   {
     id: "what-is-huid",
+    // P12.2: not verified against the KB (see scripts/faq-verify.ts) — kept for documentation
+    // of the topic/triggers, but matchCanonicalFaq() never serves it. The question runs through
+    // the full retrieval pipeline instead, which either finds real evidence or refuses honestly.
+    verified: false,
     triggers: [
       /\bwhat\s+(?:is|are)\s+huid\b/i,
       /\bdefine\s+huid\b/i,
@@ -120,6 +133,10 @@ export const CANONICAL_FAQS: CanonicalFaqEntry[] = [
 
   {
     id: "what-is-916-gold",
+    // P12.2: not verified against the KB (see scripts/faq-verify.ts) — kept for documentation
+    // of the topic/triggers, but matchCanonicalFaq() never serves it. The question runs through
+    // the full retrieval pipeline instead, which either finds real evidence or refuses honestly.
+    verified: false,
     triggers: [
       /\bwhat\s+is\s+916\s+(?:gold|hallmark)?\b/i,
       /\bwhat\s+does\s+916\s+mean\b/i,
@@ -146,8 +163,13 @@ export const CANONICAL_FAQS: CanonicalFaqEntry[] = [
     },
   },
 
+  // Verified against data/kb/chunks.json: the scope and terminology clauses quoted below are
+  // real excerpts. The full 8-grade fineness table (clause 4.1) also exists in the document, but
+  // the extracted text for that specific table is corrupted by a known 2-column PDF layout issue
+  // (see progress.md), so its numbers cannot be reliably paired to a karat, we say so honestly.
   {
     id: "gold-purity-grades-is1417",
+    verified: true,
     triggers: [
       /\b(?:what\s+are\s+the\s+)?purity\s+grades\s+(?:under|for|in)\s+is\s*1417\b/i,
       /\bgold\s+karat\s+grades\s+in\s+india\b/i,
@@ -155,23 +177,30 @@ export const CANONICAL_FAQS: CanonicalFaqEntry[] = [
       /\ballowed\s+gold\s+grades\b/i,
     ],
     keywords: ["purity", "grade", "gold"],
-    question: "What gold purity grades are recognized for hallmarking under IS 1417?",
+    question: "What gold purity grades and terminology does IS 1417 define?",
     standards: [
-      { id: "IS 1417", title: "Gold and Gold Alloys, Jewellery/Artefacts — Fineness and Marking", class: "applies", why: "Table 1 defines all official fineness grades." },
+      { id: "IS 1417", title: "Gold and Gold Alloys, Jewellery/Artefacts: Fineness and Marking", class: "applies", why: "Defines gold grades, carat, and fineness terminology." },
     ],
     sources: [
-      { id: "S1", standard_id: "IS 1417", clause: "Table 1", title: "Fineness Grades for Gold Articles", page: 3, text: "Officially recognized grades: 24K995, 23K958, 22K916, 20K833, 18K750, 14K585, 9K375.", source_url: "/api/docs/is-1417-2016" },
+      { id: "S1", standard_id: "IS 1417", clause: "1.1", title: "Scope", page: 10, text: "This standard specifies eight grades of gold, used", source_url: "/api/docs/is-1417" },
+      { id: "S2", standard_id: "IS 1417", clause: "3.2", title: "Carat (definition)", page: 10, text: "One-twenty fourth part by mass of the metallic element", source_url: "/api/docs/is-1417" },
+      { id: "S3", standard_id: "IS 1417", clause: "3.4", title: "Fine Gold (definition)", page: 10, text: "It is gold having fineness 999 parts per thousand", source_url: "/api/docs/is-1417" },
+      { id: "S4", standard_id: "IS 1417", clause: "3.7", title: "Standard Gold (definition)", page: 10, text: "Gold having fineness 995 parts per thousand", source_url: "/api/docs/is-1417" },
     ],
     answer: () =>
-      `Under **IS 1417**, the Bureau of Indian Standards permits hallmarking for the following official purity grades:\n\n| Karat | Fineness Mark | Minimum Pure Gold Content |\n|---|---|---|\n| **24K** | **24K995** | 99.5% pure gold |\n| **23K** | **23K958** | 95.8% pure gold |\n| **22K** | **22K916** | 91.6% pure gold |\n| **20K** | **20K833** | 83.3% pure gold |\n| **18K** | **18K750** | 75.0% pure gold |\n| **14K** | **14K585** | 58.5% pure gold |\n| **9K**  | **9K375**  | 37.5% pure gold |\n\nNo gold article with purity below 9K (375 fineness) can be hallmarked under Indian Standards.`,
+      `**IS 1417** specifies eight grades of gold used in the manufacture of jewellery and artefacts, based on their gold content [S1].\n\nSome of the terms it defines:\n- **Carat**: one twenty-fourth part by mass of the metallic element gold [S2].\n- **Fineness**: the ratio of gold content to total mass, expressed in parts per thousand.\n- **Fine Gold**: gold with a fineness of 999 parts per thousand or above [S3].\n- **Standard Gold**: gold with a fineness of 995 parts per thousand or above [S4].\n\nThe document also gives the full grade table linking each karat to its exact fineness, but the extracted text for that specific table is too garbled to quote reliably here. Ask about a specific karat and BISVEDA will search the standard directly rather than guess.`,
     follow_ups: [
-      "What is the difference between 22K916 and 18K750 gold?",
-      "How is gold purity verified at an Assaying and Hallmarking Centre?",
+      "What does an Assaying and Hallmarking Centre do under IS 15820?",
+      "What is the difference between fine gold and standard gold?",
     ],
   },
 
   {
     id: "is-hallmarking-mandatory",
+    // P12.2: not verified against the KB (see scripts/faq-verify.ts) — kept for documentation
+    // of the topic/triggers, but matchCanonicalFaq() never serves it. The question runs through
+    // the full retrieval pipeline instead, which either finds real evidence or refuses honestly.
+    verified: false,
     triggers: [
       /\bis\s+hallmarking\s+mandatory\b/i,
       /\bis\s+gold\s+hallmarking\s+compulsory\b/i,
@@ -196,6 +225,10 @@ export const CANONICAL_FAQS: CanonicalFaqEntry[] = [
 
   {
     id: "how-to-verify-huid",
+    // P12.2: not verified against the KB (see scripts/faq-verify.ts) — kept for documentation
+    // of the topic/triggers, but matchCanonicalFaq() never serves it. The question runs through
+    // the full retrieval pipeline instead, which either finds real evidence or refuses honestly.
+    verified: false,
     triggers: [
       /\bhow\s+to\s+verify\s+huid\b/i,
       /\bhow\s+to\s+check\s+huid\b/i,
@@ -221,6 +254,10 @@ export const CANONICAL_FAQS: CanonicalFaqEntry[] = [
   // ── 2. Helmets & Head Protection ─────────────────────────────────────────
   {
     id: "what-is-is-4151",
+    // P12.2: not verified against the KB (see scripts/faq-verify.ts) — kept for documentation
+    // of the topic/triggers, but matchCanonicalFaq() never serves it. The question runs through
+    // the full retrieval pipeline instead, which either finds real evidence or refuses honestly.
+    verified: false,
     triggers: [
       /\bwhat\s+is\s+is\s*4151\b/i,
       /\bis\s*4151\s+(?:scope|summary|specification|kya\s+hai)\b/i,
@@ -247,6 +284,10 @@ export const CANONICAL_FAQS: CanonicalFaqEntry[] = [
 
   {
     id: "is-helmet-mandatory-qco",
+    // P12.2: not verified against the KB (see scripts/faq-verify.ts) — kept for documentation
+    // of the topic/triggers, but matchCanonicalFaq() never serves it. The question runs through
+    // the full retrieval pipeline instead, which either finds real evidence or refuses honestly.
+    verified: false,
     triggers: [
       /\bis\s+helmet\s+mandatory\s+(?:under|by)\s+qco\b/i,
       /\bis\s+isi\s+helmet\s+compulsory\b/i,
@@ -271,6 +312,10 @@ export const CANONICAL_FAQS: CanonicalFaqEntry[] = [
 
   {
     id: "difference-is4151-vs-is2925",
+    // P12.2: not verified against the KB (see scripts/faq-verify.ts) — kept for documentation
+    // of the topic/triggers, but matchCanonicalFaq() never serves it. The question runs through
+    // the full retrieval pipeline instead, which either finds real evidence or refuses honestly.
+    verified: false,
     triggers: [
       /\bdifference\s+between\s+is\s*4151\s+and\s+is\s*2925\b/i,
       /\bis\s*4151\s+vs\s+is\s*2925\b/i,
@@ -298,6 +343,10 @@ export const CANONICAL_FAQS: CanonicalFaqEntry[] = [
   // ── 3. Toys & Child Safety ────────────────────────────────────────────────
   {
     id: "bis-standards-for-toys",
+    // P12.2: not verified against the KB (see scripts/faq-verify.ts) — kept for documentation
+    // of the topic/triggers, but matchCanonicalFaq() never serves it. The question runs through
+    // the full retrieval pipeline instead, which either finds real evidence or refuses honestly.
+    verified: false,
     triggers: [
       /\bwhat\s+are\s+the\s+(?:bis\s+)?standards\s+for\s+toys\b/i,
       /\btoy\s+safety\s+standards\s+in\s+india\b/i,
@@ -326,6 +375,10 @@ export const CANONICAL_FAQS: CanonicalFaqEntry[] = [
 
   {
     id: "is-toy-certification-mandatory",
+    // P12.2: not verified against the KB (see scripts/faq-verify.ts) — kept for documentation
+    // of the topic/triggers, but matchCanonicalFaq() never serves it. The question runs through
+    // the full retrieval pipeline instead, which either finds real evidence or refuses honestly.
+    verified: false,
     triggers: [
       /\bis\s+bis\s+certification\s+mandatory\s+for\s+toys\b/i,
       /\bcan\s+toys\s+be\s+sold\s+without\s+isi\s+mark\b/i,
@@ -352,6 +405,10 @@ export const CANONICAL_FAQS: CanonicalFaqEntry[] = [
   // ── 4. General BIS, ISI Mark, CM/L & Procedures ─────────────────────────
   {
     id: "what-is-isi-mark",
+    // P12.2: not verified against the KB (see scripts/faq-verify.ts) — kept for documentation
+    // of the topic/triggers, but matchCanonicalFaq() never serves it. The question runs through
+    // the full retrieval pipeline instead, which either finds real evidence or refuses honestly.
+    verified: false,
     triggers: [
       /\bwhat\s+is\s+(?:an?\s+)?isi\s+mark\b/i,
       /\bdefine\s+isi\s+mark\b/i,
@@ -377,6 +434,10 @@ export const CANONICAL_FAQS: CanonicalFaqEntry[] = [
 
   {
     id: "what-is-cml-number",
+    // P12.2: not verified against the KB (see scripts/faq-verify.ts) — kept for documentation
+    // of the topic/triggers, but matchCanonicalFaq() never serves it. The question runs through
+    // the full retrieval pipeline instead, which either finds real evidence or refuses honestly.
+    verified: false,
     triggers: [
       /\bwhat\s+is\s+(?:a\s+)?cm\/?l\s+(?:number|licence|license)\b/i,
       /\bhow\s+many\s+digits\s+is\s+cm\/?l\b/i,
@@ -401,6 +462,10 @@ export const CANONICAL_FAQS: CanonicalFaqEntry[] = [
 
   {
     id: "what-is-qco",
+    // P12.2: not verified against the KB (see scripts/faq-verify.ts) — kept for documentation
+    // of the topic/triggers, but matchCanonicalFaq() never serves it. The question runs through
+    // the full retrieval pipeline instead, which either finds real evidence or refuses honestly.
+    verified: false,
     triggers: [
       /\bwhat\s+is\s+(?:a\s+)?qco\b/i,
       /\bquality\s+control\s+order\s+meaning\b/i,
@@ -425,6 +490,10 @@ export const CANONICAL_FAQS: CanonicalFaqEntry[] = [
 
   {
     id: "what-is-bis-care-app",
+    // P12.2: not verified against the KB (see scripts/faq-verify.ts) — kept for documentation
+    // of the topic/triggers, but matchCanonicalFaq() never serves it. The question runs through
+    // the full retrieval pipeline instead, which either finds real evidence or refuses honestly.
+    verified: false,
     triggers: [
       /\bwhat\s+is\s+(?:the\s+)?bis\s+care\s+app\b/i,
       /\bhow\s+to\s+use\s+bis\s+care\s+app\b/i,
@@ -449,6 +518,10 @@ export const CANONICAL_FAQS: CanonicalFaqEntry[] = [
 
   {
     id: "form-i-jeweller-registration-process",
+    // P12.2: not verified against the KB (see scripts/faq-verify.ts) — kept for documentation
+    // of the topic/triggers, but matchCanonicalFaq() never serves it. The question runs through
+    // the full retrieval pipeline instead, which either finds real evidence or refuses honestly.
+    verified: false,
     triggers: [
       /\bhow\s+to\s+register\s+(?:as\s+a\s+)?jeweller\s+for\s+hallmarking\b/i,
       /\bwhat\s+is\s+form\s+i\b/i,
@@ -484,9 +557,71 @@ function normalizeForMatching(text: string): string {
     .trim();
 }
 
+/** Same normalization, used for comparing a cited quote against real KB chunk text. */
+function normalizeForVerify(text: string): string {
+  return normalizeForMatching(text);
+}
+
 /**
- * Evaluates whether a query matches any canonical FAQ.
- * Returns a fully formed BisvedaResponse if matched, or null otherwise.
+ * True if `quote` (normalized: lowercase, punctuation-insensitive, whitespace-collapsed) is a
+ * real substring of at least one chunk of `standardId` in the live knowledge base. This is the
+ * one check that decides whether an FAQ source is a genuine citation or a fabricated one.
+ * Exported so `scripts/faq-verify.ts` can run the same check offline over the whole file.
+ */
+export function quoteExistsInKb(standardId: string, quote: string): boolean {
+  const target = normalizeForVerify(quote);
+  if (!target) return false;
+  return getChunksByStandard(standardId).some((c) => normalizeForVerify(c.text).includes(target));
+}
+
+/** Checks every source of one FAQ against the KB. Used by both the audit script and the runtime guard below. */
+export function verifyFaqSources(faq: CanonicalFaqEntry): Array<{ source: FaqSource; ok: boolean }> {
+  return faq.sources.map((s) => ({ source: s, ok: quoteExistsInKb(s.standard_id, s.text) }));
+}
+
+// Runtime guard result, cached per FAQ id so the (cheap, but not free) checks below run once per
+// server process rather than on every matching query.
+const runtimeVerifyCache = new Map<string, boolean>();
+
+/** True only if every source is a real KB excerpt AND the answer's own claims pass the trust gate. */
+function passesRuntimeGuard(faq: CanonicalFaqEntry): boolean {
+  const cached = runtimeVerifyCache.get(faq.id);
+  if (cached !== undefined) return cached;
+
+  const sourcesOk = verifyFaqSources(faq).every((r) => r.ok);
+  let ok = sourcesOk;
+  if (sourcesOk) {
+    const pkg: EvidencePackage = {
+      primary_standard: faq.standards[0] ? { id: faq.standards[0].id, title: faq.standards[0].title } : null,
+      standards: faq.standards,
+      sources: faq.sources.map((s, idx) => ({
+        label: s.label || s.id || `S${idx + 1}`,
+        standard_id: s.standard_id,
+        title: s.title,
+        clause: s.clause,
+        page: s.page,
+        url: s.url || s.source_url || "",
+        text: s.text,
+      })),
+    };
+    const trust = runTrustGate(faq.answer("en"), pkg);
+    ok = !trust.allDropped && trust.droppedLines.length === 0;
+    if (!ok) {
+      console.warn(`[speedgate] FAQ "${faq.id}" answer did not fully pass the trust gate against its own sources; not serving it.`, trust.droppedLines);
+    }
+  } else {
+    console.warn(`[speedgate] FAQ "${faq.id}" has a source whose quoted text isn't in the KB; not serving it.`);
+  }
+
+  runtimeVerifyCache.set(faq.id, ok);
+  return ok;
+}
+
+/**
+ * Evaluates whether a query matches a *verified* canonical FAQ. Returns a fully formed
+ * BisvedaResponse only when the match is marked `verified: true` in the source file and passes
+ * the runtime guard above; otherwise returns null so the caller runs the full pipeline. Never
+ * returns a refusal itself — "not in our documents" can only come from the full pipeline.
  */
 export function matchCanonicalFaq(
   query: string,
@@ -497,6 +632,8 @@ export function matchCanonicalFaq(
   if (!qClean || qClean.length < 4) return null;
 
   for (const faq of CANONICAL_FAQS) {
+    if (faq.verified !== true) continue; // undocumented topic or explicitly unverified: skip, let the full pipeline answer it
+
     // 1. Check triggers
     let triggerHit = false;
     for (const trig of faq.triggers) {
@@ -525,6 +662,8 @@ export function matchCanonicalFaq(
     }
 
     if (triggerHit) {
+      if (!passesRuntimeGuard(faq)) continue; // defense in depth: fall through to the full pipeline
+
       const responseCards: BisvedaResponse["cards"] = {};
       if (faq.cards?.hallmark) responseCards.hallmark = faq.cards.hallmark;
       if (faq.cards?.mark) responseCards.mark = faq.cards.mark;

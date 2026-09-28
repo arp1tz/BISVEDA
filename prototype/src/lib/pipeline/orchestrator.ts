@@ -63,13 +63,34 @@ function summarizeHistoryForLLM(history: ConversationTurn[] = [], maxTurns = 3):
   return out;
 }
 
-async function refusalNotInSources(conversationId: string, language: string, extra?: string): Promise<BisvedaResponse> {
+/**
+ * P12.2: picks one extra, topic-matched next step for an honest "not in our documents" refusal,
+ * on top of the two default links every refusal already gets. Deterministic keyword match on the
+ * English query text — no generated facts, just routing to an official page or in-app page.
+ */
+function guidedRefusalStep(englishQuery: string): { text: string; url: string } | null {
+  const q = (englishQuery || "").toLowerCase();
+  if (/\b(qco|quality control order|licence|license|certif|scheme|isi mark|cm\/?l)\b/.test(q)) {
+    return { text: "Certification schemes on Manak Online", url: "https://www.manakonline.in" };
+  }
+  if (/\b(complain|counterfeit|fake|bis care|huid|report)\b/.test(q)) {
+    return { text: "BIS Care app and complaints", url: "https://www.bis.gov.in/" };
+  }
+  if (/\b(lab|laboratory|test(?:ing)?|ahc|hallmarking centre|hallmarking center|assaying)\b/.test(q)) {
+    return { text: "Find a lab or hallmarking centre", url: "/labs" };
+  }
+  return null;
+}
+
+async function refusalNotInSources(conversationId: string, language: string, extra?: string, englishQuery?: string): Promise<BisvedaResponse> {
   const [notFound, covers, catalogue, helpline] = await Promise.all([
     tStatic("not_in_sources", language),
     tStatic("covers", language),
     translateTo("Search the official BIS Standards Catalogue", language),
     translateTo("National Consumer Helpline", language),
   ]);
+  const guided = englishQuery ? guidedRefusalStep(englishQuery) : null;
+  const guidedStep = guided ? { text: await translateTo(guided.text, language), url: guided.url } : null;
   return {
     conversation_id: conversationId,
     kind: "refusal",
@@ -82,6 +103,7 @@ async function refusalNotInSources(conversationId: string, language: string, ext
       message: (extra ? `${extra} ` : "") + `${notFound} ${covers} ${knownStandardsList()}.`,
       next_steps: [
         { text: catalogue, url: "https://www.services.bis.gov.in/php/BIS_2.0/bisconnect/knowyourstandards/indian_standards/isdetails" },
+        ...(guidedStep ? [guidedStep] : []),
         { text: helpline, url: "https://consumerhelpline.gov.in/" },
       ],
     },
@@ -467,7 +489,7 @@ async function runPipelineInner(options: PipelineOptions): Promise<BisvedaRespon
     const stdId = understood.standards[0];
     const resp = stdId ? await answerForStandard(conversationId, q, stdId, understood.language, historyText, userProvidedText) : null;
     if (resp) return { ...resp, cards: buildCards() };
-    return await refusalNotInSources(conversationId, understood.language, `"${stdId}" is not one of the standards we hold.`);
+    return await refusalNotInSources(conversationId, understood.language, `"${stdId}" is not one of the standards we hold.`, q);
   }
 
   // ── Branch: smalltalk / gibberish / out_of_scope ─────────────────────────
@@ -500,6 +522,12 @@ async function runPipelineInner(options: PipelineOptions): Promise<BisvedaRespon
       replyText ||
       (await tStatic(understood.intent === "gibberish" ? "gibberish" : "out_of_scope", understood.language));
 
+    // A "product/certification question about something we don't hold" often gets classified
+    // out_of_scope rather than reaching refusalNotInSources below, so the same guided-link
+    // routing applies here too (never for gibberish, which has no real topic to route on).
+    const guided = understood.intent === "out_of_scope" ? guidedRefusalStep(q) : null;
+    const guidedStep = guided ? { text: await translateTo(guided.text, understood.language), url: guided.url } : null;
+
     return {
       conversation_id: conversationId,
       kind: "refusal",
@@ -511,7 +539,10 @@ async function runPipelineInner(options: PipelineOptions): Promise<BisvedaRespon
       refusal: {
         reason: understood.intent as "out_of_scope" | "gibberish",
         message: refusalMsg,
-        next_steps: [{ text: "Visit the official BIS Portal", url: "https://www.bis.gov.in/" }],
+        next_steps: [
+          { text: "Visit the official BIS Portal", url: "https://www.bis.gov.in/" },
+          ...(guidedStep ? [guidedStep] : []),
+        ],
       },
       follow_ups: [`Which standard applies to helmets?`, `What are the gold hallmarking grades?`],
     };
@@ -788,7 +819,7 @@ async function runPipelineInner(options: PipelineOptions): Promise<BisvedaRespon
 
   if (!floorCheck.passed) {
     return {
-      ...(await refusalNotInSources(conversationId, understood.language)),
+      ...(await refusalNotInSources(conversationId, understood.language, undefined, retrievalQuery)),
       cards: buildCards(),
     };
   }
@@ -799,12 +830,12 @@ async function runPipelineInner(options: PipelineOptions): Promise<BisvedaRespon
   emit("check", "done", Date.now() - tCheck);
 
   if (!adjudicated.primaryStandard) {
-    return { ...(await refusalNotInSources(conversationId, understood.language)), cards: buildCards() };
+    return { ...(await refusalNotInSources(conversationId, understood.language, undefined, retrievalQuery)), cards: buildCards() };
   }
 
   const pkg = buildEvidencePackage(adjudicated, fused.rankedChunks);
   if (pkg.sources.length === 0) {
-    return { ...(await refusalNotInSources(conversationId, understood.language)), cards: buildCards() };
+    return { ...(await refusalNotInSources(conversationId, understood.language, undefined, retrievalQuery)), cards: buildCards() };
   }
 
   emit("write", "active");
@@ -820,7 +851,7 @@ async function runPipelineInner(options: PipelineOptions): Promise<BisvedaRespon
   emit("write", "done", Date.now() - tWrite);
 
   if (trust.allDropped) {
-    return { ...(await refusalNotInSources(conversationId, understood.language)), cards: buildCards() };
+    return { ...(await refusalNotInSources(conversationId, understood.language, undefined, retrievalQuery)), cards: buildCards() };
   }
 
   return {

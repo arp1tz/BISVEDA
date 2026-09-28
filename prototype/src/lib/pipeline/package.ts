@@ -40,7 +40,7 @@ export function buildEvidencePackage(adjudicated: AdjudicationPackage, rankedChu
     sources.push({
       label: `S${sIndex++}`,
       standard_id: chunk.standard_id,
-      title: `${chunk.standard_id} — Clause ${chunk.clause}${chunk.clause_title ? `: ${chunk.clause_title}` : ""}`,
+      title: `${chunk.standard_id}, Clause ${chunk.clause}${chunk.clause_title ? `: ${chunk.clause_title}` : ""}`,
       clause: chunk.clause,
       page: chunk.page_start,
       url: `/api/docs/${chunk.doc_id}#page=${chunk.page_start}`,
