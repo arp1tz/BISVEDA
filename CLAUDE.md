@@ -30,6 +30,7 @@ L5  pipeline/answer.ts       Groq, history-aware, cites [S#]; evidence-only fall
 L6  pipeline/trust.ts        strip unknown [S#], drop unsupported IS numbers or figures, refuse if unsupported
 L3  lib/kb/store.ts          loads data/kb + data/directory once
 L0/L2 scripts/kb, scripts/directory  (offline)
+--  lib/ui-i18n/*, components/a11y/PageTranslator.tsx, api/translate-ui   interface-language picker + page translator (P12.4), separate from the answer-language pipeline above
 ```
 
 ## Hard rules
