@@ -267,7 +267,7 @@ async def bisveda_media(websocket: WebSocket):
         c_state = _call_state(call_id)
         c_state["phone"] = phone
         c_state["stream_sid"] = stream_sid
-        c_state["ai_is_speaking"] = False
+        c_state["ai_is_speaking"] = True
         c_state["barge_in_active"] = False
         c_state["consecutive_speech_pkts"] = 0
 
@@ -313,7 +313,6 @@ async def bisveda_media(websocket: WebSocket):
                                 pcm16k, rms = exotel_to_gemini_pcm16(payload, call_id)
 
                                 # ── Barge-In / Interruption Engine ──
-                                # If the AI is currently speaking and caller starts talking (RMS > threshold)
                                 if c_state["ai_is_speaking"]:
                                     if rms >= SPEECH_RMS_THRESHOLD:
                                         c_state["consecutive_speech_pkts"] += 1
@@ -333,10 +332,15 @@ async def bisveda_media(websocket: WebSocket):
                                             "stream_sid": stream_sid,
                                         }))
 
-                                # Stream audio into Gemini Live
-                                await gemini.send_realtime_input(
-                                    audio=types.Blob(data=pcm16k, mime_type="audio/pcm;rate=16000")
-                                )
+                                        # Forward voiced audio to Gemini
+                                        await gemini.send_realtime_input(
+                                            audio=types.Blob(data=pcm16k, mime_type="audio/pcm;rate=16000")
+                                        )
+                                else:
+                                    # AI is NOT speaking: stream caller voice audio directly to Gemini Live
+                                    await gemini.send_realtime_input(
+                                        audio=types.Blob(data=pcm16k, mime_type="audio/pcm;rate=16000")
+                                    )
 
                         elif event_type == "dtmf":
                             digit = (event.get("dtmf") or {}).get("digit")
@@ -400,6 +404,8 @@ async def bisveda_media(websocket: WebSocket):
                                         pcm8k = gemini_to_exotel_pcm16(audio_data, call_id)
                                         if pcm8k and not c_state["barge_in_active"]:
                                             out_packets += 1
+                                            if out_packets == 1:
+                                                log.info(f"[{call_id}] 🔊 First AI audio packet sent to caller ({len(pcm8k)} bytes)")
                                             payload = base64.b64encode(pcm8k).decode("ascii")
                                             await websocket.send_text(json.dumps({
                                                 "event": "media",
@@ -422,33 +428,29 @@ async def bisveda_media(websocket: WebSocket):
                             log.warn(f"[{call_id}] gemini_to_exotel error in turn {turn}: {e}")
                             await asyncio.sleep(0.05)
 
-            # Start streaming loops
-            in_task = asyncio.create_task(exotel_to_gemini())
+            # Start streaming loops: receiver first so it catches greeting audio chunks immediately
             out_task = asyncio.create_task(gemini_to_exotel())
+            in_task = asyncio.create_task(exotel_to_gemini())
 
             # Trigger clean opening greeting immediately
-            async def send_greeting():
-                try:
-                    await asyncio.sleep(0.3)
-                    await gemini.send_client_content(
-                        turns={
-                            "role": "user",
-                            "parts": [{
-                                "text": (
-                                    "The caller has answered the call. Please speak your opening greeting out loud now: "
-                                    "Warmly welcome them in Hindi and English as the BISVEDA AI Helpline, mention that they can speak in "
-                                    "Marathi, Hindi, English, or any Indian language, and ask how you can help them today. "
-                                    "DO NOT ask 'क्या आपका कोई और सवाल है?'."
-                                )
-                            }],
-                        },
-                        turn_complete=True,
-                    )
-                    log.info(f"[{call_id}] Opening greeting instruction dispatched to Gemini Live")
-                except Exception as ge:
-                    log.error(f"[{call_id}] Failed to dispatch greeting: {ge}")
-
-            asyncio.create_task(send_greeting())
+            try:
+                await gemini.send_client_content(
+                    turns=[{
+                        "role": "user",
+                        "parts": [{
+                            "text": (
+                                "The caller has answered the call. Please speak your opening greeting out loud right now: "
+                                "Greet the caller warmly in Hindi and English as the official BISVEDA AI Helpline, "
+                                "tell them they can speak in Marathi, Hindi, English, or any Indian language, "
+                                "and ask how you can help them today."
+                            )
+                        }],
+                    }],
+                    turn_complete=True,
+                )
+                log.info(f"[{call_id}] Opening greeting instruction dispatched to Gemini Live")
+            except Exception as ge:
+                log.error(f"[{call_id}] Failed to dispatch greeting: {ge}")
 
             # Keep connection running until caller hangs up (in_task completes) or error occurs
             done, pending = await asyncio.wait(

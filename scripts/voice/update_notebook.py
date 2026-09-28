@@ -118,7 +118,7 @@ async def bisveda_media(websocket: WebSocket):
     call_id = f"call_{int(time.time())}"
     started_at = time.time()
 
-    ai_is_speaking = False
+    ai_is_speaking = True
     barge_in_active = False
     consecutive_speech_pkts = 0
 
@@ -165,6 +165,7 @@ async def bisveda_media(websocket: WebSocket):
                                 in_pkts += 1
                                 raw_pcm8k = base64.b64decode(payload)
                                 rms = audioop.rms(raw_pcm8k, 2) if raw_pcm8k else 0
+                                pcm16k = exotel_to_gemini_pcm16(payload, call_id)
 
                                 # Barge-in detection
                                 if ai_is_speaking:
@@ -182,11 +183,13 @@ async def bisveda_media(websocket: WebSocket):
                                             "stream_sid": stream_sid,
                                         }))
                                         logger.info("BARGE_IN", f"Interruption detected (RMS {rms}) -> Cleared playout", call_id)
-
-                                pcm16k = exotel_to_gemini_pcm16(payload, call_id)
-                                await gemini.send_realtime_input(
-                                    audio=types.Blob(data=pcm16k, mime_type="audio/pcm;rate=16000")
-                                )
+                                        await gemini.send_realtime_input(
+                                            audio=types.Blob(data=pcm16k, mime_type="audio/pcm;rate=16000")
+                                        )
+                                else:
+                                    await gemini.send_realtime_input(
+                                        audio=types.Blob(data=pcm16k, mime_type="audio/pcm;rate=16000")
+                                    )
                         elif event_type == "stop":
                             return
                 except Exception:
@@ -239,29 +242,28 @@ async def bisveda_media(websocket: WebSocket):
                             break
                         await asyncio.sleep(0.05)
 
-            in_task = asyncio.create_task(exotel_to_gemini())
             out_task = asyncio.create_task(gemini_to_exotel())
+            in_task = asyncio.create_task(exotel_to_gemini())
 
             # Trigger opening greeting
-            async def send_greeting():
-                await asyncio.sleep(0.3)
+            try:
                 await gemini.send_client_content(
-                    turns={
+                    turns=[{
                         "role": "user",
                         "parts": [{
                             "text": (
-                                "The caller has answered the call. Please speak your opening greeting out loud now: "
-                                "Warmly welcome them in Hindi and English as the BISVEDA AI Helpline, mention that they can speak in "
-                                "Marathi, Hindi, English, or any Indian language, and ask how you can help them today. "
-                                "DO NOT ask 'क्या आपका कोई और सवाल है?'."
+                                "The caller has answered the call. Please speak your opening greeting out loud right now: "
+                                "Greet the caller warmly in Hindi and English as the official BISVEDA AI Helpline, "
+                                "tell them they can speak in Marathi, Hindi, English, or any Indian language, "
+                                "and ask how you can help them today."
                             )
                         }],
-                    },
+                    }],
                     turn_complete=True,
                 )
                 logger.info("GREETING_TRIGGERED", "Opening greeting dispatched", call_id)
-
-            asyncio.create_task(send_greeting())
+            except Exception as ge:
+                logger.error("GREETING_ERROR", str(ge), call_id)
 
             done, pending = await asyncio.wait(
                 {in_task, out_task},
