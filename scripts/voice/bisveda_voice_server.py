@@ -1,7 +1,8 @@
 """
 BISVEDA Real-time Voice Call Assistant — Exotel + Gemini Live Runner
-Starts the FastAPI bridge, mounts ngrok tunnel, registers BISVEDA tools,
-and connects bidirectional Exotel telephony audio (8kHz PCM16) to Gemini Live (gemini-3.1-flash-live-preview).
+Starts the FastAPI bridge, mounts ngrok tunnel, and connects bidirectional
+Exotel telephony audio (8kHz PCM16) directly to Gemini Live (gemini-3.1-flash-live-preview)
+for low-latency, natural, multi-turn conversational assistance.
 """
 
 import os
@@ -45,11 +46,10 @@ PORT = int(get_env("VOICE_PORT", "8001"))
 
 EXOTEL_SAMPLE_RATE = 8000
 EXOTEL_CHANNELS = 1
-OUTGOING_CHUNK_BYTES = 1600  # 100ms at 8kHz 16-bit mono (5 * 320 bytes)
+OUTGOING_CHUNK_BYTES = 1600  # 100ms at 8kHz 16-bit mono
 
 # Audio state buffer per call
 AUDIO_STATE = {}
-CALLS = {}
 ACTIVE_CALLS = {}
 
 def _audio_state(call_id: str):
@@ -105,89 +105,33 @@ def clear_audio_state(call_id: str):
 # ── Gemini Client ──
 gemini_client = genai.Client(api_key=GEMINI_API_KEY)
 
-# ── BIS Mock Database & Tools ──
-MOCK_STANDARDS = {
-    "IS 4151": {"title": "Protective Helmets for Two Wheeler Riders", "scope": "Safety requirements for motorcycle helmets", "qco": "Mandatory under QCO 2020", "scheme": "Scheme-I (ISI Mark)"},
-    "IS 1239": {"title": "Steel Tubes, Tubulars and Other Wrought Steel Fittings", "scope": "Mild steel tubes for water, gas and sanitation", "qco": "Mandatory under Steel QCO", "scheme": "Scheme-I (ISI Mark)"},
-    "IS 1417": {"title": "Gold and Gold Alloys, Silver and Silver Alloys — Hallmarking", "scope": "Purity standards for 14K, 18K, 22K (916), 24K jewellery", "qco": "Mandatory Hallmarking Order", "scheme": "Hallmarking (HUID)"},
-    "IS 9873": {"title": "Safety of Toys — Mechanical and Physical Properties", "scope": "Safety requirements for toys for children under 14", "qco": "Mandatory Toys QCO 2020", "scheme": "Scheme-I (ISI Mark)"},
-    "IS 14543": {"title": "Packaged Drinking Water (Other than Packaged Natural Mineral Water)", "scope": "Microbiological and chemical quality for bottled water", "qco": "Mandatory QCO", "scheme": "Scheme-I (ISI Mark)"},
-    "IS 269": {"title": "Ordinary Portland Cement (33, 43 and 53 grade)", "scope": "Compressive strength and chemical composition of cement", "qco": "Mandatory Cement QCO", "scheme": "Scheme-I (ISI Mark)"},
-}
-
-TOOLS = [
-    types.Tool(function_declarations=[
-        types.FunctionDeclaration(
-            name="search_standards",
-            description="Search the BIS standards database by keywords, product name, or standard number (e.g., 'steel tubes', 'IS 4151', 'drinking water').",
-            parameters={"type": "OBJECT", "properties": {"query": {"type": "STRING", "description": "Search query keywords"}}, "required": ["query"]},
-        ),
-        types.FunctionDeclaration(
-            name="verify_isi_mark",
-            description="Verify whether an ISI Mark CM/L licence number is genuine and active (e.g., 'CM/L-1234567').",
-            parameters={"type": "OBJECT", "properties": {"cm_l_number": {"type": "STRING", "description": "The CM/L licence number"}}, "required": ["cm_l_number"]},
-        ),
-        types.FunctionDeclaration(
-            name="verify_huid",
-            description="Verify Hallmark Unique Identification (HUID) 6-character code on gold jewellery.",
-            parameters={"type": "OBJECT", "properties": {"huid": {"type": "STRING", "description": "6-character alphanumeric HUID"}}, "required": ["huid"]},
-        ),
-        types.FunctionDeclaration(
-            name="check_qco_compliance",
-            description="Check whether a product falls under mandatory Quality Control Order (QCO).",
-            parameters={"type": "OBJECT", "properties": {"product_name": {"type": "STRING", "description": "Product name in English"}}, "required": ["product_name"]},
-        ),
-        types.FunctionDeclaration(
-            name="find_testing_labs",
-            description="Find BIS recognized testing laboratories by product or city/state.",
-            parameters={"type": "OBJECT", "properties": {"product_or_standard": {"type": "STRING", "description": "Product or standard"}, "location": {"type": "STRING", "description": "City or state"}}, "required": ["product_or_standard"]},
-        ),
-        types.FunctionDeclaration(
-            name="end_call",
-            description="End the phone call after speaking a polite closing goodbye out loud to the caller.",
-            parameters={"type": "OBJECT", "properties": {"reason": {"type": "STRING", "description": "Reason for ending"}}},
-        ),
-    ])
-]
-
-def execute_tool_call(call_id: str, name: str, args: dict):
-    log.info(f"[{call_id}] Tool Call: {name}({args})")
-    if name == "search_standards":
-        q = str(args.get("query", "")).upper()
-        matches = [s for is_num, s in MOCK_STANDARDS.items() if q in is_num or any(w in s["title"].upper() or w in s["scope"].upper() for w in q.split())]
-        if not matches:
-            matches = list(MOCK_STANDARDS.values())[:2]
-        return {"status": "ok", "count": len(matches), "standards": matches[:3]}
-    elif name == "verify_isi_mark":
-        cml = str(args.get("cm_l_number", ""))
-        return {"status": "ok", "valid": True, "cm_l": cml, "manufacturer": "National Industries Ltd", "standard": "IS 4151:2015", "valid_until": "2027-03-31"}
-    elif name == "verify_huid":
-        huid = str(args.get("huid", "")).upper()
-        return {"status": "ok", "valid": True, "huid": huid, "purity": "22K916 (91.6% Pure Gold)", "centre": "BIS Assaying & Hallmarking Centre", "status": "Operative"}
-    elif name == "check_qco_compliance":
-        p = str(args.get("product_name", "")).lower()
-        covered = any(k in p for k in ["helmet", "steel", "cement", "toy", "water", "cable", "wire", "valve"])
-        return {"status": "ok", "covered": covered, "mandatory_scheme": "Scheme-I (ISI Mark)" if covered else "Voluntary", "note": "Mandatory BIS certification required under Gazette QCO" if covered else "Currently voluntary"}
-    elif name == "find_testing_labs":
-        return {"status": "ok", "labs": [{"name": "BIS Central Laboratory", "city": "Sahibabad / Delhi NCR", "scope": "Electrical, Mechanical, Chemical"}, {"name": "National Test House", "city": "Mumbai", "scope": "Civil, Mechanical, and Chemical testing"}]}
-    elif name == "end_call":
-        if call_id in CALLS:
-            CALLS[call_id]["should_end"] = True
-        return {"status": "ok"}
-    return {"status": "ok"}
-
+# ── BIS Knowledge System Prompt ──
 SYSTEM_PROMPT = """
-You are "BISVEDA" (बिसवेदा), a warm, helpful, and highly knowledgeable AI voice assistant for the Bureau of Indian Standards (BIS), Ministry of Consumer Affairs, Government of India.
-You are speaking live over a phone call with an Indian citizen, consumer, or MSME business owner.
+You are "BISVEDA" (बिसवेदा), the official AI Voice Assistant for the Bureau of Indian Standards (BIS), Ministry of Consumer Affairs, Food & Public Distribution, Government of India.
+You are speaking live on a telephone call with an Indian consumer, citizen, or MSME business owner.
 
-CONVERSATIONAL RULES:
-1. The caller has answered the phone. Greet them warmly and naturally in Hindi first, followed by English:
-   "Namaste! BISVEDA AI Helpline mein aapka swagat hai. Welcome to the Bureau of Indian Standards AI helpline. Aap Hindi, English, ya kisi bhi bhasha mein sawaal pooch sakte hain. How can I help you today?"
-2. Listen carefully to the user and seamlessly switch to their preferred language (Hindi, English, Hinglish, Marathi, etc.).
-3. Keep spoken replies short, natural, and crisp (1-2 sentences per turn), ideal for voice phone calls.
-4. When asked about Indian standards, ISI marks, gold hallmark HUID, testing labs, or mandatory QCO compliance, ALWAYS use the relevant tool to provide factual answers.
-5. After answering a question, ask: "Kya aapka koi aur sawaal hai?" or "Would you like to check anything else?"
-6. If the user is satisfied and says thank you/bye, say a warm, polite closing goodbye before ending the call.
+CORE CONVERSATIONAL GUIDELINES:
+1. Speak naturally, warmly, and concisely (1 to 2 sentences per turn). This is a voice phone call, so avoid long paragraphs, bullet lists, or markdown symbols.
+2. In the opening greeting:
+   "Namaste! BISVEDA AI Helpline mein aapka swagat hai. Welcome to the Bureau of Indian Standards AI helpline. Aap Hindi, English, ya apni kisi bhi bhasha mein sawaal pooch sakte hain. How can I help you today?"
+3. Adapt seamlessly to the caller's language (Hindi, English, Hinglish, Marathi, Tamil, etc.).
+4. After answering any query, politely invite the caller: "Kya aapka koi aur sawaal hai?" or "Is there anything else I can help you with?"
+5. NEVER hang up or end the call prematurely. Always remain listening for the caller's next question until they say goodbye.
+
+COMPREHENSIVE BIS KNOWLEDGE FOR IMMEDIATE ANSWERS:
+- Two-Wheeler Helmets: Governed by IS 4151. Mandatory certification under the Two-Wheeler Helmets Quality Control Order (QCO). Selling non-ISI helmets is illegal.
+- Gold Hallmarking: Governed by IS 1417. Mandatory for 14K, 18K, 20K, 22K (916), 23K, and 24K jewellery. Consists of 3 marks: BIS logo (triangle), purity grade (e.g., 22K916), and a 6-digit alphanumeric Hallmark Unique Identification (HUID) code.
+- How to Verify Gold HUID: Open the official "BIS Care" mobile app, tap 'Verify HUID', and enter the 6-character alphanumeric code to see the jeweller name, assaying centre, and registration status.
+- ISI Mark & CM/L Licence: Genuine ISI products display the ISI monogram with the Indian Standard number (e.g., IS 4151) on top and a 7 or 8 digit licence number (CM/L-XXXXXXX) at the bottom.
+- How to Verify ISI Mark: Open the "BIS Care" app, tap 'Verify Licence Details (CM/L)', and enter the licence number to check manufacturer name, product, brand, and validity.
+- Steel Pipes & Tubes: Governed by IS 1239 (mild steel tubes) and IS 1161 (structural steel tubes). Mandatory under Steel and Steel Products QCO.
+- Packaged Drinking Water: Governed by IS 14543 (packaged drinking water) and IS 13428 (packaged natural mineral water). Both are strictly mandatory under Scheme-I ISI mark.
+- Cement: Governed by IS 269 (Ordinary Portland Cement - 33, 43, 53 grade) and IS 1489 (Portland Pozzolana Cement). Compulsory certification under Cement QCO.
+- Toys for Children: Governed by IS 9873 (mechanical, flammability, and heavy metal safety) and IS 15644 (electric toys). Mandatory under Toys (Quality Control) Order.
+- Electrical Cables & Wires: Governed by IS 694 for PVC insulated cables.
+- Quality Control Orders (QCO): Mandatory orders notified by the Central Government under the BIS Act, 2016 making BIS certification compulsory before manufacture, import, or domestic sale.
+- Testing Laboratories: BIS has its Central Laboratory at Sahibabad (Ghaziabad / Delhi NCR), regional labs in Mumbai, Kolkata, Chennai, Chandigarh, and Guwahati, plus hundreds of BIS-recognized NABL accredited labs across India.
+- Reporting Counterfeits / Complaints: Consumers can file complaints about counterfeit ISI marks, substandard products, or misleading claims directly on the "BIS Care" app or via the National Consumer Helpline (1915).
 """
 
 app = FastAPI(title="BISVEDA Exotel Voice Bridge")
@@ -303,18 +247,15 @@ async def bisveda_media(websocket: WebSocket):
         stream_sid = start_info["stream_sid"]
         phone = start_info["phone"]
 
-        CALLS[call_id] = {"should_end": False, "phone": phone}
         ACTIVE_CALLS[call_id] = {"stream_sid": stream_sid, "phone": phone, "started_at": started_at}
-
         log.info(f"[{call_id}] EXOTEL_START verified | stream_sid={stream_sid} | phone={phone}")
 
-        # Connect to Gemini Live
+        # Connect to Gemini Live Session
         async with gemini_client.aio.live.connect(
             model=GEMINI_MODEL,
             config=types.LiveConnectConfig(
                 response_modalities=["AUDIO"],
                 system_instruction=SYSTEM_PROMPT,
-                tools=TOOLS,
                 speech_config=types.SpeechConfig(
                     voice_config=types.VoiceConfig(
                         prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name="Aoede")
@@ -324,7 +265,7 @@ async def bisveda_media(websocket: WebSocket):
         ) as gemini:
             log.info(f"[{call_id}] Gemini Live session connected!")
 
-            # ── Exotel -> Gemini (Caller audio) ──
+            # ── Exotel -> Gemini (Caller live voice audio) ──
             async def exotel_to_gemini():
                 nonlocal stream_sid, call_id
                 in_packets = 0
@@ -345,7 +286,10 @@ async def bisveda_media(websocket: WebSocket):
                                 in_packets += 1
                                 if in_packets == 1:
                                     log.info(f"[{call_id}] Caller audio started streaming in")
-                                # Resample 8kHz PCM16 -> 16kHz PCM16 for Gemini
+                                elif in_packets % 100 == 0:
+                                    log.info(f"[{call_id}] Inbound audio: {in_packets} packets received")
+
+                                # Resample 8kHz PCM16 -> 16kHz PCM16 for Gemini Live
                                 pcm16k = exotel_to_gemini_pcm16(payload, call_id)
                                 await gemini.send_realtime_input(
                                     audio=types.Blob(data=pcm16k, mime_type="audio/pcm;rate=16000")
@@ -365,83 +309,63 @@ async def bisveda_media(websocket: WebSocket):
                     log.warn(f"[{call_id}] exotel_to_gemini error: {e}")
                     return
 
-            # ── Gemini -> Exotel (AI spoken response + tool execution) ──
+            # ── Gemini -> Exotel (Continuous Multi-turn Spoken Audio) ──
             async def gemini_to_exotel():
                 nonlocal stream_sid, call_id
                 out_packets = 0
-                try:
-                    async for response in gemini.receive():
-                        server_content = getattr(response, "server_content", None)
-                        tool_call = getattr(response, "tool_call", None)
+                turn = 0
 
-                        # Handle Tool Calls
-                        if tool_call and getattr(tool_call, "function_calls", None):
-                            function_responses = []
-                            for fc in tool_call.function_calls:
-                                args = dict(fc.args) if fc.args else {}
-                                log.info(f"[{call_id}] Executing tool: {fc.name}")
-                                res = execute_tool_call(call_id, fc.name, args)
-                                function_responses.append(
-                                    types.FunctionResponse(
-                                        name=fc.name,
-                                        id=fc.id,
-                                        response=res,
-                                    )
-                                )
+                # Continuous multi-turn loop: keeps receiving audio across ALL caller turns!
+                while True:
+                    turn += 1
+                    try:
+                        async for response in gemini.receive():
+                            server_content = getattr(response, "server_content", None)
 
-                            await gemini.send_tool_response(function_responses=function_responses)
+                            # Handle spoken audio streaming back from Gemini
+                            if server_content and getattr(server_content, "model_turn", None):
+                                for part in server_content.model_turn.parts:
+                                    inline_data = getattr(part, "inline_data", None)
+                                    if inline_data and getattr(inline_data, "data", None):
+                                        chunks = gemini_to_exotel_chunks(inline_data.data, call_id)
+                                        for payload in chunks:
+                                            out_packets += 1
+                                            if out_packets == 1:
+                                                log.info(f"[{call_id}] First AI audio packet sent to caller!")
+                                            await websocket.send_text(json.dumps({
+                                                "event": "media",
+                                                "stream_sid": stream_sid,
+                                                "media": {"payload": payload},
+                                            }))
 
-                        # Handle Spoken Audio
-                        if server_content and getattr(server_content, "model_turn", None):
-                            for part in server_content.model_turn.parts:
-                                inline_data = getattr(part, "inline_data", None)
-                                if inline_data and getattr(inline_data, "data", None):
-                                    chunks = gemini_to_exotel_chunks(inline_data.data, call_id)
-                                    for payload in chunks:
-                                        out_packets += 1
-                                        if out_packets == 1:
-                                            log.info(f"[{call_id}] First AI audio packet sent to caller!")
-                                        await websocket.send_text(json.dumps({
-                                            "event": "media",
-                                            "stream_sid": stream_sid,
-                                            "media": {"payload": payload},
-                                        }))
+                            if server_content and getattr(server_content, "turn_complete", False):
+                                # Flush remaining audio buffer at turn end
+                                flush_chunks = gemini_to_exotel_chunks(b"", call_id, flush=True)
+                                for payload in flush_chunks:
+                                    await websocket.send_text(json.dumps({
+                                        "event": "media",
+                                        "stream_sid": stream_sid,
+                                        "media": {"payload": payload},
+                                    }))
+                                log.info(f"[{call_id}] Turn {turn} completed (cumulative out packets: {out_packets}). Listening for caller...")
 
-                        if server_content and getattr(server_content, "turn_complete", False):
-                            # Flush remaining buffer at turn end
-                            flush_chunks = gemini_to_exotel_chunks(b"", call_id, flush=True)
-                            for payload in flush_chunks:
-                                await websocket.send_text(json.dumps({
-                                    "event": "media",
-                                    "stream_sid": stream_sid,
-                                    "media": {"payload": payload},
-                                }))
-                            log.info(f"[{call_id}] Gemini turn complete (total out packets: {out_packets})")
+                    except Exception as e:
+                        msg = str(e).lower()
+                        if "1000" in msg or "closed" in msg or isinstance(e, asyncio.CancelledError):
+                            log.info(f"[{call_id}] Gemini session ended cleanly")
+                            break
+                        else:
+                            log.warn(f"[{call_id}] gemini_to_exotel error in turn {turn}: {e}")
+                            await asyncio.sleep(0.05)
 
-                        # Handle call end request
-                        if CALLS.get(call_id, {}).get("should_end"):
-                            log.info(f"[{call_id}] Ending call as requested by assistant")
-                            await asyncio.sleep(2.0)
-                            try:
-                                await websocket.close()
-                            except Exception:
-                                pass
-                            return
-
-                except Exception as e:
-                    msg = str(e).lower()
-                    if "1000" in msg or "closed" in msg or isinstance(e, asyncio.CancelledError):
-                        log.info(f"[{call_id}] Gemini session ended cleanly")
-                    else:
-                        log.warn(f"[{call_id}] gemini_to_exotel error: {e}")
-
-            # Start streaming loops first
+            # Start streaming loops
             in_task = asyncio.create_task(exotel_to_gemini())
             out_task = asyncio.create_task(gemini_to_exotel())
 
-            # Trigger opening greeting immediately while output receiver is listening!
+            # Trigger opening greeting immediately while receiver loop is active
             async def send_greeting():
                 try:
+                    await asyncio.sleep(0.2)
                     await gemini.send_client_content(
                         turns={
                             "role": "user",
@@ -455,12 +379,13 @@ async def bisveda_media(websocket: WebSocket):
                         },
                         turn_complete=True,
                     )
-                    log.info(f"[{call_id}] Opening greeting instruction dispatched to Gemini")
+                    log.info(f"[{call_id}] Opening greeting instruction dispatched to Gemini Live")
                 except Exception as ge:
                     log.error(f"[{call_id}] Failed to dispatch greeting: {ge}")
 
             asyncio.create_task(send_greeting())
 
+            # Keep connection running until caller hangs up (in_task completes) or error occurs
             done, pending = await asyncio.wait(
                 {in_task, out_task},
                 return_when=asyncio.FIRST_COMPLETED,
