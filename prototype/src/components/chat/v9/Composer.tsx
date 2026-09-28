@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { ArrowUp, Loader2, Mic, MicOff } from "lucide-react";
+import { ArrowUp, Loader2 } from "lucide-react";
 import { AttachMenu } from "./AttachMenu";
 import { AttachmentPreview } from "./AttachmentPreview";
+import { VoiceMicButton } from "./VoiceMicButton";
+import type { VoiceInputState } from "@/lib/voice/useVoiceInput";
 import { fileToAttachment, type AttachmentItem } from "@/lib/attachments";
 
 export type { AttachmentItem };
@@ -12,19 +14,22 @@ interface ComposerProps {
   onSend: (message: string, attachment?: AttachmentItem | null) => void;
   isLoading?: boolean;
   placeholder?: string;
+  /** Voice input is owned by the chat page (so it can run the hands-free loop). Omit to hide the mic. */
+  voiceState?: VoiceInputState;
+  onMicClick?: () => void;
 }
 
 export function Composer({
   onSend,
   isLoading = false,
   placeholder = "Ask a follow-up… e.g. which labs can test this?",
+  voiceState = "idle",
+  onMicClick,
 }: ComposerProps) {
   const [input, setInput] = useState("");
   const [attachment, setAttachment] = useState<AttachmentItem | null>(null);
-  const [isListening, setIsListening] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [attachError, setAttachError] = useState<string | null>(null);
-  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -33,75 +38,12 @@ export function Composer({
     }
   }, [input]);
 
-  // Clean up speech recognition on unmount
-  useEffect(() => {
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-    };
-  }, []);
-
   const handleAttachFile = async (file: File) => {
     setAttachError(null);
     try {
       setAttachment(await fileToAttachment(file));
     } catch (err) {
       setAttachError(err instanceof Error ? err.message : "Could not attach that file.");
-    }
-  };
-
-  const handleToggleVoice = () => {
-    if (typeof window === "undefined") return;
-
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      alert("Voice input is not supported by your browser. Please try Google Chrome or Edge.");
-      return;
-    }
-
-    if (isListening) {
-      recognitionRef.current?.stop();
-      setIsListening(false);
-      return;
-    }
-
-    try {
-      const recognition = new SpeechRecognition();
-      recognition.lang = "en-IN";
-      recognition.interimResults = true;
-      recognition.continuous = false;
-
-      recognition.onstart = () => {
-        setIsListening(true);
-      };
-
-      recognition.onresult = (event: any) => {
-        let transcript = "";
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          transcript += event.results[i][0].transcript;
-        }
-        if (transcript) {
-          setInput((prev) => (prev ? `${prev} ${transcript}` : transcript));
-        }
-      };
-
-      recognition.onerror = (event: any) => {
-        console.warn("Speech recognition error:", event.error);
-        setIsListening(false);
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-
-      recognitionRef.current = recognition;
-      recognition.start();
-    } catch (err) {
-      console.error("Speech recognition start failed:", err);
-      setIsListening(false);
     }
   };
 
@@ -138,20 +80,8 @@ export function Composer({
       >
         <AttachMenu onFile={handleAttachFile} disabled={isLoading} direction="up" className="mb-0.5" />
 
-        {/* Microphone Voice Input Button */}
-        <button
-          type="button"
-          onClick={handleToggleVoice}
-          className={`p-2 rounded-xl transition-all shrink-0 cursor-pointer ${
-            isListening
-              ? "bg-[#E8710A] text-white animate-pulse"
-              : "text-[#64748B] hover:text-[#0F172A] hover:bg-[#F7F8FA]"
-          }`}
-          title={isListening ? "Listening... click to stop" : "Speak query using microphone"}
-          aria-label="Voice input"
-        >
-          {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-        </button>
+        {/* Microphone (speech-to-text via the chat page's voice hook) */}
+        {onMicClick && <VoiceMicButton state={voiceState} onClick={onMicClick} disabled={isLoading} className="mb-0.5" />}
 
         {/* Text Input Area */}
         <textarea
@@ -160,7 +90,9 @@ export function Composer({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={isListening ? "Listening to your voice..." : placeholder}
+          placeholder={
+            voiceState === "listening" ? "Listening… speak now" : voiceState === "transcribing" ? "Understanding what you said…" : placeholder
+          }
           disabled={isLoading}
           className="flex-1 max-h-36 py-1.5 px-1 resize-none bg-transparent text-sm text-[#0F172A] placeholder:text-[#64748B] focus:outline-none leading-relaxed"
         />

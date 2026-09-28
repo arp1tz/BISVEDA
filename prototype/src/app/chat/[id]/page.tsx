@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { PanelLeft, Sparkles, PhoneCall } from "lucide-react";
+import { PanelLeft, Sparkles, PhoneCall, Mic, X } from "lucide-react";
 import { AppHeader } from "@/components/chat/v9/AppHeader";
 import { AppFooter } from "@/components/chat/v9/AppFooter";
 import { ChatSidebar, ChatSessionItem } from "@/components/chat/v9/ChatSidebar";
@@ -23,6 +23,8 @@ import { FormICard } from "@/components/chat/v9/FormICard";
 import { HelplineCallCard } from "@/components/chat/v9/HelplineCallCard";
 import { HelplineModal } from "@/components/chat/v9/HelplineModal";
 import { listConversations, getConversation, saveConversation } from "@/lib/conversations";
+import { useVoiceInput } from "@/lib/voice/useVoiceInput";
+import { speak, stopSpeaking, onSpeakingChange, languageLabel } from "@/lib/voice/tts";
 import type { BisvedaResponse, StageEvent } from "@/lib/pipeline/respond";
 import type { Source } from "@/lib/pipeline/package";
 
@@ -62,6 +64,68 @@ function ChatWorkspaceInner() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const initialSentRef = useRef<boolean>(false);
+
+  // Voice chat: speak → answer is read aloud → the mic re-opens, until the user ends it.
+  const [voiceMode, setVoiceMode] = useState(searchParams.get("voice") === "1");
+  const voiceModeRef = useRef(voiceMode);
+  const [voiceNote, setVoiceNote] = useState<string | null>(null);
+  const [isSpeakingNow, setIsSpeakingNow] = useState(false);
+  const sendRef = useRef<(text: string) => void>(() => {});
+
+  const setVoiceModeBoth = (on: boolean) => {
+    voiceModeRef.current = on;
+    setVoiceMode(on);
+  };
+
+  useEffect(() => onSpeakingChange(setIsSpeakingNow), []);
+  // Stop talking when leaving the chat page.
+  useEffect(() => () => stopSpeaking(), []);
+
+  const voice = useVoiceInput({
+    onTranscript: (text) => {
+      setVoiceNote(null);
+      sendRef.current(text);
+    },
+    onError: (message) => {
+      setVoiceNote(message);
+      setVoiceModeBoth(false);
+    },
+  });
+
+  /** After an answer arrives in voice mode: read it aloud, then listen again. */
+  const handleVoiceAnswer = async (resp: BisvedaResponse) => {
+    const text = resp.text || resp.refusal?.message || resp.clarify?.question || "";
+    let interrupted = false;
+    if (text) {
+      const result = await speak(text, resp.language);
+      if (result.ok) interrupted = !!result.interrupted;
+      else if (result.reason === "no_voice")
+        setVoiceNote(`No ${languageLabel(result.language)} voice is installed on this device, so answers can't be read aloud. You can keep talking.`);
+      else if (result.reason === "unsupported") setVoiceNote("Read aloud is not supported in this browser.");
+    }
+    if (!interrupted && voiceModeRef.current) {
+      await new Promise((r) => setTimeout(r, 350)); // let the room go quiet before the mic opens
+      if (voiceModeRef.current) void voice.start();
+    }
+  };
+
+  const handleMicClick = () => {
+    setVoiceNote(null);
+    if (voice.state === "listening") {
+      voice.stop(); // finish now → transcript is sent
+      return;
+    }
+    if (voice.state === "transcribing") return;
+    stopSpeaking(); // tapping the mic while an answer is playing interrupts it
+    setVoiceModeBoth(true);
+    void voice.start();
+  };
+
+  const handleEndVoiceChat = () => {
+    setVoiceModeBoth(false);
+    stopSpeaking();
+    voice.stop(true);
+  };
 
   // Auto-scroll on new content
   const scrollToBottom = () => {
@@ -187,6 +251,7 @@ function ChatWorkspaceInner() {
     const updatedWithUser = [...messages, userMsg, assistantMsg];
     setMessages(updatedWithUser);
     setIsLoading(true);
+    let completedResponse: BisvedaResponse | null = null;
 
     try {
       const res = await fetch("/api/chat", {
@@ -197,7 +262,7 @@ function ChatWorkspaceInner() {
           conversation_id: conversationId,
           history: historyTurns.slice(-6),
           userLocation: activeLoc || undefined,
-          attachment: attachment ? { name: attachment.name, base64: attachment.base64 } : undefined,
+          attachment: attachment ? { name: attachment.name, base64: attachment.base64, type: attachment.type } : undefined,
           formState: Object.keys(formState).length > 0 ? formState : undefined,
         }),
       });
@@ -254,6 +319,7 @@ function ChatWorkspaceInner() {
             } else if ((eventType === "result" || eventType === "response") && dataStr) {
               try {
                 const finalResp = JSON.parse(dataStr) as BisvedaResponse;
+                completedResponse = finalResp;
 
                 if (finalResp.cards?.form_i?.fields) {
                   setFormState((prev) => ({ ...prev, ...finalResp.cards!.form_i!.fields }));
@@ -318,6 +384,7 @@ function ChatWorkspaceInner() {
       } else {
         // Fallback: standard JSON response
         const finalResp = (await res.json()) as BisvedaResponse;
+        completedResponse = finalResp;
         if (finalResp.cards?.form_i?.fields) {
           setFormState((prev) => ({ ...prev, ...finalResp.cards!.form_i!.fields }));
         }
@@ -369,7 +436,11 @@ function ChatWorkspaceInner() {
       });
     } finally {
       setIsLoading(false);
+      if (voiceModeRef.current && completedResponse) void handleVoiceAnswer(completedResponse);
     }
+  };
+  sendRef.current = (text: string) => {
+    void handleSendMessage(text);
   };
 
   const handleOpenSourceDrawer = (response: BisvedaResponse, sourceIndex: number) => {
@@ -573,10 +644,46 @@ function ChatWorkspaceInner() {
                   />
                 )}
 
+              {(voiceMode || voiceNote) && (
+                <div className="flex items-center justify-between gap-2 text-xs">
+                  {voiceMode ? (
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FFF7ED] border border-[#FDBA74]/60 text-[#0B2A4A] font-medium">
+                      <Mic className={`h-3.5 w-3.5 text-[#E8710A] ${voice.state === "listening" ? "animate-pulse" : ""}`} />
+                      <span>
+                        Voice chat ·{" "}
+                        {voice.state === "listening"
+                          ? "Listening…"
+                          : voice.state === "transcribing"
+                            ? "Understanding…"
+                            : isLoading
+                              ? "Thinking…"
+                              : isSpeakingNow
+                                ? "Speaking… (tap the mic to interrupt)"
+                                : "Ready"}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleEndVoiceChat}
+                        className="ml-1 inline-flex items-center gap-1 text-[#64748B] hover:text-[#0F172A] cursor-pointer"
+                        aria-label="End voice chat"
+                      >
+                        <X className="h-3 w-3" />
+                        <span>End</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <span />
+                  )}
+                  {voiceNote && <span className="text-[#B45309]">{voiceNote}</span>}
+                </div>
+              )}
+
               <Composer
                 onSend={handleSendMessage}
                 isLoading={isLoading}
                 placeholder="Ask a follow-up… e.g. which labs can test this?"
+                voiceState={voice.state}
+                onMicClick={handleMicClick}
               />
 
               <div className="text-center text-[10px] text-[#64748B] select-none pt-0.5">

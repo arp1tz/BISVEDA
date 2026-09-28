@@ -8,6 +8,8 @@ import { AppFooter } from "@/components/chat/v9/AppFooter";
 import { HelplineModal } from "@/components/chat/v9/HelplineModal";
 import { AttachMenu } from "@/components/chat/v9/AttachMenu";
 import { AttachmentPreview } from "@/components/chat/v9/AttachmentPreview";
+import { VoiceMicButton } from "@/components/chat/v9/VoiceMicButton";
+import { useVoiceInput } from "@/lib/voice/useVoiceInput";
 import { fileToAttachment, type AttachmentItem } from "@/lib/attachments";
 
 export default function HomePage() {
@@ -15,6 +17,7 @@ export default function HomePage() {
   const [query, setQuery] = useState("");
   const [attachment, setAttachment] = useState<AttachmentItem | null>(null);
   const [attachError, setAttachError] = useState<string | null>(null);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
   const [isHelplineOpen, setIsHelplineOpen] = useState(false);
 
   const productPills = [
@@ -55,7 +58,7 @@ export default function HomePage() {
     }
   };
 
-  const handleSearch = (searchQuery: string) => {
+  const handleSearch = (searchQuery: string, opts: { voice?: boolean } = {}) => {
     const q = searchQuery.trim();
     if (!q && !attachment) return;
     const conversationId = `conv-${Date.now()}`;
@@ -75,7 +78,24 @@ export default function HomePage() {
       }
     }
 
-    router.push(`/chat/${conversationId}${q ? `?q=${encodeURIComponent(q)}` : ""}`);
+    const params = [q ? `q=${encodeURIComponent(q)}` : "", opts.voice ? "voice=1" : ""].filter(Boolean).join("&");
+    router.push(`/chat/${conversationId}${params ? `?${params}` : ""}`);
+  };
+
+  // Voice: speak → transcript is sent straight away and the chat opens in hands-free mode.
+  const voice = useVoiceInput({
+    onTranscript: (text) => {
+      setVoiceError(null);
+      setQuery(text);
+      handleSearch(text, { voice: true });
+    },
+    onError: (message) => setVoiceError(message),
+  });
+
+  const handleMicClick = () => {
+    setVoiceError(null);
+    if (voice.state === "listening") voice.stop();
+    else void voice.start();
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -127,6 +147,7 @@ export default function HomePage() {
             </div>
           )}
           {attachError && <p className="mb-2 text-xs text-[#bd2f2f]">{attachError}</p>}
+          {voiceError && <p className="mb-2 text-xs text-[#bd2f2f]">{voiceError}</p>}
 
           <div className="flex items-center w-full bg-[#F7F8FA] border border-[#E5E7EB] focus-within:border-[#0B2A4A] focus-within:ring-2 focus-within:ring-[#0B2A4A]/10 rounded-xl px-3 py-2.5 shadow-xs transition-all gap-2">
             <AttachMenu onFile={handleAttachFile} />
@@ -136,11 +157,18 @@ export default function HomePage() {
               id="landing-search-input"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Ask about a product, standard or certification…"
+              placeholder={
+                voice.state === "listening"
+                  ? "Listening… speak now"
+                  : voice.state === "transcribing"
+                    ? "Understanding what you said…"
+                    : "Ask about a product, standard or certification…"
+              }
               className="flex-1 min-w-0 bg-transparent text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-hidden"
               autoFocus
             />
 
+            <VoiceMicButton state={voice.state} onClick={handleMicClick} />
             <button
               type="submit"
               disabled={!query.trim() && !attachment}

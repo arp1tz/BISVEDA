@@ -95,3 +95,51 @@ export async function groqChatJson<T = unknown>(messages: ChatMessage[], opts: G
     throw new Error(`Groq chat JSON mode returned invalid JSON: ${raw.slice(0, 200)}`);
   }
 }
+
+const GROQ_STT_MODEL = process.env.GROQ_STT_MODEL || "whisper-large-v3";
+
+export interface TranscriptionResult {
+  text: string;
+  /** Whisper's language name, lower-case (e.g. "marathi", "hindi", "english"). */
+  language?: string;
+}
+
+/**
+ * Speech-to-text via Groq's Whisper endpoint. No language is forced so Hindi / Marathi / Hinglish
+ * and the other Indian languages are auto-detected. Retries once on a 429 like groqChat.
+ */
+export async function groqTranscribe(audio: Blob, filename = "speech.webm"): Promise<TranscriptionResult> {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) throw new Error("GROQ_API_KEY is not set.");
+
+  let lastStatus = 0;
+  let lastBody = "";
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const form = new FormData();
+    form.append("file", audio, filename);
+    form.append("model", GROQ_STT_MODEL);
+    form.append("response_format", "verbose_json");
+    form.append("temperature", "0");
+    // Vocabulary hint: keeps BIS terms and standard numbers from being misheard.
+    form.append("prompt", "BIS, ISI mark, hallmark, HUID, IS 4151, IS 2925, IS 9873, IS 1417, Form I, Manak Online, BIS Care, QCO, helmet, toys, gold jewellery");
+
+    const res = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}` },
+      body: form,
+      signal: AbortSignal.timeout(25000),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return { text: typeof data.text === "string" ? data.text.trim() : "", language: typeof data.language === "string" ? data.language.toLowerCase() : undefined };
+    }
+    lastStatus = res.status;
+    lastBody = await res.text().catch(() => "");
+    if (res.status !== 429) break;
+    const m = lastBody.match(/try again in ([\d.]+)\s*(ms|s)\b/i);
+    const waitMs = m ? Math.ceil(parseFloat(m[1]) * (m[2].toLowerCase() === "ms" ? 1 : 1000)) + 250 : 2000;
+    if (waitMs > 9000) break;
+    await new Promise((r) => setTimeout(r, waitMs));
+  }
+  throw new Error(`Groq transcription HTTP ${lastStatus}: ${lastBody.slice(0, 300)}`);
+}
