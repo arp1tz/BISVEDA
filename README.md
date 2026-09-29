@@ -4,208 +4,231 @@
 
 # BISVEDA
 
-**A conversational assistant for Indian Standards and BIS services. Every factual answer is cited to an official BIS document.**
+**An assistant for Indian Standards and BIS services that cites the exact clause and page for every answer.**
 
-Smart India Hackathon · Problem Statement **SIH26107**
+Smart India Hackathon 2026 · Problem Statement **SIH26107** · Ministry of Consumer Affairs, Food & Public Distribution
 
 ![Status](https://img.shields.io/badge/status-working%20prototype-E8710A)
+![Golden set](https://img.shields.io/badge/golden%20set-31%2F32-228f4a)
+![Wrong standard](https://img.shields.io/badge/wrong%20standard-0-228f4a)
 ![Next.js](https://img.shields.io/badge/Next.js-15-0B2A4A)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-0B2A4A)
 ![Embeddings](https://img.shields.io/badge/embeddings-local%20bge--m3-228f4a)
 
-[What it does](#what-it-does) · [Knowledge it holds](#knowledge-it-holds) · [How it works](#how-it-works) · [Measured quality](#measured-quality) · [Prototype scope](#prototype-scope-read-this) · [Scaling](#how-far-this-scales) · [Run it](#run-it-locally)
+[Features](#features) · [Architecture](#architecture) · [How an answer is made](#how-an-answer-is-made) · [Quality](#measured-quality) · [Scaling](#built-to-scale) · [Roadmap](#roadmap) · [Getting started](#getting-started)
 
 </div>
 
 ---
 
-Citizens, jewellers and MSMEs ask BIS the same questions every day: which standard covers this product, where can I get it tested, what does 916 mean, how do I register for hallmarking. The answers exist, but they are spread across standards PDFs and separate portals.
+Citizens, jewellers and small manufacturers ask BIS the same questions every day. Which standard covers my product? Where can I get it tested? What does 916 on my chain mean? How do I register my shop for hallmarking? The answers exist, but they are spread across standards PDFs, lab portals, directories and application forms.
 
-BISVEDA answers these questions in plain language, in the user's own language, and **cites the exact clause and page** of the official document. When the documents do not support an answer, it says so and points to the right BIS route instead of guessing.
+BISVEDA answers these questions in plain language and in the user's own language, by text, photo, voice or phone call. Every answer carries `[S1]`-style source tags that open the exact clause and page of the official document. When the documents don't support an answer, BISVEDA says so and points to the right BIS service instead of guessing.
 
 > [!IMPORTANT]
-> This is a **prototype** built for the hackathon demo. It covers 8 Indian Standards and Form I end to end, with real data and real retrieval. It is not a production deployment. [Prototype scope](#prototype-scope-read-this) lists exactly what is real and what is not.
+> **The foundation is complete and built to scale.** Every layer of the full system already exists: channels, understanding, tools, hybrid retrieval, deterministic checks, the knowledge base and the staff console. It runs today on 8 Indian Standards, Form I, and the official lab and hallmarking-centre directories. Adding more standards means ingesting documents, not rewriting the system. See [Built to scale](#built-to-scale).
 
-## What it does
+## Features
 
-| Capability | What the user gets | Where the facts come from |
+| | What the user gets | Where the facts come from |
 |---|---|---|
-| **Cited Q&A** | Answers about helmets, toys and gold hallmarking, with `[S1]`, `[S2]` pills that open the source excerpt and the PDF at the right page | The 9 employee-uploaded PDFs |
-| **Labs finder** | BIS-recognised labs that have a given standard in scope, sorted by distance when location is shared | BIS LIMS directory |
-| **Hallmarking centre finder** | Operative AHCs near a city or the user's location, shown on a map | Manak Online AHC directory |
-| **Hallmark and ISI mark check** | Purity grade decoding (for example 916 to 22K) and a **format** check of a HUID or CM/L number, plus the BIS Care app / Manak Online route to verify it | IS 1417 clauses plus deterministic format rules |
-| **Photo inspection** | Upload a product photo; the assistant reads the category, label text and visible marks | Gemini vision, shown as "what we read from your photo", **never cited as a BIS source** |
-| **Form I drafting** | A conversational draft of the 13-field jeweller registration form, with a printable view | The Form I PDF |
-| **Multilingual and voice** | Ask in Hindi, Marathi, Hinglish, Tamil and more; speak instead of typing; hear answers read aloud | Language detection, Groq Whisper speech to text, browser read-aloud |
-| **Employee console** (`/admin`) | Knowledge graph explorer, document and chunk browser, searchable lab and AHC directories | The same knowledge base the chat uses |
+| **Cited answers** | Plain-language answers with `[S#]` tags; one click opens the clause text and the PDF at that page | Official standard PDFs |
+| **Product to standard** | Describe a product ("battery-operated toy car") and get every applicable standard, each with what it covers | Each standard's own scope clause |
+| **Hallmark and mark check** | Purity decoding (916 → 22 carat per IS 1417), the marks a hallmarked article must carry, and a **format** check of a HUID or CM/L number with the BIS Care / Manak Online route | IS 1417 clauses + deterministic format rules |
+| **Photo inspection** | Upload a product or jewellery photo; BISVEDA reads the category, label text, ISI mark, licence number, purity mark and HUID | Vision model, shown as "what we read from your photo", never cited as a BIS source |
+| **Testing labs** | BIS-recognised labs that have the user's standard in scope, on a map, nearest first | BIS LIMS directory |
+| **Hallmarking centres** | Operative Assaying and Hallmarking Centres near a city or the user's location | Manak Online directory |
+| **Form I for jewellers** | Details given in one message in any language, checked with follow-up questions (such as a missing PIN code), delivered as an **editable Word draft in the official Form I layout** | The Form I PDF |
+| **Multilingual** | Ask in English, Hindi, Hinglish, Marathi, Tamil, Telugu, Bengali, Kannada, Malayalam or Gujarati, in native or Roman script; IS numbers and source tags survive translation | Language detection + English working query + guarded translation |
+| **Page translation** | One language picker translates the whole interface, and answers follow the chosen language | Batched UI translation |
+| **Voice and phone** | Speak instead of typing, hear answers read aloud, or request a phone call and talk to BISVEDA | Speech-to-text, browser read-aloud, telephony voice bridge |
+| **Staff console** (`/admin`) | Knowledge graph explorer, edition and amendment register per standard, document and clause browser, lab and centre directories, ingestion workflow | The same knowledge base the chat uses |
 
-The assistant **never declares a mark, licence or HUID valid or genuine**. It checks the format and sends the user to the official BIS Care app or Manak Online, which are the only places that can confirm it.
+BISVEDA **never declares a mark, licence or HUID valid or genuine**. It checks the format and sends the user to BIS Care or Manak Online, the only services that can confirm it.
 
-## Knowledge it holds
+## Architecture
 
-Everything the assistant states comes from two places: `prototype/data/kb` (built from PDFs) and `prototype/data/directory` (scraped from official BIS portals). These numbers are measured from the built files:
-
-| Source | Contents |
-|---|---|
-| **Standards** | IS 4151 (motorcycle helmets) · IS 2925 (industrial helmets) · IS 9873 Part 1 and Part 3 (toy safety) · IS 15644 (electric toys) · IS 1417 (gold fineness and marking) · IS 1418 (gold fire assay) · IS 15820 (AHC competence) |
-| **Forms** | Form I, jeweller registration for hallmarking (13 fields) |
-| **Knowledge base** | 9 PDFs → **760 clause-level chunks**, each with a 1024-dim bge-m3 embedding |
-| **Knowledge graph** | **320 nodes, 343 edges** (standards, clauses, cross-references, labs, AHC regions) |
-| **Testing labs** | **29 labs** from BIS LIMS with at least one of these standards in scope |
-| **Hallmarking centres** | **1,651 AHCs** from Manak Online (1,512 operative); 1,490 geocoded, 161 listed without coordinates rather than guessed |
-
-## How it works
-
-BISVEDA is two pipelines: an **offline build** that turns PDFs and portals into a knowledge base, and an **online query pipeline** that answers from it.
+The system has four layers, plus an offline knowledge pipeline. Each layer is a separate module behind a small interface, so any one of them can be scaled or swapped without touching the others.
 
 ```mermaid
-flowchart LR
-  subgraph OFF["Offline build (scripts/)"]
-    PDF["9 official PDFs"] --> PARSE["Parse<br/>PyMuPDF, OCR if needed"]
-    PARSE --> CHUNK["Clause chunker"]
-    CHUNK --> EMB["bge-m3 embeddings<br/>local, 1024-dim"]
-    CHUNK --> GRAPH["Standards registry<br/>+ knowledge graph"]
-    LIMS["BIS LIMS"] --> DIR["Directory scrapers<br/>throttled + cached"]
-    MANAK["Manak Online"] --> DIR
+flowchart TB
+  subgraph CH["Channels"]
+    WEB["Web chat<br/>text · photo · voice"]
+    PHONE["Phone call<br/>voice bridge"]
+    STAFF["Staff console<br/>/admin"]
   end
 
-  EMB --> KB[("data/kb<br/>data/directory")]
-  GRAPH --> KB
-  DIR --> KB
-
-  subgraph ON["Online query (src/lib/pipeline)"]
-    Q["User turn<br/>text, voice, photo"] --> U["Understand<br/>language, intent,<br/>English working query"]
-    U --> T["Tools<br/>labs · AHC · hallmark<br/>mark check · Form I"]
-    U --> R["Hybrid retrieval<br/>exact + BM25 + dense + graph"]
-    R --> F["RRF fusion k=60<br/>+ calibrated floor"]
-    F --> P["Evidence package<br/>[S1] [S2] ..."]
-    P --> A["Answer<br/>Groq LLM"]
-    A --> G["Trust gate<br/>deterministic"]
+  subgraph ORCH["Orchestration  (src/lib/pipeline)"]
+    UND["Understand<br/>language · script · intent<br/>English working query"]
+    ROUTE{"Route"}
+    RET["Hybrid retrieval<br/>exact + BM25 + dense + graph"]
+    FUSE["RRF fusion<br/>+ calibrated relevance floor"]
+    ADJ["Adjudicate<br/>which standard applies<br/>(rule-based)"]
+    GEN["Write answer<br/>from numbered evidence only"]
+    TRUST["Trust gate<br/>(rule-based, final say)"]
   end
 
-  KB --> R
-  KB --> T
-  G --> OUT["SSE stream to chat UI<br/>stage events + answer + cards"]
-  T --> OUT
+  subgraph TOOLS["Tools  (src/lib/tools)"]
+    LABS["Lab finder"]
+    AHC["Centre finder"]
+    MARK["Hallmark · HUID · CM/L<br/>format rules"]
+    FORM["Form I drafter<br/>→ Word file"]
+    VIS["Photo reader"]
+  end
+
+  subgraph KNOW["Knowledge  (data/)"]
+    KB[("Clause store<br/>+ vectors")]
+    GRAPH[("Knowledge graph")]
+    DIR[("Lab + centre<br/>directories")]
+    EVAL[("Golden + multilingual<br/>test sets")]
+  end
+
+  subgraph MODELS["Model providers  (env-configured)"]
+    LLM["Chat + intent models"]
+    STT["Speech-to-text"]
+    VLM["Vision model"]
+    EMB["Local bge-m3<br/>embeddings"]
+  end
+
+  subgraph OFF["Offline pipeline  (scripts/)"]
+    PDF["BIS PDFs"] --> PARSE["Parse + OCR"] --> CHUNK["Clause chunker"] --> EMBED["Embed"]
+    PORTALS["LIMS · Manak Online"] --> SCRAPE["Throttled scrapers"]
+  end
+
+  WEB --> UND
+  PHONE --> UND
+  UND --> ROUTE
+  ROUTE -->|question| RET --> FUSE --> ADJ --> GEN --> TRUST
+  ROUTE -->|tool| TOOLS
+  TOOLS --> OUT["Answer stream<br/>stages · text · cards · maps · files"]
+  TRUST --> OUT
+  OUT --> WEB
+
+  KB --> RET
+  GRAPH --> RET
+  DIR --> LABS & AHC
+  STAFF --> KB & GRAPH & DIR
+  EMBED --> KB
+  CHUNK --> GRAPH
+  SCRAPE --> DIR
+  UND -.-> LLM
+  GEN -.-> LLM
+  WEB -.-> STT
+  VIS -.-> VLM
+  RET -.-> EMB
 ```
 
-### 1. Offline knowledge-base build
+| Layer | In the prototype today | At full scale |
+|---|---|---|
+| **Channels** | Web chat (text, photo, voice, read-aloud, page translation), phone call bridge, staff console | Same channels, plus WhatsApp and a public API for BIS portals |
+| **Orchestration** | Stateless request pipeline streaming stage events over SSE | Identical code on horizontally scaled replicas behind a load balancer |
+| **Tools** | Labs, centres, mark format checks, Form I → Word, photo reader | More tools on the same interface (certification scheme guide, test-report gap check) |
+| **Knowledge** | In-memory clause store with vectors, knowledge graph, directories | Postgres + pgvector (HNSW) and full-text search behind the same retrieval interface |
+| **Models** | Hosted chat and vision models, local embeddings; every model id set in env | Provider chain with automatic fallback, or self-hosted open models in India |
+| **Offline pipeline** | Parse → chunk → embed → graph, plus throttled directory scrapers | Job queue triggered from the staff console, with an officer approval step before publishing |
 
-`npm run kb:build` (in `prototype/scripts/kb/`) is idempotent and cached, so it is safe to re-run.
+## How an answer is made
 
-1. **Parse.** PyMuPDF extracts text page by page; rapidocr is available for scanned pages. All 9 current PDFs turned out to have real digital text, so 0 pages needed OCR.
-2. **Chunk.** A regex clause chunker splits each standard at its clause numbers (`4.2.1`, `Table 1`, and so on), keeping `clause`, `clause_title` and page range on every chunk. That is what makes page-accurate citations possible.
-3. **Embed.** Each chunk is embedded locally with **bge-m3** (`Xenova/bge-m3` through transformers.js, 1024 dimensions, multilingual). There is no hosted embedding API, no quota and no placeholder vectors. Embeddings are cached so rebuilds only embed changed chunks.
-4. **Registry and graph.** Standards, clauses, cross-references between standards, and the labs and AHC regions linked to them are written to `graph.json`.
-
-The directory scrapers (`prototype/scripts/directory/`) are also cached and polite to the portals:
-
-- **Labs** (`npm run dir:labs`): uses LIMS's reverse lookup by IS number. It needs **one request per standard (7 in total)** instead of crawling every lab page.
-- **AHCs** (`npm run dir:ahc`): Manak Online returns the full list in one fetch. Geocoding runs once per unique (district, state) pair through Nominatim. Rows that cannot be geocoded keep no coordinates rather than invented ones.
-
-### 2. Online query pipeline
-
-`POST /api/chat` streams Server-Sent Events. The UI shows a stage ("Understanding your question", "Searching official BIS documents", "Checking the evidence", "Writing a grounded answer") **only when that stage actually runs**.
+`POST /api/chat` streams Server-Sent Events. The UI shows a stage ("Understanding your question", "Searching official BIS documents", "Checking the evidence", "Writing the answer") only when that stage actually runs.
 
 | Step | File | What it does |
 |---|---|---|
-| Understand | `pipeline/understand.ts` | Detects language and script, writes an English working query, and classifies intent (question, labs, AHC, hallmark, mark check, Form I, and more) using a fast Groq model with JSON output. Falls back to a deterministic lexicon if the LLM is unavailable. |
-| Verified FAQs | `pipeline/speedgate.ts` | Instant answers for a few very common questions. Only entries marked `verified` and rebuilt from real KB chunks are served. |
-| Tools | `lib/tools/*` | Labs and AHC lookups (haversine distance, validity filters), hallmark and CM/L format checks, and Form I state machine. These read only the directory files and the KB. |
-| Retrieve | `pipeline/retrieve.ts` | Four retrievers run together: **exact** (an IS number in the question pins that standard), **BM25** (k1 1.2, b 0.75), **dense** (cosine over bge-m3 vectors), and **graph** (the standard from earlier turns keeps follow-ups grounded). |
-| Fuse and floor | `pipeline/fuse.ts`, `floor.ts` | Reciprocal Rank Fusion (k=60), then a **calibrated similarity floor of 0.67**, computed from the golden set (`npm run calibrate:floor`). Questions below the floor are treated as outside the documents. |
-| Package | `pipeline/adjudicate.ts`, `package.ts` | Picks the primary standard and numbers the evidence as `[S1]`, `[S2]`, and so on, each tied to a real chunk, clause and page. |
-| Answer | `pipeline/answer.ts` | A Groq-hosted model writes the answer from the package only, citing `[S#]`, and remembers recent turns. If the LLM fails, an evidence-only answer is returned instead. |
-| Trust gate | `pipeline/trust.ts` | **Deterministic, and it has the final say.** It strips citations that don't point to a real source. It drops any line that states a number or IS reference not found in the cited text (digits in any script are checked). If nothing supported survives, it refuses and points to the right BIS route. |
+| Understand | `pipeline/understand.ts` | Detects language and script, writes an English working query, resolves follow-ups ("what test does *it* need?"), and classifies intent. If the model is unavailable, a rule-based router still handles directories, mark checks, Form I and off-topic questions. |
+| Verified FAQs | `pipeline/speedgate.ts` | Instant answers for common questions, served only when marked verified against real clauses |
+| Tools | `lib/tools/*` | Lab and centre lookups with distance sorting, hallmark / HUID / CM/L format rules, Form I extraction and validation, Word file generation |
+| Retrieve | `pipeline/retrieve.ts` | Four retrievers together: **exact** (an IS number pins its standard), **BM25**, **dense** (bge-m3 cosine) and **graph** (keeps follow-ups on the same standard) |
+| Fuse and floor | `pipeline/fuse.ts`, `floor.ts` | Reciprocal Rank Fusion (k = 60), then a relevance floor calibrated on the golden set; below it, the question is treated as outside the documents |
+| Adjudicate | `pipeline/adjudicate.ts`, `package.ts` | Rule-based choice of the applicable standard from its own scope clause; evidence numbered `[S1]`, `[S2]`, … each tied to a real clause and page |
+| Write | `pipeline/answer.ts` | The model sees only the numbered evidence and must tag every fact. If it fails, an evidence-only answer is returned. |
+| Trust gate | `pipeline/trust.ts` | **Rule-based, with the final say.** It checks sentence by sentence, removes source tags that don't exist, drops any sentence whose figure or IS number isn't in its cited clause, and refuses if nothing sourced survives |
 
-Photo input goes through `lib/vision.ts` (Gemini, strict JSON). The result is kept as user-provided evidence: it can trigger a mark check or a follow-up question, but it is never cited as `[S#]`.
+### Trust by design
+
+1. **The model never decides what is true.** Standard selection, relevance, format checks and the final gate are plain code. The model only phrases evidence it was given.
+2. **Numbers are checked, not trusted.** Every figure must appear in the clause it cites, in any script.
+3. **"Not in our documents" is a real answer,** with a link to the BIS Standards Catalogue or the consumer helpline.
+4. **User evidence stays separate.** Photo readings can trigger a check but can never become a `[S#]` source.
+5. **Degrades gracefully.** Without the language model, directories, mark checks, Form I and evidence-only answers keep working, and off-topic questions are still refused.
+
+## Knowledge it holds
+
+| Source | Contents |
+|---|---|
+| **Standards** | IS 4151 (motorcycle helmets) · IS 2925 (industrial helmets) · IS 9873 Part 1 and Part 3 (toy safety) · IS 15644 (electric toys) · IS 1417 (gold fineness and marking) · IS 1418 (gold fire assay) · IS 15820 (hallmarking centre competence) |
+| **Forms** | Form I, jeweller registration for hallmarking (items 1 to 13 and the undertaking) |
+| **Knowledge base** | 9 PDFs → **760 clause-level chunks**, each with a 1024-dim bge-m3 vector |
+| **Knowledge graph** | **320 nodes, 343 links**: standards, clauses, cross-references, labs, centre regions |
+| **Testing labs** | **29 labs** from BIS LIMS with these standards in scope |
+| **Hallmarking centres** | **1,651 centres** from Manak Online (1,512 operative); 1,490 on the map, the rest listed without a pin rather than guessed |
+
+Editions are exactly those in the uploaded PDFs, for example IS 1417 : 1999 with Amendments 1 to 3. The staff console shows which edition every answer is based on.
 
 ## Measured quality
 
-Measured on 2026-09-28 with `npm run eval:rag` and `npm run eval:multi`. These are **small, hand-written test sets**. Read them as regression checks, not as benchmark claims.
+Measured on 2026-09-29 with `npm run eval:rag` on hand-written test sets. Read these as regression checks, not benchmark claims.
 
 | Metric | Result |
 |---|---|
-| Golden set pass rate (`data/eval/golden.jsonl`) | **29 / 32** |
-| Citation validity (every `[S#]` resolves to a real source) | **56 / 56** |
-| Number support (every stated figure is in the cited text) | **53 / 53** |
-| Wrong standard cited as primary | **0** |
-| Multilingual set (Hindi, Marathi, Bengali, Tamil, Telugu, Kannada, Malayalam, Gujarati, English; native and romanised script) | **23 / 24** |
+| Golden set (helmets, toys, gold, Form I, follow-ups, off-topic, prompt injection, Hindi) | **31 / 32** |
+| Correct kind of reply (answer, clarify, refusal) | **32 / 32** |
+| Wrong standard given as the main answer | **0** |
+| Source tags that resolve to a real clause | **65 / 65** |
+| Figures supported by the cited clause | **80 / 80** |
+| Multilingual set: 9 languages, native and Roman script (`npm run eval:multi`, last full run) | **23 / 24** |
 
-Known misses are kept in the results files, not hidden. For example, one industrial-helmet question retrieves IS 4151 (motorcycle helmets) as primary instead of IS 2925. Per-case results are in `prototype/data/eval/results/`.
+The one golden-set miss is kept in the results rather than hidden: an industrial-helmet question retrieves IS 4151 (motorcycle) instead of IS 2925. Per-case results are in `prototype/data/eval/results/`.
 
-## Prototype scope (read this)
+## Built to scale
 
-> [!WARNING]
-> The following parts are **not** production-real. They exist to show intended workflows in the demo.
->
-> - **Admin "Document Ingestion" tab and "Version control and amendments" view are UI mockups.** They show seeded sample records and a simulated progress stepper. Uploading there does not change the knowledge base. Real ingestion today is `npm run kb:build` run by a developer.
-> - **The phone helpline is not grounded in the knowledge base.** The voice call bridge (`scripts/voice/`, Exotel + Gemini Live) uses a hand-written prompt and does **not** go through retrieval or the trust gate. Without Exotel or Twilio credentials, `/api/helpline/call` runs in a simulated mode. The in-app voice features (speech to text, read-aloud, hands-free chat) **do** use the full cited pipeline.
+The foundation was designed so that growth is a data and infrastructure task, not a rewrite.
 
-What else a reviewer should know:
+- **Stateless API.** Conversation state travels with each request, so identical replicas can run behind any load balancer.
+- **One retrieval interface.** `pipeline/retrieve.ts` hides where chunks and vectors live. Moving from the in-memory store to Postgres + pgvector changes the store, not the pipeline.
+- **Local embeddings.** bge-m3 runs in-process with no per-call cost or quota. It can move to a separate batched embedding service when volume grows.
+- **Config-driven models.** Every model id comes from env, so providers can be changed, added or self-hosted without code changes.
+- **Deterministic core.** Routing rules, adjudication, format checks and the trust gate are plain code, cheap to run and easy to audit.
+- **Evaluation built in.** Golden and multilingual sets plus a calibrated relevance floor let coverage grow without silent drops in accuracy.
 
-- **Coverage is 8 standards plus Form I.** Anything else is correctly refused. QCO and certification-scheme documents are not in the knowledge base.
-- **No database and no user accounts.** Chat history lives in the browser's localStorage. The admin console uses one shared password from `ADMIN_PASSWORD`.
-- **Hosted LLMs are on free tiers.** Chat and intent use Groq, and vision uses Gemini. During heavy testing Groq's daily token limit was hit. When that happens, answers degrade to the evidence-only fallback instead of failing, but the output is less fluent.
-- **Source PDF quality limits chunk quality.** IS 1417 page 10 has two-column text that interleaves. IS 15644 and some IS 9873 Part 1 pages use a corrupted embedded font, so some clause numbers are unreadable. That content is filed under clause "0" rather than a guessed clause number.
-- **Marks, licences and HUIDs are format-checked only**, by design. Real verification belongs to BIS Care and Manak Online.
-
-## How far this scales
-
-We do not claim infinite scale. Here is what the current design can handle, where it stops, and what has to change to go further.
-
-### Today
-
-- One Next.js process loads the whole knowledge base (`chunks.json`, about 22 MB for 760 chunks including vectors) into memory once at startup.
-- BM25 and cosine similarity are **brute-force scans** over all chunks. At 760 chunks that is trivially fast.
-- bge-m3 query embedding runs **on CPU inside the web process**.
-- The API is stateless per request (conversation state is sent by the client), so identical replicas can sit behind a load balancer. Each replica holds its own read-only copy of the knowledge base.
-
-### Ceiling without code changes (our estimate, not benchmarked)
-
-- **About 15,000 chunks, roughly 150 standards of similar length.** Each chunk is about 30 KB of JSON (mostly its embedding), and Node cannot parse a single JSON string much above about 512 MB. That limit arrives first. Brute-force scans and memory per replica also grow linearly before then.
-- LLM throughput is capped by the provider tier, not by our code. Each answered question makes one or two LLM calls (intent + answer), plus a translation call for some non-English replies.
-
-### To go further (a known engineering path, not built yet)
-
-| Bottleneck | Change | Effect |
+| Growth step | What changes | What it unlocks |
 |---|---|---|
-| JSON store + linear scans | Move chunks and vectors to **Postgres + pgvector (HNSW index)** with full-text search for BM25. The retrieval interface in `pipeline/retrieve.ts` stays the same. | Millions of chunks. That covers the whole BIS standards catalogue (tens of thousands of standards) on standard vector-database infrastructure. |
-| CPU embedding in the web process | Separate, batched embedding service (GPU optional) | Web replicas become light, and embedding scales on its own |
-| Free-tier LLM quotas | Paid tier, or self-hosted open models | Throughput limited by budget and hardware, not daily token caps |
-| Manual `kb:build` | Wire the admin upload to the real build pipeline, with a job queue | Employees add standards without a developer |
-| Browser-only history | Server-side sessions and accounts | Cross-device history and per-user audit |
+| Up to ~150 standards | Nothing; ingest the PDFs | Current in-memory store, brute-force search still fast |
+| Whole BIS catalogue | Postgres + pgvector (HNSW) + full-text search behind the existing retrieval interface | Millions of clauses |
+| High traffic | More web replicas; embedding service split out | Throughput limited by budget, not code |
+| Staff-driven updates | Staff upload wired to the build pipeline through a job queue, with officer approval | New editions and amendments go live without a developer |
+| Accounts and history | Server-side sessions | Cross-device history and per-user audit |
 
-### Limits that do not go away with more servers
+## Roadmap
 
-- **Cost and latency per answer** are set by the LLM, not by the retrieval stack.
-- **Source quality.** Scanned or badly encoded PDFs still need OCR and human review before they are trustworthy enough to cite.
-- **Evaluation has to grow with coverage.** The 0.67 floor was calibrated on 28 questions about 8 standards. Adding standards means adding golden questions and recalibrating, or refusal accuracy will drift.
-- **Directories go stale.** Lab scopes and AHC status change, so the scrapers need a schedule, and they should stay polite to the BIS portals.
+- **Model provider fallback chain:** Groq first, then OpenRouter, then the built-in evidence-only answer, so a quota limit or outage never takes answers offline.
+- **Phone agent on the same knowledge base:** route calls through retrieval and the trust gate, and carry the web conversation into the call.
+- **Officer approval for knowledge:** new editions and amendments are searchable only after a BIS officer publishes them, with an audit log.
+- **Full standards catalogue and certification schemes:** titles, scopes and scheme guides for every standard BIS provides.
+- **Official verification links:** HUID and licence status through BIS APIs if they become available.
+- **Government cloud deployment:** NIC MeghRaj hosting with language models served from India.
 
-## Run it locally
+## Getting started
 
 ### Prerequisites
 
 - Node.js 20+ and npm
-- A **Groq API key** (chat, intent, speech to text) and a **Gemini API key** (photo inspection)
-- Only for rebuilding the knowledge base: Python 3 with `pymupdf` and `rapidocr_onnxruntime`. The built knowledge base is already committed, so this is optional.
+- A **Groq API key** (chat, intent, speech-to-text) and a **Gemini API key** (photo reading)
+- Optional, only to rebuild the knowledge base: Python 3 with `pymupdf` and `rapidocr_onnxruntime` (the built knowledge base is committed)
 
-### Start the web app
+### Run the web app
 
 ```bash
 cd prototype
 npm install
-cp .env.example .env   # then fill in GROQ_API_KEY and GEMINI_API_KEY
+cp .env.example .env   # add GROQ_API_KEY and GEMINI_API_KEY
 npm run dev            # http://localhost:3000
 ```
 
-On first use, the bge-m3 model is downloaded once from the Hugging Face Hub and cached locally.
+On first use, the bge-m3 model downloads once from the Hugging Face Hub and is cached locally.
 
-Optional `.env` settings: `ADMIN_PASSWORD` for `/admin`, and model overrides `GROQ_CHAT_MODEL`, `GROQ_FAST_MODEL`, `GROQ_STT_MODEL`, `GEMINI_VISION_MODEL`, `EMBED_MODEL`. The defaults are `openai/gpt-oss-120b`, `openai/gpt-oss-20b`, `whisper-large-v3` and `Xenova/bge-m3`. Model ids are never hard-wired into the pipeline.
+Optional `.env` settings: `ADMIN_PASSWORD` for `/admin`, and model overrides `GROQ_CHAT_MODEL`, `GROQ_FAST_MODEL`, `GROQ_STT_MODEL`, `GEMINI_VISION_MODEL`, `EMBED_MODEL`.
 
 > [!TIP]
-> `boot.ps1` / `boot.bat` at the repo root start the web app and the phone voice bridge together. The bridge also needs Python (`fastapi`, `uvicorn`, `pyngrok`, `google-genai`) and Exotel plus ngrok credentials. For a web-only demo, `npm run dev` is enough.
+> `python scripts/boot.py` (or `boot.ps1` / `boot.bat`) from the repo root starts the web app and the phone voice bridge together. The bridge needs Python (`fastapi`, `uvicorn`, `pyngrok`, `google-genai`) plus telephony and ngrok credentials. For a web-only run, `npm run dev` is enough.
 
 ### Scripts (run from `prototype/`)
 
@@ -213,55 +236,41 @@ Optional `.env` settings: `ADMIN_PASSWORD` for `/admin`, and model overrides `GR
 |---|---|
 | `npm run dev` · `npm run build` · `npm run typecheck` | Develop, build, type-check |
 | `npm run kb:build` | Rebuild `data/kb/*` from the PDFs |
-| `npm run calibrate:floor` | Recompute the similarity floor from the golden set |
-| `npm run dir:labs` · `npm run dir:ahc` | Refresh the lab and AHC directories (throttled, cached) |
+| `npm run calibrate:floor` | Recompute the relevance floor from the golden set |
+| `npm run dir:labs` · `npm run dir:ahc` | Refresh the lab and centre directories (throttled, cached) |
 | `npm run eval:rag` | Golden-set evaluation |
 | `npm run eval:multi` | Multilingual evaluation (`-- --only id1,id2` for specific cases) |
-
-## Demo walkthrough
-
-A 5-minute path through the prototype (full script in [`docs/DEMO.md`](docs/DEMO.md)):
-
-1. **Home page.** The 8 standards covered are listed up front.
-2. *"Which standard applies to motorcycle helmets?"* The answer cites IS 4151. Click `[S1]` to see the clause and open the PDF at that page.
-3. Follow up with *"what impact test does it need?"* No need to repeat the standard.
-4. *"Where can I test my helmet in Mumbai?"* shows real LIMS labs on a map.
-5. Upload `prototype/public/samples/helmet_with_isi.jpg` to see what was read from the photo and the CM/L format check.
-6. *"Hallmarking centres in Jaipur"* shows operative AHCs from Manak Online.
-7. *"What is 916?"* and *"check HUID AB12C3"* show purity decoding and the HUID format check with the BIS Care route.
-8. *"I want to register my jewellery shop for hallmarking"* starts the Form I draft and opens the printable view.
-9. Ask the same helmet question in Marathi or Hindi. The cited answer comes back in that language.
-10. Open `/admin` to explore the knowledge graph, the documents and chunks, and the directories.
 
 ## Repository layout
 
 ```text
 BISVEDA/
-├── example docs uploaded by employees/   # the 9 source PDFs + download manifest
-├── docs/                                 # DEMO.md, DECISIONS.md, prd.md
+├── example docs uploaded by employees/   # source PDFs
+├── docs/                                 # demo guide, decisions, product requirements
 ├── scripts/                              # boot supervisor, phone voice bridge (Python)
 └── prototype/                            # the Next.js app
     ├── data/
     │   ├── kb/                           # chunks, standards, graph, calibration, Form I schema
-    │   ├── directory/                    # labs.json (LIMS), ahc.json (Manak Online)
+    │   ├── directory/                    # labs (LIMS), hallmarking centres (Manak Online)
     │   └── eval/                         # golden + multilingual sets, results
     ├── scripts/
     │   ├── kb/                           # parse, chunk, embed, graph, build
     │   └── directory/                    # LIMS and Manak Online scrapers
     └── src/
         ├── app/                          # pages (/, /chat, /admin, /labs, /standards, /form-i/print) + API routes
-        ├── components/                   # chat cards, admin console, accessibility
+        ├── components/                   # chat cards, staff console, accessibility
         └── lib/
-            ├── pipeline/                 # understand, retrieve, fuse, floor, answer, trust, orchestrator
-            ├── tools/                    # labs, ahc, hallmark, form_i
+            ├── pipeline/                 # understand, retrieve, fuse, floor, adjudicate, answer, trust, orchestrator
+            ├── tools/                    # labs, centres, hallmark, Form I (+ Word export)
             ├── kb/                       # in-memory store, BM25 + dense search
+            ├── ui-i18n/                  # interface translation
             ├── voice/                    # speech input, read-aloud
-            └── vision.ts                 # photo inspection
+            └── vision.ts                 # photo reading
 ```
 
 ## Tech stack
 
-**App:** Next.js 15, React 19, TypeScript, Tailwind CSS v4, Leaflet maps, react-force-graph for the knowledge graph.
-**AI:** Groq (answers, intent, Whisper speech to text), Gemini (photo inspection only), bge-m3 via transformers.js (local embeddings).
-**Offline:** Python + PyMuPDF (PDF parsing), tsx build scripts.
-**Data:** JSON files loaded into memory. No database in the prototype, by choice.
+**App:** Next.js 15, React 19, TypeScript, Tailwind CSS v4, Leaflet maps, react-force-graph, docx.
+**AI:** Groq-hosted open models (answers, intent, Whisper speech-to-text), Gemini (photo reading), bge-m3 via transformers.js (local embeddings).
+**Offline:** Python + PyMuPDF + OCR (PDF parsing), tsx build scripts.
+**Data:** JSON knowledge base loaded into memory in the prototype, with a defined path to Postgres + pgvector.

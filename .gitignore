@@ -61,3 +61,8 @@ tsconfig.tsbuildinfo
 # UX4G handbook PDFs (large reference files, not source)
 UX4G-Handbook.pdf
 UX4G Handbook Final - UX4G-Handbook.pdf
+
+# Submission material and competitive research (kept local, not published)
+docs/submission/
+docs/reference/Competitor Research/
+.env.bak*
