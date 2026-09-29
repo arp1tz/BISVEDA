@@ -1,55 +1,42 @@
-# BISVEDA: demo questions
+# BISVEDA demo questionnaire (run order for the video)
 
-Tested against the live prototype on 2026-09-29. ✅ = gives the intended answer. Use these in the video, the screenshots and the judges' walkthrough.
+Ask these in order. Each one was run on the prototype on 2026-09-29. Scene numbers match `script.txt`.
 
-## English
-| Question | Shows |
-|---|---|
-| ✅ I make battery-operated toy cars for kids. Which standards apply? | Cited answer naming IS 15644 and IS 9873 (Part 1), source drawer |
-| ✅ what does IS 9873 part 3 test for in toys | Toxic elements and phthalates, cited |
-| ✅ cupellation fire assay method for gold | Step-by-step method from IS 1418 with temperatures, cited |
-| ✅ what are the general requirements for competence of a hallmarking centre | IS 15820, cited |
-| ✅ 22 carat gold jewellery hallmark fineness grades | Hallmark card (22K / 916) plus cited IS 1417 grades and the 5 required marks |
-| ✅ My ring has HUID AB12C3. Is it valid? | HUID format check + BIS Care route (never says "genuine") |
-| ✅ Check this licence number CM/L-3112329 | CM/L format + BIS Care / Manak Online route |
-| ✅ Show hallmarking centres in Jaipur | Centre map + list from Manak Online |
-| ✅ Where can I get electric toys tested near Delhi? | Lab map (Delhi Test House first) + cited IS 15644 tests |
+| # | Scene | Where | Type / do exactly this | Image to attach | What the viewer should see |
+|---|---|---|---|---|---|
+| Q1 | 2 Cited answer | Home page search | `I make battery-operated toy cars for kids. Which standards apply?` then click **[S1]** | none | IS 15644 + IS 9873 (Part 1), source tags, source panel with clause, page and "Open PDF" |
+| Q2 | 2 Honest refusal | Same chat | `domestic pressure cooker stainless steel standard` | none | "We couldn't find this in the documents we hold" + BIS catalogue link |
+| Q3 | 3 Hallmark photo | **New chat**, + → attach | `Is this hallmarked? What does the mark mean?` | `prototype/public/samples/hallmarked_gold.jpg` | Photo card (22K916, AB12C3), hallmark card (22K / 916, HUID format valid), BIS Care route, cited list of the 5 marks |
+| Q4 | 3 Centre finder | Same chat | `Show hallmarking centres in Jaipur` | none | Map + operative Jaipur centres from Manak Online |
+| Q5 | 4 Form I start | **New chat** | `mujhe apni jewellery shop ka hallmarking registration karna hai` | none | One checklist of the 9 details Form I needs |
+| Q6 | 4 Form I details | Same chat (paste) | `Shop ka naam Shree Ganesh Jewellers hai, address 14 MG Road, Wardha, Maharashtra, phone 9876543210. Proprietorship hai, owner Utkarsh Kale (Proprietor). Sirf sone ka certificate chahiye. Turnover 2.5 crore hai, koi cancellation nahi hua, hamara mark SGJ hai, contact person Utkarsh Kale proprietor 9876543210` | none | "Noted" list, then one follow-up: the address has no PIN code |
+| Q7 | 4 Form I finish | Same chat | `PIN code 442001 hai` → click **Download Word draft (.docx)** → open it | none | "Draft ready", Word file in the official Form I layout with the details filled in |
+| Q8 | 5 Hinglish | **New chat** | `sone ke gehno par 916 ka matlab kya hai aur hallmark mein kya kya hota hai` → click read-aloud for 2 s | none | Hinglish answer with source tags + hallmark card; spoken aloud |
+| — | 5 Translate page | Header | Language picker → **हिन्दी** | — | Whole interface switches to Hindi |
+| Q9 | 5 Answer in picked language | Same chat, typed in English | `Which standards apply to toys for children?` then switch the picker back to English | none | Answer in Hindi: IS 9873 (Part 1) and IS 15644, cited |
+| **CALL** | 6 **Live call** (after Q9) | Header → **Talk on Call** | Keep "Start new", enter your mobile, **Call me now** | — | "Call request queued", then the phone rings |
+| C1 | 6 On the phone | Phone | "Motorcycle helmet ke liye kaunsa standard hai?" | — | Agent: IS 4151, ISI mark |
+| C2 | 6 On the phone | Phone | "Sone ka HUID kaise check karu?" | — | Agent: BIS Care app → Verify HUID |
+| E1 | 7 Employee pipeline | `/admin` → **Ingestion** | Choose the PDF, Standard ID `IS 2925:1984`, Title `Industrial Safety Helmets`, Revision `Second Revision`, click **Start Document Ingestion & Indexing** | `example docs uploaded by employees/IS_2925_Specification_for_Industrial_Safety_Helmets_(Second_Revision).pdf` | Steps tick: parsing → clause chunking → vectors → graph linking → live, with the log |
+| E2 | 7 Knowledge graph | **Knowledge Graph** tab | Search `IS 1417`, click the node | — | Graph with the node inspector (clauses, links) |
+| E3 | 7 Versions | **Documents** tab → IS 1417 → **Version Control & Amendments** | — | — | IS 1417 : 1999, Third Revision, Amendments 1 to 3 from the PDF |
 
-## Hinglish / Hindi / regional
-| Question | Shows |
-|---|---|
-| ✅ sone ke gehno par 916 ka matlab kya hai aur hallmark mein kya kya hota hai | Hinglish reply with citations + hallmark card |
-| ✅ bachon ke khilone banane ke liye kaunsa standard follow karna padega? | Hinglish: IS 9873 (Part 1) first, IS 15644 for electric toys |
-| ✅ Jaipur mein hallmarking centre kahan hai | Centre finder from a Hinglish question |
-| ✅ tum kya kya kar sakte ho | Capability list in Hinglish |
-| ✅ lahan mulanchya khelnyansathi konte standard pahije | Marathi (Roman script) toy standards |
-| ✅ தங்க நகைகளுக்கு எந்த இந்திய தரநிலை பொருந்தும்? | Tamil: IS 1417, cited |
-| ⚠️ सोने के आभूषणों की शुद्धता कैसे जांचें? | Still says the method isn't described. Avoid. |
+## Where the live call goes
+After Q9, when the user-side features are done (scene 6, about 2:25). The page is back in English, and the call leads into the staff section.
 
-## Photos (`prototype/public/samples/`)
-| Photo + question | Shows |
-|---|---|
-| ✅ `hallmarked_gold.jpg` + "Is this hallmarked? What does the mark mean?" | Reads 22K916 and AB12C3, hallmark card, cited marks |
-| ✅ `toy_car.jpg` + "What should I check on this toy?" | Reads the ISI label, cited IS 15644 checks |
-| ✅ `example test images uploaded by user/Hallmarked_ring.webp` + "Check the hallmark on this ring" | Notices the marks are British (anchor, 375), not BIS |
-| ⚠️ `toy carr.png` (McQueen) | Weak answer. Avoid. |
+## Backup questions (if you have time or one fails)
+| Question | Image | Shows |
+|---|---|---|
+| `What should I check on this toy?` | `prototype/public/samples/toy_car.jpg` | Reads the ISI/CM-L label, cited IS 15644 checks |
+| `Check the hallmark on this ring` | `example test images uploaded by user/Hallmarked_ring.webp` | Notices the marks are British (anchor, 375), not BIS |
+| `Where can I get electric toys tested near Delhi?` | none | Lab map, Delhi Test House first, cited IS 15644 tests |
+| `lahan mulanchya khelnyansathi konte standard pahije` | none | Marathi answer |
+| `தங்க நகைகளுக்கு எந்த இந்திய தரநிலை பொருந்தும்?` | none | Tamil answer, IS 1417 |
+| `tum kya kya kar sakte ho` | none | What BISVEDA can do, in Hinglish |
+| `aaj mausam kaisa hai delhi mein` | none | Polite out-of-scope reply |
 
-## Form I (jeweller registration → Word file)
-1. `mujhe apni jewellery shop ka hallmarking registration karna hai`
-2. Paste:
-   `Shop ka naam Shree Ganesh Jewellers hai, address 14 MG Road, Wardha, Maharashtra, phone 9876543210. Proprietorship hai, owner Utkarsh Kale (Proprietor). Sirf sone ka certificate chahiye. Turnover 2.5 crore hai, koi cancellation nahi hua, hamara mark SGJ hai, contact person Utkarsh Kale proprietor 9876543210`
-3. It asks for the missing PIN code → `PIN code 442001 hai`
-4. "Draft ready" → **Download Word draft (.docx)**.
-
-Shortcut: at any point say `that's all, give me the draft` and the missing items are left blank in the Word file.
-
-## Honest refusals
-| Question | Shows |
-|---|---|
-| ✅ domestic pressure cooker stainless steel standard | "Not in the documents we hold" + BIS catalogue link |
-| ✅ standards for LED aquarium strip lights | Same |
-| ✅ aaj mausam kaisa hai delhi mein | Out of scope, in Hinglish |
-
-## Phone call (Talk on Call)
-Safe questions: *Motorcycle helmet ke liye kaunsa standard hai?* · *Sone ka HUID kaise check karu?* · *Kya aap Marathi bol sakte ho?*
-Avoid: how many marks a hallmark has, cement, water, steel pipes. The phone agent uses a fixed prompt, not the cited documents.
+## Don't use in the video
+- `toy carr.png` (McQueen): weak answer.
+- `सोने के आभूषणों की शुद्धता कैसे जांचें?`: still says the method isn't described.
+- On the call: number of hallmark marks, cement, water, steel pipes.
+- The "Continue from conversation" option in the call dialog: it's labelled "Upcoming".

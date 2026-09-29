@@ -1,144 +1,142 @@
-BISVEDA - VIDEO DEMO SCRIPT (screen recording + narration + live phone call)
-Target length: 3 min 45 s.  About 500 spoken words at a calm pace.
-Format per scene:  [time]  SCREEN = what you click/type  |  SAY = what you narrate.
+BISVEDA - VIDEO DEMO SCRIPT  (screen recording + voice-over + live phone call)
+Length: 3 min 50 s maximum.  About 520 spoken words.
+Each scene:  SCREEN = what you click / type   |   SAY = what you narrate.
+All questions are also listed, in order, in DEMO_QUESTIONS.md.
 
 ==========================================================================================
-BEFORE YOU RECORD (10-minute checklist)
+BEFORE RECORDING
 ==========================================================================================
-1. Start everything with the boot script from C:\BISVEDA:   python scripts/boot.py
-   (web on http://localhost:3000, voice bridge on :8001 with the Exotel/ngrok tunnel).
-   Open http://localhost:3000/api/helpline/call once and confirm it responds.
-2. In prototype/.env set  GEMINI_VISION_MODEL=gemini-3.5-flash-lite  (photos answer in ~5 s).
-3. Fresh Groq quota: do not run evals or long test sessions on recording day.
-4. Browser: Chrome, 1440x900 window, zoom 100%, bookmarks bar hidden, notifications off.
-   Pre-open tab 2 at http://localhost:3000/admin (already logged in).
-5. Have ready on the desktop: prototype/public/samples/hallmarked_gold.jpg
-6. Phone for the call on speaker, next to the mic, with the ringer ON. Test one call first.
-7. Copy the Form I details (Scene 4) to the clipboard so you paste, not type.
-8. Do one full dry run. Every query below was tested on 2026-09-29; if any answer looks off
-   on the day, ask it once more in a new chat.
-9. Record screen and voice separately if you can; it is easier to trim waiting time
-   (cut any spinner longer than 2 s in the edit).
+1. Restart everything so the NEW API keys load:  from C:\BISVEDA run   python scripts/boot.py
+   (web http://localhost:3000 + voice bridge :8001). Wait for both "ready" lines.
+2. Chrome, window 1440x900, zoom 100%, bookmarks bar hidden, notifications off.
+   Tab 1: http://localhost:3000        Tab 2: http://localhost:3000/admin (already logged in).
+3. Keep ready on the desktop:
+     prototype/public/samples/hallmarked_gold.jpg
+     example docs uploaded by employees/IS_2925_Specification_for_Industrial_Safety_Helmets_(Second_Revision).pdf
+4. Copy the Form I details (Scene 4) to the clipboard.
+5. Phone on speaker, ringer ON, next to the mic. Make one test call before recording.
+6. One full dry run, then record. Don't run long test sessions on recording day (the free
+   AI quota is about 60-80 answers a day).
+7. In the edit, cut any waiting longer than 2 seconds.
 
 ==========================================================================================
-SCENE 0 - OPENING (0:00 - 0:15)
+SCENE 1 - OPENING  (0:00 - 0:12)
 ==========================================================================================
-SCREEN: Home page, cursor still. Slowly move over the search box, the + and mic buttons,
-        and the "Speak with BISVEDA on Call" pill.
+SCREEN: Home page. Move the cursor over the search box, the + and mic buttons, the language
+        picker, and "Speak with BISVEDA on Call".
 SAY:
-"This is BISVEDA, an assistant for Indian Standards and BIS services. Citizens, jewellers and
-small manufacturers ask BIS the same questions every day. BISVEDA answers them in their own
-language, and every answer shows the exact clause and page it came from."
+"This is BISVEDA, an assistant for Indian Standards and BIS services. You can ask by text, photo,
+voice or phone, in your own language, and every answer shows the exact clause it came from."
 
 ==========================================================================================
-SCENE 1 - CITED ANSWER + HONEST REFUSAL (0:15 - 0:55)
+SCENE 2 - CITED ANSWER + HONEST REFUSAL  (0:12 - 0:45)
 ==========================================================================================
-SCREEN: Type:  I make battery-operated toy cars for kids. Which standards apply?
-        While it works, point at the progress steps.
-SAY (while loading):
-"I'm a toy maker. Watch the steps: it understands the question, searches the official BIS
-documents, checks the evidence, then writes."
-SCREEN: Answer appears. Click the first [S1] pill. The source drawer opens. Hover "Open PDF".
+SCREEN: Type  Q1:  I make battery-operated toy cars for kids. Which standards apply?
+SAY (while it works):
+"I'm a toy maker. It understands the question, searches the official BIS documents, checks the
+evidence, and only then writes."
+SCREEN: Click [S1]. The source panel opens with the clause, page and "Open PDF".
 SAY:
-"It names IS 15644 for electric toys and IS 9873 for mechanical safety. Each claim has a source
-tag. Click it and you see the exact clause and page from the standard. Nothing is written
-from memory."
-SCREEN: Close the drawer. Type:  domestic pressure cooker stainless steel standard
+"It names IS 15644 for electric toys and IS 9873 for mechanical safety. Every sentence has a
+source tag, and one click shows the exact clause and page."
+SCREEN: Close the panel. Type  Q2:  domestic pressure cooker stainless steel standard
 SAY:
-"And when the documents we hold don't cover something, it says so and sends you to the
-official BIS catalogue instead of guessing."
+"If the documents don't cover something, it says so, and points to the official BIS catalogue
+instead of guessing."
 
 ==========================================================================================
-SCENE 2 - HALLMARKING: PHOTO CHECK + CENTRE FINDER (0:55 - 1:40)
+SCENE 3 - HALLMARKING: PHOTO + CENTRE FINDER  (0:45 - 1:20)
 ==========================================================================================
-SCREEN: Click "+ New chat". Click +, attach hallmarked_gold.jpg, type:
-        Is this hallmarked? What does the mark mean?
-SAY (while loading):
-"Now a consumer with a gold ring. I just upload a photo."
-SCREEN: Point at the photo card (22K916, AB12C3), then the hallmark card, then the cited line.
+SCREEN: "+ New chat". Click +, attach  hallmarked_gold.jpg , type
+        Q3:  Is this hallmarked? What does the mark mean?
 SAY:
-"It reads the marks from the photo: 916, which IS 1417 defines as 22 carat, and the HUID code.
-It checks the HUID format, cites the five marks a hallmarked piece must carry, and sends you to
-the BIS Care app to verify it. It never declares jewellery genuine on its own."
-SCREEN: Type:  Show hallmarking centres in Jaipur
+"A customer checks a gold ring from a photo."
+SCREEN: Point at the photo card (22K916, AB12C3), the hallmark card, the cited line.
 SAY:
-"Need a centre nearby? These are operative hallmarking centres from the official Manak Online
-list of more than sixteen hundred, on a map."
+"It reads 916 and the HUID from the photo. 916 means 22 carat under IS 1417. It checks the HUID
+format and sends you to the BIS Care app to verify it. It never declares jewellery genuine by
+itself."
+SCREEN: Type  Q4:  Show hallmarking centres in Jaipur
+SAY:
+"And here are the nearest operative hallmarking centres, from the official Manak Online list."
 
 ==========================================================================================
-SCENE 3 - HINGLISH (1:40 - 2:00)
+SCENE 4 - FORM I FOR JEWELLERS: CHAT TO WORD FILE  (1:20 - 1:55)
 ==========================================================================================
-SCREEN: Type it, or click the mic and say it if the mic worked in your dry run
-        (speech-to-text may write Hindi in Devanagari; the answer is still Hindi, just in a different script):
-        sone ke gehno par 916 ka matlab kya hai aur hallmark mein kya kya hota hai
-        When the answer appears, click the read-aloud (speaker) button for 3 seconds, then stop.
+SCREEN: "+ New chat". Type  Q5:  mujhe apni jewellery shop ka hallmarking registration karna hai
 SAY:
-"People don't always type in English. Here I ask in Hinglish, by voice. The answer comes back in
-Hinglish, with the same source tags, and it can read the answer aloud."
+"A jeweller wants hallmarking registration. BISVEDA asks for everything Form I needs, in one list."
+SCREEN: Paste  Q6  (the Form I details from the clipboard).
+SAY:
+"I reply once, in Hinglish. It fills the form and cross-checks it: the address has no PIN code."
+SCREEN: Type  Q7:  PIN code 442001 hai   ->  "Draft ready"  ->  "Download Word draft (.docx)"
+        -> open the file in Word for 2 seconds.
+SAY:
+"Now I get an editable Word draft in the official Form I format, ready for Manak Online."
 
 ==========================================================================================
-SCENE 4 - FORM I: JEWELLER REGISTRATION, CHAT TO WORD FILE (2:00 - 2:45)
+SCENE 5 - MULTILINGUAL + PAGE TRANSLATION  (1:55 - 2:25)
 ==========================================================================================
-SCREEN: "+ New chat". Type:  mujhe apni jewellery shop ka hallmarking registration karna hai
+SCREEN: "+ New chat". Type  Q8:  sone ke gehno par 916 ka matlab kya hai aur hallmark mein kya kya hota hai
 SAY:
-"A jeweller wants to register for hallmarking. BISVEDA asks for everything Form I needs, in one
-list."
-SCREEN: Paste:
-        Shop ka naam Shree Ganesh Jewellers hai, address 14 MG Road, Wardha, Maharashtra, phone 9876543210.
-        Proprietorship hai, owner Utkarsh Kale (Proprietor). Sirf sone ka certificate chahiye.
-        Turnover 2.5 crore hai, koi cancellation nahi hua, hamara mark SGJ hai,
-        contact person Utkarsh Kale proprietor 9876543210
+"People mix languages. Ask in Hinglish and the answer comes back in Hinglish, with the same
+source tags."
+SCREEN: Click the read-aloud (speaker) button for 2 seconds, then stop.
+SCREEN: Click the language picker in the header, choose  हिन्दी . The whole page translates.
 SAY:
-"I answer in one message, in my own words. It fills the form and cross-checks it. Here it
-noticed the address has no PIN code."
-SCREEN: Type:  PIN code 442001 hai   ->  "Draft ready". Click "Download Word draft (.docx)",
-        open the file in Word for 3 seconds.
+"The whole interface also translates: I pick Hindi, and every button and label changes."
+SCREEN: Type in English  Q9:  Which standards apply to toys for children?
 SAY:
-"Done. I get an editable Word draft in the official Form I layout, ready to check and submit on
-Manak Online."
+"Now even an English question gets its answer in Hindi, still cited. It works the same for
+Marathi, Tamil and other Indian languages."
+SCREEN: Switch the picker back to English (1 second).
 
 ==========================================================================================
-SCENE 5 - PHONE CALL (2:45 - 3:20)
+SCENE 6 - LIVE PHONE CALL  (2:25 - 3:00)
 ==========================================================================================
-SCREEN: Back in the chat, click "Talk on Call" in the header. Keep "Start new" selected.
-        Type your number, click "Call me now". Show the "Call request queued" screen.
+SCREEN: Click "Talk on Call" in the header. Keep "Start new". Type your mobile number,
+        click "Call me now". Show "Call request queued".
 SAY:
-"Not everyone has a smartphone or wants to type. Anyone can request a call."
-[Phone rings. Answer on speaker. Let the greeting play (about 5 s).]
-YOU ASK ON THE PHONE (Hindi):   "Motorcycle helmet ke liye kaunsa standard hai?"
-[Agent answers: IS 4151, ISI mark.]
-YOU ASK:   "Sone ka HUID kaise check karu?"
-[Agent answers: BIS Care app, Verify HUID.]   Say "Dhanyavaad" and hang up.
-SAY (over the end of the call, or in the edit):
-"The same assistant, by phone, in Hindi, Marathi or English."
-DO NOT ask the phone agent how many marks a hallmark has, or about cement, water or steel
-pipes: the phone agent does not yet read from the same cited documents as the web chat.
+"Not everyone wants to type. Anyone can ask BISVEDA to call them."
+[Phone rings. Answer on speaker. Let the greeting play, about 5 seconds.]
+ASK ON THE PHONE  C1:  "Motorcycle helmet ke liye kaunsa standard hai?"
+[Agent: IS 4151, ISI mark.]
+ASK  C2:  "Sone ka HUID kaise check karu?"
+[Agent: BIS Care app, Verify HUID.]      Say "Dhanyavaad", hang up.
+SAY (over the end of the call):
+"The same help on an ordinary phone call, in Hindi, Marathi or English."
 
 ==========================================================================================
-SCENE 6 - FOR BIS STAFF (3:20 - 3:40)
+SCENE 7 - EMPLOYEE PIPELINE  (3:00 - 3:40)
 ==========================================================================================
-SCREEN: Switch to tab 2 (/admin). Knowledge Graph: search IS 1417, click the node (2 s).
-        Documents tab, IS 1417, "Version Control & Amendments" (3 s).
-        Directory tab, hallmarking centres table (2 s).
+SCREEN: Tab 2 (/admin). Open the "Ingestion" tab.
+        Choose the IS 2925 PDF. Standard ID: IS 2925:1984. Title: Industrial Safety Helmets.
+        Revision: Second Revision. Click "Start Document Ingestion & Indexing".
 SAY:
-"For BIS staff there is a console: every standard, clause, lab and hallmarking centre linked in
-one graph, the edition and amendments each answer is based on, and the official lab and centre
-directories with their source and date."
+"For BIS staff, a new standard goes in through one pipeline: the PDF is checked and parsed,
+split clause by clause, turned into search vectors, and linked into the knowledge graph."
+SCREEN: While the steps tick, switch to "Knowledge Graph", search  IS 1417 , click the node.
+SAY:
+"Every standard, clause, lab and hallmarking centre is linked here."
+SCREEN: "Documents" tab -> IS 1417 -> "Version Control & Amendments".
+SAY:
+"And staff can see exactly which edition and amendments the answers are based on."
 
 ==========================================================================================
-SCENE 7 - CLOSE (3:40 - 3:50)
+SCENE 8 - CLOSE  (3:40 - 3:50)
 ==========================================================================================
-SCREEN: Back to the home page.
+SCREEN: Tab 1, home page.
 SAY:
-"BISVEDA: cited answers, in your language, by text, photo, voice or phone call. When the
-documents don't support an answer, it tells you where to go instead."
+"BISVEDA: answers from official BIS documents, in your language, by text, photo, voice or phone.
+And when it doesn't know, it tells you where to go."
 
 ==========================================================================================
-IF SOMETHING GOES WRONG WHILE RECORDING
+IF SOMETHING GOES WRONG
 ==========================================================================================
-- Answer is short or looks off: re-ask once, or cut it in the edit.
-- Photo takes longer than 10 s: cut the waiting in the edit; check GEMINI_VISION_MODEL.
-- Call does not ring in 20 s: check the boot script window for the voice bridge and ngrok lines,
-  then retry. As a last resort record the call separately and splice it in.
-- A "429" or very generic answer across the board: the Groq daily quota is used up; record the
-  next day.
+- An answer looks short or odd: ask it again in a new chat, or cut it in the edit.
+- A photo takes longer than 10 s: cut the wait in the edit.
+- No ring within 20 s: check the boot window for the voice bridge / ngrok lines and retry.
+  Last resort: record the call separately and splice it in.
+- On the call, don't ask about the number of hallmark marks, cement, water or steel pipes
+  (the phone agent doesn't read from the same cited documents as the web chat yet).
+- Answers suddenly turn into raw text excerpts: the daily AI quota is used up. Record later.
