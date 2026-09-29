@@ -138,10 +138,10 @@ export async function POST(req: NextRequest) {
     // ─────────────────────────────────────────────────────────────
     // 1. Primary: Exotel Voice Outbound Call Flow (AgentStream)
     // ─────────────────────────────────────────────────────────────
-    const exotelAccountSid = process.env.EXOTEL_ACCOUNT_SID || bridge?.account_sid || "none6723";
-    const exotelApiKey = process.env.EXOTEL_API_KEY || "90b2ea024e1f7ec958f6a3bf1d775952604fa5d65c64d90f";
-    const exotelApiToken = process.env.EXOTEL_API_TOKEN || "b9e9b63bd4e658fa6eb5562a70a30433e900b2f4adc4ae23";
-    const exotelCallerId = bridge?.caller_id || process.env.EXOTEL_CALLER_ID || "01414939968";
+    const exotelAccountSid = process.env.EXOTEL_ACCOUNT_SID || bridge?.account_sid || "";
+    const exotelApiKey = process.env.EXOTEL_API_KEY || "";
+    const exotelApiToken = process.env.EXOTEL_API_TOKEN || "";
+    const exotelCallerId = bridge?.caller_id || process.env.EXOTEL_CALLER_ID || "";
     const exotelStreamUrl = bridge?.stream_url || process.env.EXOTEL_STREAM_BASE || "";
 
     if (exotelAccountSid && exotelApiKey && exotelApiToken) {

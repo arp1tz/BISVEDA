@@ -26,21 +26,47 @@ from google.genai import types
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("bisveda-exotel")
 
+def load_dotenv_fallback():
+    """Load key-value pairs from .env into os.environ if not already set."""
+    candidates = [
+        os.path.join(os.path.dirname(__file__), "..", "..", ".env"),
+        os.path.join(os.path.dirname(__file__), "..", "..", "prototype", ".env"),
+        ".env",
+        os.path.join("prototype", ".env"),
+    ]
+    for c in candidates:
+        abs_p = os.path.abspath(c)
+        if os.path.isfile(abs_p):
+            try:
+                with open(abs_p, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith("#") and "=" in line:
+                            k, v = line.split("=", 1)
+                            k = k.strip()
+                            v = v.strip().strip('"').strip("'")
+                            if k and k not in os.environ:
+                                os.environ[k] = v
+            except Exception:
+                pass
+
+load_dotenv_fallback()
+
 def get_env(key, default=""):
     return os.environ.get(key, default)
 
-# ── Credentials & Configuration ──
-GEMINI_API_KEY = get_env("VOICE_GEMINI_API_KEY") or get_env("GEMINI_API_KEY", "AQ.Ab8RN6JrOHqgvRTeVBWciSg1P4LcTEuVq6lDEh7tF0EctC-1Mw")
+# ── Credentials & Configuration (Loaded securely from .env) ──
+GEMINI_API_KEY = get_env("VOICE_GEMINI_API_KEY") or get_env("GEMINI_API_KEY")
 GEMINI_MODEL = get_env("VOICE_GEMINI_MODEL", "gemini-3.1-flash-live-preview")
 
-EXOTEL_ACCOUNT_SID = get_env("EXOTEL_ACCOUNT_SID", "none6723")
-EXOTEL_API_KEY = get_env("EXOTEL_API_KEY", "90b2ea024e1f7ec958f6a3bf1d775952604fa5d65c64d90f")
-EXOTEL_API_TOKEN = get_env("EXOTEL_API_TOKEN", "b9e9b63bd4e658fa6eb5562a70a30433e900b2f4adc4ae23")
-EXOTEL_CALLER_ID = get_env("EXOTEL_CALLER_ID", "01414939968")
-EXOTEL_APP_ID = get_env("EXOTEL_APP_ID", "1349660")
-MY_PHONE_NUMBER = get_env("MY_PHONE_NUMBER", "9529512485")
+EXOTEL_ACCOUNT_SID = get_env("EXOTEL_ACCOUNT_SID")
+EXOTEL_API_KEY = get_env("EXOTEL_API_KEY")
+EXOTEL_API_TOKEN = get_env("EXOTEL_API_TOKEN")
+EXOTEL_CALLER_ID = get_env("EXOTEL_CALLER_ID")
+EXOTEL_APP_ID = get_env("EXOTEL_APP_ID")
+MY_PHONE_NUMBER = get_env("MY_PHONE_NUMBER")
 
-NGROK_AUTHTOKEN = get_env("NGROK_AUTHTOKEN", "3JuYjB10Je24Y4vDMc7nmD8yvqk_6EvETNmVk772rHuTkJVLV")
+NGROK_AUTHTOKEN = get_env("NGROK_AUTHTOKEN")
 PORT = int(get_env("VOICE_PORT", "8001"))
 
 EXOTEL_SAMPLE_RATE = 8000
