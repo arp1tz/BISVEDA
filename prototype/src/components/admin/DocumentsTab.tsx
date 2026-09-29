@@ -44,7 +44,7 @@ interface ChunkItem {
 interface VersionRevision {
   id: string;
   version: string;
-  year: number;
+  year: number | null; // null: the uploaded PDF does not state it
   status: "active" | "superseded" | "withdrawn" | "draft";
   effective_date: string;
   gazette_notification?: string;
@@ -61,7 +61,10 @@ interface AmendmentRecord {
   gazette_ref: string;
 }
 
-// Built-in standard version control registry
+// Edition and amendment registry, taken only from what the uploaded PDFs print (cover page and the
+// amendment slips bound into them). Nothing here comes from outside those files; when a PDF does not state
+// something (an edition year, an amendment's content) it says so instead of filling it in.
+// Staff can add later revisions and amendments with the buttons on this tab.
 const DEFAULT_VERSION_HISTORIES: Record<
   string,
   { revisions: VersionRevision[]; amendments: AmendmentRecord[] }
@@ -69,168 +72,177 @@ const DEFAULT_VERSION_HISTORIES: Record<
   "IS 4151": {
     revisions: [
       {
-        id: "v-4151-4",
-        version: "Revision 4 (Current)",
-        year: 2015,
-        status: "active",
-        effective_date: "2016-01-01",
-        gazette_notification: "Gazette of India S.O. 3855(E)",
-        qco_order: "Two-Wheeler Helmet QCO (MoRTH Notification No. RT-11036)",
-        summary:
-          "Enforces mandatory ISI certification for all two-wheeler rider protective helmets manufactured or sold in India.",
-      },
-      {
-        id: "v-4151-3",
-        version: "Revision 3",
+        id: "v-4151-1993",
+        version: "Third Revision",
         year: 1993,
-        status: "superseded",
-        effective_date: "1994-06-15",
-        summary:
-          "Introduced standardized chin-guard retention and visor optical clarity specifications.",
-      },
-      {
-        id: "v-4151-2",
-        version: "Revision 2",
-        year: 1982,
-        status: "withdrawn",
-        effective_date: "1983-01-01",
-        summary: "Early revision establishing energy absorption testing using metal headforms.",
-      },
-      {
-        id: "v-4151-1",
-        version: "First Edition",
-        year: 1974,
-        status: "withdrawn",
-        effective_date: "1974-08-10",
-        summary: "Initial standard for motorcycle rider helmets in India.",
+        status: "active",
+        effective_date: "Published October 1993, reaffirmed 2008",
+        gazette_notification: "Uploaded PDF: second reprint, January 2006, including Amendments No. 1 and 2",
+        summary: "Edition held in the knowledge base and cited in answers: protective helmets for motorcycle riders.",
       },
     ],
     amendments: [
       {
         id: "amd-4151-1",
         amendment_number: 1,
-        date: "2018-05-12",
-        clause_affected: "Clause 7.1.2 (Drop Velocity)",
-        summary: "Revised anvil impact drop velocity tolerances from ±0.15 m/s to ±0.10 m/s.",
-        gazette_ref: "BIS Standards Gazette Part II",
+        date: "September 1998",
+        clause_affected: "Clauses 5.1, 6.3, 6.6",
+        summary: "Helmet sizes matched to headform sizes 500 to 620 mm per IS 7692 : 1993; padding to cover the areas above plane AA; note added to 6.6.",
+        gazette_ref: "Amendment slip in uploaded PDF, p. 3",
       },
       {
         id: "amd-4151-2",
         amendment_number: 2,
-        date: "2020-08-28",
-        clause_affected: "Clause 6.4 (Retention Buckle)",
-        summary: "Mandated dual-action release mechanism on micro-metric quick-release buckles.",
-        gazette_ref: "MoRTH S.O. 2933(E)",
-      },
-      {
-        id: "amd-4151-3",
-        amendment_number: 3,
-        date: "2024-03-15",
-        clause_affected: "Clause 8.2 (Traceability Marking)",
-        summary: "Mandatory QR code and 7-digit CM/L licence number display on helmet exterior.",
-        gazette_ref: "BIS Technical Directive TD/4151/24",
+        date: "January (year not legible in scan)",
+        clause_affected: "Fig. 7 (page 14)",
+        summary: "Figure 7 substituted.",
+        gazette_ref: "Amendment slip in uploaded PDF, p. 3",
       },
     ],
+  },
+  "IS 2925": {
+    revisions: [
+      {
+        id: "v-2925-1984",
+        version: "Second Revision",
+        year: 1984,
+        status: "active",
+        effective_date: "1984 edition",
+        summary: "Edition held in the knowledge base and cited in answers: industrial safety helmets.",
+      },
+    ],
+    amendments: [],
   },
   "IS 1417": {
     revisions: [
       {
-        id: "v-1417-5",
-        version: "Revision 5 (Current)",
-        year: 2016,
-        status: "active",
-        effective_date: "2016-07-01",
-        gazette_notification: "Gazette S.O. 1383(E)",
-        qco_order: "Hallmarking of Gold Jewellery Order 2020",
-        summary:
-          "Defines 6 standard karat purity grades (14K, 18K, 20K, 22K, 23K, 24K) and mandatory 6-digit alphanumeric HUID marking.",
-      },
-      {
-        id: "v-1417-4",
-        version: "Revision 4",
+        id: "v-1417-1999",
+        version: "Third Revision",
         year: 1999,
-        status: "superseded",
-        effective_date: "2000-04-11",
-        summary: "Pre-HUID voluntary hallmarking standard using 4-symbol marking system.",
+        status: "active",
+        effective_date: "Published December 1999, reaffirmed",
+        gazette_notification: "Uploaded PDF, with Amendments No. 1, 2 and 3 bound in",
+        summary: "Edition held in the knowledge base and cited in answers: gold fineness grades and hallmark marking.",
       },
       {
-        id: "v-1417-3",
-        version: "Revision 3",
-        year: 1989,
+        id: "v-8844",
+        version: "IS 8844 (withdrawn)",
+        year: null,
         status: "withdrawn",
-        effective_date: "1990-01-01",
-        summary: "Specification for gold and silver alloys purity assays.",
+        effective_date: "Superseded by IS 1417 : 1999",
+        summary: "The IS 1417 : 1999 cover states it supersedes IS 8844, which stands withdrawn.",
       },
     ],
     amendments: [
       {
         id: "amd-1417-1",
         amendment_number: 1,
-        date: "2019-11-20",
-        clause_affected: "Clause 5.1 (Marking)",
-        summary: "Transitioned from 4-mark system to 3-mark system: BIS logo, Purity/Fineness, HUID.",
-        gazette_ref: "Gazette Notification S.O. 4221(E)",
+        date: "December 2004",
+        clause_affected: "Clause 4.1 (notes)",
+        summary: "Gold alloys for jewellery/artefacts and gold solders to be free from iridium and ruthenium.",
+        gazette_ref: "Amendment slip in uploaded PDF, p. 4",
       },
       {
         id: "amd-1417-2",
         amendment_number: 2,
-        date: "2021-06-16",
-        clause_affected: "Clause 4.2 (Mandatory Districts)",
-        summary: "Mandatory hallmarking phased enforcement across 256 notified districts.",
-        gazette_ref: "Consumer Affairs Order CA-2021/HM",
+        date: "December 2007",
+        clause_affected: "Clauses 4.1, 5.2, 6.1, 6.2",
+        summary: "Grade 708 (17 carat) added; hallmarked articles to carry BIS mark, purity grade/fineness, assay centre mark, year letter and jeweller's mark; clause 6.1.4 added; 6.2 substituted.",
+        gazette_ref: "Amendment slip in uploaded PDF, p. 6",
       },
       {
         id: "amd-1417-3",
         amendment_number: 3,
-        date: "2023-04-01",
-        clause_affected: "Clause 6.1 (6-Digit HUID Requirement)",
-        summary: "Prohibited sale of gold jewellery without 6-digit alphanumeric HUID nationwide.",
-        gazette_ref: "BIS Central Hallmarking Order HM/2023",
+        date: "June 2010",
+        clause_affected: "Clauses 6.1.4, 6.2(d)",
+        summary: "Clause 6.1.4 and item 6.2(d) deleted.",
+        gazette_ref: "Amendment slip in uploaded PDF, p. 8",
       },
     ],
   },
-  "IS 9873 (Part 1)": {
+  "IS 1418": {
     revisions: [
       {
-        id: "v-9873-2",
-        version: "Revision 2 (Current)",
-        year: 2019,
+        id: "v-1418-2009",
+        version: "Current edition in knowledge base",
+        year: 2009,
         status: "active",
-        effective_date: "2020-09-01",
-        gazette_notification: "Gazette S.O. 2235(E)",
-        qco_order: "Toys (Quality Control) Order 2020 (DPIIT Mandate)",
-        summary:
-          "Mechanical and physical properties test specification for toys. Mandatory Scheme-I ISI marking required before customs import or domestic sale.",
+        effective_date: "2009 edition",
+        summary: "Edition held in the knowledge base and cited in answers: cupellation (fire assay) method for gold.",
       },
+    ],
+    amendments: [],
+  },
+  "IS 15820": {
+    revisions: [
       {
-        id: "v-9873-1",
-        version: "First Edition",
-        year: 2012,
-        status: "superseded",
-        effective_date: "2013-05-01",
-        summary: "Harmonized Indian Standard with ISO 8124-1 for toy mechanical safety.",
+        id: "v-15820-2009",
+        version: "Current edition in knowledge base",
+        year: 2009,
+        status: "active",
+        effective_date: "2009 edition",
+        summary: "Edition held in the knowledge base and cited in answers: competence of assaying and hallmarking centres.",
+      },
+    ],
+    amendments: [],
+  },
+  "IS 9873 (Part 3)": {
+    revisions: [
+      {
+        id: "v-9873-3-1999",
+        version: "First Revision",
+        year: 1999,
+        status: "active",
+        effective_date: "1999 edition (adopted from ISO 8124-3 : 1997)",
+        gazette_notification: "Uploaded PDF, with Amendments No. 1, 2 and 3 bound in",
+        summary: "Edition held in the knowledge base and cited in answers: migration of certain elements (and phthalates, per Amendment No. 3).",
       },
     ],
     amendments: [
       {
-        id: "amd-9873-1",
+        id: "amd-9873-3-1",
         amendment_number: 1,
-        date: "2021-10-14",
-        clause_affected: "Clause 4.14 (Battery Compartments)",
-        summary: "Mandatory tool-operated screw locks on all button-cell battery compartments.",
-        gazette_ref: "DPIIT Order No. P-29026/2021",
+        date: "August 2009",
+        clause_affected: "See amendment slip",
+        summary: "Later deleted by Amendment No. 2.",
+        gazette_ref: "Amendment slip in uploaded PDF, p. 13",
       },
       {
-        id: "amd-9873-2",
+        id: "amd-9873-3-2",
         amendment_number: 2,
-        date: "2023-07-08",
-        clause_affected: "Clause 4.22 (Projectile Toy Kinetic Energy)",
-        summary: "Lowered permissible kinetic energy limit on suction-cup projectiles to 0.08 J.",
-        gazette_ref: "BIS Toy Safety Directive TSD-2023",
+        date: "October 2010",
+        clause_affected: "National Foreword; new National Annex A",
+        summary: "Amendment No. 1 deleted; National Annex A added with BIS certification marking and the details to be marked on each toy and its packing.",
+        gazette_ref: "Amendment slip in uploaded PDF, p. 13",
+      },
+      {
+        id: "amd-9873-3-3",
+        amendment_number: 3,
+        date: "July 2011",
+        clause_affected: "Designation, title, National Foreword",
+        summary: "Title changed to 'Migration of certain elements and phthalates'; designation simplified to IS 9873 (Part 3) : 1999.",
+        gazette_ref: "Amendment slip in uploaded PDF, p. 4",
       },
     ],
   },
 };
+
+/** Any document without a registry entry: state only what the knowledge base knows. */
+function editionUnknownHistory(stdId: string): { revisions: VersionRevision[]; amendments: AmendmentRecord[] } {
+  return {
+    revisions: [
+      {
+        id: `v-${stdId}`,
+        version: "Edition as uploaded",
+        year: null,
+        status: "active",
+        effective_date: "Year not stated in the uploaded PDF text",
+        summary: `Edition of ${stdId} held in the knowledge base and cited in answers.`,
+      },
+    ],
+    amendments: [],
+  };
+}
 
 export function DocumentsTab() {
   const [docs, setDocs] = useState<DocItem[]>([]);
@@ -313,39 +325,7 @@ export function DocumentsTab() {
     if (key && versionHistories[key]) {
       return versionHistories[key];
     }
-    // Generic fallback for any other standard in KB
-    return {
-      revisions: [
-        {
-          id: `v-${stdId}-1`,
-          version: "Revision 1 (Current Active)",
-          year: 2021,
-          status: "active" as const,
-          effective_date: "2021-04-01",
-          gazette_notification: "Gazette Notification S.O. 1822(E)",
-          qco_order: "Mandatory Quality Control Order Enforced",
-          summary: `Current active standard specification for ${stdId}. Mandatory ISI mark required under Section 16 of BIS Act.`,
-        },
-        {
-          id: `v-${stdId}-0`,
-          version: "Original Edition",
-          year: 2011,
-          status: "superseded" as const,
-          effective_date: "2011-08-15",
-          summary: `Previous superseded edition of ${stdId}.`,
-        },
-      ],
-      amendments: [
-        {
-          id: `amd-${stdId}-1`,
-          amendment_number: 1,
-          date: "2023-01-10",
-          clause_affected: "Clause 3.2 (Scope & Testing Protocols)",
-          summary: "Harmonized sampling guidelines with updated laboratory testing parameters.",
-          gazette_ref: "BIS Technical Directive",
-        },
-      ],
-    };
+    return editionUnknownHistory(stdId);
   };
 
   const handleAddRevision = (e: React.FormEvent) => {
@@ -582,12 +562,12 @@ export function DocumentsTab() {
                     <div className="flex items-center gap-2">
                       <span className="h-3 w-3 rounded-full bg-emerald-600 animate-pulse" />
                       <span className="text-xs font-bold uppercase tracking-wider text-emerald-800">
-                        Current Enforced Standard Revision
+                        Edition in the knowledge base
                       </span>
                     </div>
 
                     <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                      ✓ Mandatory QCO Compliant
+                      ✓ Answers cite this edition
                     </span>
                   </div>
 
@@ -596,21 +576,22 @@ export function DocumentsTab() {
                       <div>
                         <span className="text-slate-500 block text-[11px]">Revision Notation:</span>
                         <span className="font-bold text-slate-900 text-sm">
-                          {selectedHistory.revisions[0].version} ({selectedHistory.revisions[0].year})
+                          {selectedHistory.revisions[0].version}
+                          {selectedHistory.revisions[0].year ? ` (${selectedHistory.revisions[0].year})` : ""}
                         </span>
                       </div>
 
                       <div>
-                        <span className="text-slate-500 block text-[11px]">Effective Date:</span>
+                        <span className="text-slate-500 block text-[11px]">Edition:</span>
                         <span className="font-medium text-slate-800">
                           {selectedHistory.revisions[0].effective_date}
                         </span>
                       </div>
 
                       <div>
-                        <span className="text-slate-500 block text-[11px]">Statutory Gazette Ref:</span>
+                        <span className="text-slate-500 block text-[11px]">Source:</span>
                         <span className="font-medium text-slate-800 truncate block">
-                          {selectedHistory.revisions[0].gazette_notification || "BIS Standards Directorate"}
+                          {selectedHistory.revisions[0].gazette_notification || "Uploaded PDF"}
                         </span>
                       </div>
 
@@ -646,7 +627,7 @@ export function DocumentsTab() {
                         <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-xs text-[#0B2A4A]">
-                              {selectedDoc.standard_id}:{rev.year}
+                              {selectedDoc.standard_id}{rev.year ? ` : ${rev.year}` : ""}
                             </span>
                             <span className="text-slate-400">—</span>
                             <span className="font-medium text-xs text-slate-800">{rev.version}</span>
@@ -665,7 +646,7 @@ export function DocumentsTab() {
                               {rev.status}
                             </span>
                             <span className="text-[11px] text-slate-500 font-mono">
-                              Effective: {rev.effective_date}
+                              {rev.effective_date}
                             </span>
                           </div>
                         </div>
@@ -680,7 +661,7 @@ export function DocumentsTab() {
                 <div>
                   <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-1.5">
                     <Tag className="h-3.5 w-3.5 text-[#E8710A]" />
-                    <span>Notified Amendments Log ({selectedHistory.amendments.length})</span>
+                    <span>Amendments printed in the PDF ({selectedHistory.amendments.length})</span>
                   </h3>
 
                   <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
@@ -690,11 +671,18 @@ export function DocumentsTab() {
                           <th className="py-2.5 px-3 font-semibold">Amendment #</th>
                           <th className="py-2.5 px-3 font-semibold">Clause Affected</th>
                           <th className="py-2.5 px-3 font-semibold">Summary of Change</th>
-                          <th className="py-2.5 px-3 font-semibold">Notification Ref</th>
+                          <th className="py-2.5 px-3 font-semibold">Where</th>
                           <th className="py-2.5 px-3 font-semibold">Date</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
+                        {selectedHistory.amendments.length === 0 && (
+                          <tr>
+                            <td colSpan={5} className="py-3 px-3 text-slate-500">
+                              No amendment slips are printed in the uploaded PDF. Use &quot;Add amendment&quot; to record one.
+                            </td>
+                          </tr>
+                        )}
                         {selectedHistory.amendments.map((amd) => (
                           <tr key={amd.id} className="hover:bg-slate-50/70">
                             <td className="py-2.5 px-3 font-bold text-[#0B2A4A]">

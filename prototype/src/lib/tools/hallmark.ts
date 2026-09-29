@@ -31,7 +31,8 @@ export interface HallmarkToolResult {
  * Extracts and checks hallmark, purity, HUID, or CM/L identifiers from user text or vision inputs.
  */
 export function processHallmarkOrMark(input: HallmarkToolInput): HallmarkToolResult | null {
-  const q = input.query || "";
+  // "22 carat", "18 karat", "22kt" -> "22K" so the purity pattern below sees them.
+  const q = (input.query || "").replace(/\b(24|23|22|21|18|14|9)\s*(?:carat|karat|kt|ct)\b/gi, "$1K");
 
   // 1. Check for HUID
   let candidateHuid = input.huidRaw;

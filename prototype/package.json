@@ -19,6 +19,7 @@
     "@huggingface/transformers": "^4.3.0",
     "@types/diff": "^7.0.2",
     "diff": "^9.0.0",
+    "docx": "^9.8.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.475.0",
     "next": "^15.1.7",

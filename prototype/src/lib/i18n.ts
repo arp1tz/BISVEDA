@@ -107,9 +107,9 @@ const STATIC: Record<string, Table> = {
     mr: "नमस्कार! मी BISVEDA आहे. मी तुम्हाला भारतीय मानके (Indian Standards) शोधण्यास, BIS प्रमाणन अनिवार्य आहे का ते तपासण्यास आणि मान्यताप्राप्त चाचणी प्रयोगशाळा शोधण्यास मदत करू शकतो. तुम्ही कोणत्या उत्पादनाबद्दल विचारत आहात?",
   },
   out_of_scope: {
-    en: "This inquiry is outside the scope of the Bureau of Indian Standards (BIS) and Indian Standards. BISVEDA provides guidance on product standards, mandatory Quality Control Orders (QCOs), certification schemes, and recognized testing laboratories.",
-    hi: "यह प्रश्न भारतीय मानक ब्यूरो (BIS) और भारतीय मानकों के दायरे से बाहर है। BISVEDA उत्पाद मानकों, अनिवार्य गुणवत्ता नियंत्रण आदेशों (QCO), प्रमाणन योजनाओं और मान्यताप्राप्त परीक्षण प्रयोगशालाओं के बारे में मार्गदर्शन देता है।",
-    mr: "हा प्रश्न भारतीय मानक ब्युरो (BIS) आणि भारतीय मानकांच्या कक्षेबाहेरचा आहे. BISVEDA उत्पादन मानके, अनिवार्य गुणवत्ता नियंत्रण आदेश (QCO), प्रमाणन योजना आणि मान्यताप्राप्त चाचणी प्रयोगशाळा यांबद्दल मार्गदर्शन करते.",
+    en: "This inquiry is outside the scope of the Bureau of Indian Standards (BIS) and Indian Standards. BISVEDA answers questions on Indian Standards for helmets, toys and gold hallmarking, and finds BIS-recognised labs and hallmarking centres.",
+    hi: "यह प्रश्न भारतीय मानक ब्यूरो (BIS) और भारतीय मानकों के दायरे से बाहर है। BISVEDA हेलमेट, खिलौनों और सोने की हॉलमार्किंग के भारतीय मानकों पर उत्तर देता है, और मान्यता प्राप्त प्रयोगशालाएं व हॉलमार्किंग केंद्र खोजता है।",
+    mr: "हा प्रश्न भारतीय मानक ब्युरो (BIS) आणि भारतीय मानकांच्या कक्षेबाहेरचा आहे. BISVEDA हेल्मेट, खेळणी आणि सोन्याच्या हॉलमार्किंगच्या भारतीय मानकांवर उत्तर देते, आणि मान्यताप्राप्त प्रयोगशाळा व हॉलमार्किंग केंद्रे शोधते.",
   },
   gibberish: {
     en: "The entered text does not appear to be a recognizable query. Please ask about a product, standard, or BIS certification service.",

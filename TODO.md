@@ -262,6 +262,15 @@ All are archive.org scans. **Measured in P1, corrected from an earlier audit's g
 - [x] **12.6** Docs: this section, progress.md Latest State, CLAUDE.md architecture line for `lib/ui-i18n`/`PageTranslator`.
 - Known: `npm run eval:rag` hit Groq's daily token quota mid-session (see progress.md); re-run once it resets for a real number. `npm run build` not run this pass (dev server shares `.next`).
 
+## P13: Demo readiness for the SIH video `[Opus 5.5 / High]` — ✅ DONE
+- [x] **13.0** Checkpoint commit before changes.
+- [x] **13.1** Probe all demo queries against the live app; fix routing (AHC vs IS 15820, FAQ skip for tool intents, lab/city fallback), trust gate (sentence-level), evidence packaging (other applicable standards), toy scope answers, purity enrichment, out-of-domain refusal.
+- [x] **13.2** Form I: grouped checklist, LLM extraction, validation cross-questions, finish-now, editable .docx download, official undertaking in print view.
+- [x] **13.3** Admin version panel grounded in the PDFs; banned word and QCO badge removed; ingestion log says 1024-dim bge-m3.
+- [x] **13.4** `docs/submission/`: 12-screenshot list, 3:45 video script with phone call, tested demo questions, SIH abstract.
+- [ ] Phone agent still answers from a fixed prompt (not the cited KB) and disagrees with IS 1417:1999 on the number of hallmark marks; connect it to the KB.
+- [ ] Native-Hindi purity question ("शुद्धता कैसे जांचें") still answers "not described"; route purity-method questions to IS 1418.
+
 ## Follow-ups & Backlog
 - [ ] **Re-run `npm run eval:rag` and `npm run eval:multi` once Groq's daily token quota resets.** The P12 session's numbers (23/32 golden) were degraded by quota exhaustion (confirmed 429 "tokens per day" error from heavy interactive testing), not a real regression; re-run both and update `progress.md`/`data/eval/results/baseline.json` with the clean numbers.
 - [ ] **Telephony Session Context Continuation Pipeline (Exotel + Gemini Live)**:

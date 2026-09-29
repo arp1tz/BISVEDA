@@ -656,7 +656,9 @@ export function matchCanonicalFaq(
       });
 
       // Query must be concise and clearly inquiring about this concept
-      if (allKeywordsPresent && qClean.split(" ").length <= 8 && /(?:what|who|how|is|are|define|explain|tell|meaning|kya)\b/i.test(qClean)) {
+      // The "IS" of a standard number ("IS 2112") is not the question word "is".
+      const withoutIsNumbers = qClean.replace(/\bis\s*\d+/gi, " ");
+      if (allKeywordsPresent && qClean.split(" ").length <= 8 && /(?:what|who|how|is|are|define|explain|tell|meaning|kya)\b/i.test(withoutIsNumbers)) {
         triggerHit = true;
       }
     }

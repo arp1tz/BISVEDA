@@ -41,6 +41,8 @@ export interface MarkCard {
 export interface FormICard {
   fields: Record<string, string>;
   missing_required: string[];
+  /** Draft can be downloaded (all required items given, or the user asked to finish now). */
+  ready?: boolean;
   print_url?: string;
 }
 

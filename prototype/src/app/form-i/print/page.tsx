@@ -99,7 +99,7 @@ export default function FormIPrintPage() {
             FORM I
           </p>
           <p className="text-xs text-slate-600 mt-0.5">
-            [See Regulation 3 of Bureau of Indian Standards (Hallmarking) Regulations, 2018]
+            (refer sub-regulation (2) of regulation 3)
           </p>
           <p className="text-sm font-bold text-slate-800 mt-2 uppercase tracking-wide">
             Application for Grant of Certificate of Registration to Jewellers for Sale of Hallmarked Articles
@@ -133,11 +133,12 @@ export default function FormIPrintPage() {
 
         {/* Declaration & Signature Block */}
         <div className="mt-8 pt-6 border-t border-slate-300 text-xs text-slate-700 leading-relaxed">
-          <p className="font-semibold text-slate-800 mb-2">Declaration:</p>
+          <p className="font-semibold text-slate-800 mb-2">13. Undertaking</p>
           <p>
-            I / We hereby apply for grant of Certificate of Registration for sale of precious metal articles
-            conforming to the relevant Indian Standard(s). I / We undertake to abide by the provisions of the
-            Bureau of Indian Standards Act, 2016 and the rules and regulations framed thereunder.
+            I/We undertake that we shall strictly follow the provisions of Bureau of Indian Standards Act, 2016, Rules,
+            2017, and Hallmarking Regulations 2018 and guidelines for conformity assessment scheme issued thereunder upon
+            grant of Certificate by Bureau of Indian Standards for sale of gold or silver hallmarked articles as per IS
+            1417/2112.
           </p>
           <div className="mt-12 flex justify-between items-end">
             <div>

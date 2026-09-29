@@ -164,7 +164,7 @@ export function IngestionTab() {
       await new Promise((r) => setTimeout(r, 700));
       setProgress(75);
       setCurrentStep(4);
-      addLog(`[Embedding Engine] Generated 768-dimensional dense vectors with BGE-M3 / miniLM.`);
+      addLog(`[Embedding Engine] Generated 1024-dimensional dense vectors with local bge-m3.`);
 
       // Step 4: Knowledge Graph Linking
       await new Promise((r) => setTimeout(r, 600));

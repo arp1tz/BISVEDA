@@ -186,14 +186,11 @@ export async function inspectImage(
   const cleanBase64 = base64Data.replace(/^data:[a-zA-Z0-9+.-]+\/[a-zA-Z0-9+.-]+;base64,/, "");
 
   const configuredModel = process.env.GEMINI_VISION_MODEL;
-  const models = [
-    configuredModel,
-    "gemini-3.1-flash-lite",
-    "gemini-3.5-flash-lite",
-    "gemini-2.5-flash-lite",
-    "gemini-3.8-flash",
-    "gemini-3.6-flash",
-  ].filter((m): m is string => Boolean(m));
+  // Fallbacks when GEMINI_VISION_MODEL is unset, fastest first (timed 2026-09-29: 3.5-flash-lite ~3.8 s,
+  // 3.1-flash-lite ~5 s; 2.5-flash-lite and 2.5-flash return 404, so they are gone).
+  const models = Array.from(
+    new Set([configuredModel, "gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-3.6-flash"])
+  ).filter((m): m is string => Boolean(m));
 
   for (const model of models) {
     try {
@@ -216,7 +213,7 @@ export async function inspectImage(
               temperature: 0.0,
             },
           }),
-          signal: AbortSignal.timeout(15000),
+          signal: AbortSignal.timeout(10000),
         }
       );
 

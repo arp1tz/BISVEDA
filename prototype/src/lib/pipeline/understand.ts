@@ -29,7 +29,56 @@ import {
   LanguageInfo,
 } from "./normalize";
 import { coerceLanguageTag, baseLanguage, tStatic, translateTo } from "../i18n";
-import { parseFormInputsFromText } from "../tools/form_i";
+import { parseFormInputsFromText, getFormISchema } from "../tools/form_i";
+
+const CENTRE_RE = /\b(?:hallmark\w*|assay\w*)\s*(?:and\s*hallmarking\s*)?(?:cent(?:re|er)s?|kendra)\b|\bAHCs?\b/i;
+const FIND_RE = /\b(?:show|find|list|near(?:est|by)?|where|locate|in\s+[A-Z][a-z]+|kaha(?:n)?|paas|kidhar|around)\b/i;
+const ABOUT_STANDARD_RE = /\b(?:requirements?|competence|criteria|IS\s*15820|must\s+(?:meet|have)|what\s+(?:does|do|is|are)\s+(?:a|an|the)?\s*(?:hallmarking|assaying))\b/i;
+
+/**
+ * The router model sometimes swaps "show hallmarking centres in Jaipur" (directory) with "what are the
+ * competence requirements for a hallmarking centre" (IS 15820 question). Both are easy to tell apart by words.
+ */
+export function correctDirectoryIntent(intent: Intent, text: string): Intent {
+  // "Where can I get X tested", "labs near me", "test kahan karwaye": the lab finder.
+  if (
+    intent === "kb_question" &&
+    /\b(?:test\w*|labs?|laborator\w*|jaanch|janch|chachni)\b/i.test(text) &&
+    (/\b(?:where|kaha|kahan|kuthe|near(?:est|by)?|find|list|show|locate)\b/i.test(text) || /\b(?:in|near)\s+(?!IS\b)[A-Z][a-z]+/.test(text))
+  ) {
+    return "find_labs";
+  }
+  if (!CENTRE_RE.test(text)) return intent;
+  if (ABOUT_STANDARD_RE.test(text)) return intent === "find_ahc" ? "kb_question" : intent;
+  if (FIND_RE.test(text) && intent !== "form_i") return "find_ahc";
+  return intent;
+}
+
+const WANTS_TO_REGISTER_RE =
+  /\b(?:i\s+want|i\s+would\s+like|help\s+me|want\s+to|register\s+my|apply\s+for|draft|fill|start|mujhe|karna\s+hai|karni\s+hai|chahta|chahti|banana\s+hai)\b/i;
+
+/** An information question about Form I (what/which/how ...) rather than a request to draft it. */
+function isQuestionAboutForm(message: string): boolean {
+  const m = message.trim();
+  const asks = /^(?:what|which|how|why|when|who|is|are|does|do|can|kya|kaun|kaise|kitne)\b/i.test(m) || /\?\s*$/.test(m);
+  return asks && !WANTS_TO_REGISTER_RE.test(m);
+}
+
+/** "in Jaipur", "near Navi Mumbai", "Jaipur mein", "Pune madhye": a place name for the lab/centre finders. */
+function extractCity(text: string): string | undefined {
+  const m =
+    text.match(/\b(?:in|near|at|around|nearby)\s+([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)?)/) ||
+    text.match(/\b([A-Z][a-zA-Z]+)\s+(?:mein|me|mai|madhe|madhye|jawal|ke\s+paas|paas)\b/i);
+  const city = m?.[1]?.trim();
+  if (!city || /^(?:India|Indian|IS|BIS|The|My|Our|Which|What)$/i.test(city)) return undefined;
+  return city;
+}
+
+/** A draft has started (some fields) but required items are still missing. */
+function isFormIIncomplete(formState?: Record<string, unknown>): boolean {
+  if (!formState || Object.keys(formState).length === 0) return false;
+  return getFormISchema().some((f) => f.required && !(typeof formState[f.key] === "string" && (formState[f.key] as string).trim()));
+}
 
 export type Intent =
   | "kb_question"
@@ -293,14 +342,38 @@ async function understandTurnInner(input: UnderstandInput): Promise<UnderstandRe
       };
     }
 
+    intent = correctDirectoryIntent(intent, `${cleaned} ${englishInput}`);
+    // Asking for a standard/certification for some product is a BIS question even when we hold no document
+    // for that product: the answer is "not in our documents" plus the catalogue link, not "off-topic".
+    if (intent === "out_of_scope" && /\b(?:standards?|IS\s*\d+|ISI|BIS|certif\w*|licen[cs]e|specification)\b/i.test(englishInput)) {
+      intent = "kb_question";
+    }
+
     const hasFormInputs =
       Object.keys(deterministicFormInputs).length > 0 || (llm.form_updates && Object.keys(llm.form_updates).length > 0);
-    if (hasFormInputs || (input.formState && Object.keys(input.formState).length > 0 && intent !== "smalltalk")) {
+    // While a Form I draft is still missing required items, plain replies ("Proprietorship", "none") belong to the
+    // form. A tool request, smalltalk or an actual question leaves the form so the user is never stuck in it.
+    const formInProgress = isFormIIncomplete(input.formState);
+    const leavesForm =
+      ["find_labs", "find_ahc", "hallmark", "mark_check", "smalltalk"].includes(intent) || /\?\s*$/.test(input.message.trim());
+    if ((hasFormInputs && intent !== "find_ahc" && intent !== "find_labs") || (formInProgress && !leavesForm)) {
       intent = "form_i";
+    }
+    // "What fields does Form I need?" asks about the form; only a request to register/draft (or an answer
+    // while drafting) starts the drafting flow.
+    const noFormYet = !input.formState || Object.keys(input.formState).length === 0;
+    if (intent === "form_i" && noFormYet && !hasFormInputs && isQuestionAboutForm(input.message)) {
+      intent = "kb_question";
     }
 
     const mergedFormUpdates = { ...((llm.form_updates as Record<string, unknown>) || {}), ...deterministicFormInputs };
-    const llmStandards = Array.isArray(llm.standards) ? llm.standards.filter((s): s is string => typeof s === "string") : [];
+    // The model writes ids loosely ("IS 9873 Part 1"); map each to the canonical id ("IS 9873 (Part 1)") or the
+    // store lookup downstream silently drops it and retrieval loses that standard.
+    const llmStandards = uniqueStandards(
+      (Array.isArray(llm.standards) ? llm.standards.filter((s): s is string => typeof s === "string") : []).map(
+        (s) => extractCanonicalStandards(s)[0]?.id ?? s
+      )
+    );
 
     return {
       intent,
@@ -309,7 +382,7 @@ async function understandTurnInner(input: UnderstandInput): Promise<UnderstandRe
       english_query: englishInput,
       standards: llmStandards.length > 0 ? llmStandards : canonical,
       product: typeof llm.product === "string" ? llm.product : undefined,
-      city: typeof llm.city === "string" ? llm.city : undefined,
+      city: typeof llm.city === "string" && llm.city.trim() ? llm.city : extractCity(cleaned),
       form_updates: Object.keys(mergedFormUpdates).length > 0 ? mergedFormUpdates : undefined,
       language: lang,
       usedFallback: false,
@@ -320,10 +393,11 @@ async function understandTurnInner(input: UnderstandInput): Promise<UnderstandRe
   const isForm =
     Object.keys(deterministicFormInputs).length > 0 || Boolean(input.formState && Object.keys(input.formState).length > 0);
   return {
-    intent: isForm ? "form_i" : "kb_question",
+    intent: isForm ? "form_i" : correctDirectoryIntent("kb_question", `${cleaned} ${englishInput}`),
     standalone_query: englishInput,
     english_query: englishInput,
     standards: canonical,
+    city: extractCity(cleaned),
     form_updates: Object.keys(deterministicFormInputs).length > 0 ? deterministicFormInputs : undefined,
     language: lang,
     usedFallback: true,

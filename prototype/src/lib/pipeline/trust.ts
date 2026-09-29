@@ -70,15 +70,18 @@ function checkLine(line: string, pkg: EvidencePackage, sourceMap: Map<string, So
   // no other technical figures, is restating an identity fact the pipeline
   // already verified before generation ever ran — it doesn't need its own
   // citation the way a specific clause/number claim does.
-  const primaryCleanId = pkg.primary_standard?.id.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+  // Same for a heading-style line naming any standard the pipeline itself selected for this answer.
+  const adjudicatedIds = new Set(
+    [pkg.primary_standard?.id, ...pkg.standards.map((s) => s.id)].filter(Boolean).map((id) => id!.replace(/[^a-zA-Z0-9]/g, "").toUpperCase())
+  );
   const mentionedIsIds = (normalized.match(/\bIS\s*[:\-]?\s*\d{1,5}(?:\s*\(Part\s*\d+\))?\b/gi) || []).map((m) =>
     m.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()
   );
   const onlyMentionsPrimaryIdentity =
     hasIsNumber &&
     meaningfulNumbers.length === 0 &&
-    primaryCleanId !== undefined &&
-    mentionedIsIds.every((id) => id === primaryCleanId);
+    adjudicatedIds.size > 0 &&
+    mentionedIsIds.every((id) => adjudicatedIds.has(id));
 
   const needsCitation = (hasIsNumber || meaningfulNumbers.length > 0) && !onlyMentionsPrimaryIdentity;
 
@@ -95,9 +98,16 @@ function checkLine(line: string, pkg: EvidencePackage, sourceMap: Map<string, So
   if (pkg.primary_standard) allowedStdIds.add(pkg.primary_standard.id.replace(/[^a-zA-Z0-9]/g, "").toUpperCase());
 
   const isMatches = normalized.match(/\bIS\s*[:\-]?\s*\d{1,5}(?:\s*\(Part\s*\d+\))?\b/gi) || [];
+  const citedRaw = validCitations.map((c) => sourceMap.get(c.replace(/[\[\]]/g, ""))?.text || "").join(" ");
+  const citedIsIds = new Set(
+    (citedRaw.match(/\bIS\s*[:\-]?\s*\d{1,5}\b/gi) || []).map((m) => m.replace(/[^a-zA-Z0-9]/g, "").toUpperCase())
+  );
   for (const raw of isMatches) {
     const cleanIs = raw.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
-    const allowed = Array.from(allowedStdIds).some((a) => a === cleanIs || a.includes(cleanIs) || cleanIs.includes(a));
+    const baseIs = cleanIs.replace(/PART\d+$/, "");
+    // Allowed: an adjudicated standard, or one the cited clause itself names (e.g. "superseding IS 8844").
+    const allowed =
+      Array.from(allowedStdIds).some((a) => a === cleanIs || a.includes(cleanIs) || cleanIs.includes(a)) || citedIsIds.has(baseIs);
     if (!allowed) {
       return { valid: false, reason: `unauthorized_standard_${raw}`, sanitized: strippedUnresolved, needsCitation: true };
     }
@@ -223,22 +233,36 @@ export function runTrustGate(
   const kept: string[] = [];
   let citationRequiringLines = 0;
   let citationRequiringKept = 0;
+  let keptCitedSentence = false;
 
   for (const line of lines) {
-    const check = checkLine(line, pkg, sourceMap);
-    if (check.needsCitation) citationRequiringLines++;
-    if (check.valid) {
-      kept.push(check.sanitized);
-      if (check.needsCitation) citationRequiringKept++;
-    } else {
-      dropped.push({ line, reason: check.reason || "invalid" });
+    // Checked sentence by sentence: the model writes paragraphs, and one unsupported figure should cost
+    // that sentence, not the whole paragraph. A sentence keeps the [S#] labels that follow its full stop.
+    const marker = line.match(/^\s*(?:[-*•]\s+|\d{1,2}[.)]\s+)/)?.[0] ?? "";
+    const sentences = line
+      .slice(marker.length)
+      .split(/(?<=[.!?।](?:\s*\[S\d+\])*)\s+(?=\S)/)
+      .map((s, i) => (i === 0 ? marker + s : s));
+    const keptSentences: string[] = [];
+    for (const sentence of sentences) {
+      const check = checkLine(sentence, pkg, sourceMap);
+      if (check.needsCitation) citationRequiringLines++;
+      if (check.valid) {
+        keptSentences.push(check.sanitized);
+        if (check.needsCitation) citationRequiringKept++;
+        if (/\[S\d+\]/.test(check.sanitized)) keptCitedSentence = true;
+      } else {
+        dropped.push({ line: sentence, reason: check.reason || "invalid" });
+      }
     }
+    if (keptSentences.length > 0 || !line.trim()) kept.push(keptSentences.join(" "));
   }
 
-  const allDropped = citationRequiringLines > 0 && citationRequiringKept === 0;
+  // Refuse only when nothing sourced survived: a cited explanation without figures is still a sourced answer.
+  const allDropped = citationRequiringLines > 0 && citationRequiringKept === 0 && !keptCitedSentence;
 
   return {
-    text: kept.join("\n").trim(),
+    text: kept.join("\n").replace(/\n{3,}/g, "\n\n").trim(),
     droppedLines: dropped,
     allDropped,
     isGeneralQuery: false,

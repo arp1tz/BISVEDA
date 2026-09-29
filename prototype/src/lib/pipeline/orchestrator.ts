@@ -26,9 +26,9 @@ import { inspectImage, normalizeCmlNumber, validateHuid, parsePurity, VisionInsp
 import { findLabs } from "../tools/labs";
 import { findAhc } from "../tools/ahc";
 import { processHallmarkOrMark } from "../tools/hallmark";
-import { stepFormI, parseFormInputsFromText } from "../tools/form_i";
+import { stepFormI, extractFormFields, wantsFormIFinish } from "../tools/form_i";
 import { matchCanonicalFaq } from "./speedgate";
-import { isEnglish, tStatic, translateTo, translateMany } from "../i18n";
+import { isEnglish, tStatic, translateTo, translateMany, translateUiBatch } from "../i18n";
 
 export type { BisvedaResponse, StageEvent, PipelineStage };
 export { STAGE_LABELS, buildFollowUps };
@@ -82,6 +82,109 @@ function guidedRefusalStep(englishQuery: string): { text: string; url: string } 
     return { text: "Find a lab or hallmarking centre", url: "/labs" };
   }
   return null;
+}
+
+const DOMAIN_RE =
+  /\b(?:helmets?|toys?|khilon\w*|khel\w*|dolls?|games?|gold|silver|sona|sone|sonyach\w*|chandi|jewell?e?ry|jewels?|ornaments?|gahn\w*|gehn\w*|dagin\w*|rings?|chains?|necklaces?|bangles?|earrings?|artefacts?|bullion|hallmark\w*|assay\w*|huid|carat|karat|fineness|purity|cupellation|jeweller)\b/i;
+
+const TOY_RE = /\b(?:toys?|khilon\w*|kheln\w*|khelnya\w*|bomma\w*)\b/i;
+const ELECTRIC_TOY_RE = /\b(?:electric\w*|battery|batteries|battery-operated|remote|rechargeable|motori[sz]ed|plug-in|ride-on)\b/i;
+const WHICH_STANDARD_RE = /\b(?:which|what|kaun\w*|konte|konta|kuthle)\b[^?]*\b(?:standards?|IS)\b|\bstandards?\b[^?]*\b(?:apply|applies|follow|need|required|lagu)\b/i;
+
+/** Toy standards to answer a "which standard applies to toys" question with, most relevant first. */
+function toyStandardsQuestion(text: string): string[] | null {
+  if (!TOY_RE.test(text) || !WHICH_STANDARD_RE.test(text)) return null;
+  if (/\bIS\s*[:\-]?\s*\d/i.test(text)) return null; // already names a standard: normal retrieval answers it
+  return ELECTRIC_TOY_RE.test(text)
+    ? ["IS 15644", "IS 9873 (Part 1)", "IS 9873 (Part 3)"]
+    : ["IS 9873 (Part 1)", "IS 9873 (Part 3)", "IS 15644"];
+}
+
+/** Scope wording for standards whose clause numbers were lost in parsing (see TODO.md P1 known limitations). */
+const SCOPE_TEXT_RE: Record<string, RegExp> = {
+  "IS 9873 (Part 1)": /\b1\s+Scope\b|This part of ISO 8124 (?:specifies|applies)/i,
+  "IS 15644": /\b1\s+Scope\b|deals with the safety of toys|function dependent on electricity/i,
+};
+
+/** Answers from the scope (or title page) of each listed standard, so every one of them can be named and cited. */
+async function answerFromScopes(
+  conversationId: string,
+  question: string,
+  standardIds: string[],
+  language: string,
+  historyText?: string,
+  userProvidedText?: string
+): Promise<BisvedaResponse | null> {
+  const stds = standardIds.map((id) => getStandardById(id)).filter((s): s is NonNullable<typeof s> => Boolean(s));
+  if (stds.length === 0) return null;
+
+  const chunks = stds.flatMap((std) => {
+    const all = getChunksByStandard(std.id);
+    const re = SCOPE_TEXT_RE[std.id];
+    const scope = all.find((c) => isScopeChunk(c.clause, c.clause_title)) || (re ? all.find((c) => re.test(c.text)) : undefined);
+    return [scope || all[0]].filter(Boolean);
+  });
+  const evidence = chunks.map((c, i) => ({ ...c, similarity: undefined, rrfScore: 1000 - i })) as any[];
+
+  const pkg = buildEvidencePackage(
+    {
+      primaryStandard: { id: stds[0].id, title: stds[0].title },
+      standards: stds.map((s) => ({ id: s.id, title: s.title, class: "applies" as const, why: `${s.id}: ${s.title}.`, source_url: `/api/docs/${s.doc_id}` })),
+      grounding: "verified",
+    },
+    evidence
+  );
+  if (pkg.sources.length === 0) return null;
+
+  const generated = await generateAnswer({
+    question: `${question}\n(Answer as a bullet list with one bullet per standard in the evidence. Start each bullet with the standard number in bold, then say in a few words what it covers and when it applies to this product. Use each evidence block's standard attribute to name it.)`,
+    pkg,
+    language,
+    historyText,
+    userProvidedText,
+  });
+  const trust = runTrustGate(generated.text, pkg);
+  if (trust.allDropped || !trust.text) return null;
+
+  return {
+    conversation_id: conversationId,
+    kind: "answer",
+    language,
+    grounding: "verified",
+    text: trust.text,
+    standards: pkg.standards,
+    sources: pkg.sources,
+    follow_ups: buildFollowUps(pkg.primary_standard),
+  };
+}
+
+/** General BIS words: a question built on these (ISI mark, licence, certification, labs) isn't about a foreign product. */
+const GENERIC_BIS_RE = /\b(?:isi|bis|certif\w*|licen[cs]e|standard\s*mark|labs?|laborator\w*|form\s*i|registration|mark(?:ing)?s?)\b/i;
+
+function isOutOfDomainProduct(
+  product: string | undefined,
+  query: string,
+  standards: string[],
+  hasActiveContext: boolean,
+  routerUnavailable = false
+): boolean {
+  if (standards.some((s) => getStandardById(s))) return false; // the user named one of our standards
+  if (DOMAIN_RE.test(query)) return false;
+  if (product && product.trim()) return !DOMAIN_RE.test(product);
+  // Without the router model nothing was translated or classified: a new question with none of our words
+  // would only match stray text (a committee list, an address), so refuse instead of guessing.
+  if (routerUnavailable && !hasActiveContext && !GENERIC_BIS_RE.test(query)) return true;
+  // No product named: only a stand-alone "standard for <something>" question with none of our words is out of domain.
+  return !hasActiveContext && !GENERIC_BIS_RE.test(query) && /\b(?:standards?|specification|IS\s*code)\b/i.test(query);
+}
+
+/** Tool cards (labs, marks) already carry the directory facts, so drop "the documents don't list labs"-style lines. */
+function dropNotCoveredSentences(text: string): string {
+  const sentences = text.split(/(?<=[.!?।])\s+/);
+  const kept = sentences.filter(
+    (s) => !/\b(?:do(?:es)?\s*not|don'?t|doesn'?t)\s+(?:contain|cover|list|provide|mention|include|specify)\b|\bnot\s+covered\b|\bcannot\s+confirm\b/i.test(s)
+  );
+  return kept.join(" ").trim();
 }
 
 async function refusalNotInSources(conversationId: string, language: string, extra?: string, englishQuery?: string): Promise<BisvedaResponse> {
@@ -467,12 +570,10 @@ async function runPipelineInner(options: PipelineOptions): Promise<BisvedaRespon
   }
 
   // ── Canonical Verified FAQ Match (Speedgate Layer) ───────────────────────
-  if (
-    understood.intent !== "smalltalk" &&
-    understood.intent !== "gibberish" &&
-    understood.intent !== "out_of_scope" &&
-    understood.intent !== "form_i"
-  ) {
+  // Tool intents (directories, mark checks, Form I) must reach their tool: a FAQ on "hallmarking" would
+  // otherwise swallow "show hallmarking centres in Jaipur".
+  const TOOL_INTENTS = ["smalltalk", "gibberish", "out_of_scope", "form_i", "find_ahc", "find_labs", "hallmark", "mark_check"];
+  if (!TOOL_INTENTS.includes(understood.intent)) {
     const canonicalFaqMatch = matchCanonicalFaq(q, understood.language, conversationId);
     if (canonicalFaqMatch) {
       // FAQ answers are hand-verified English text; for other languages translate it (numbers are guarded in translateTo).
@@ -568,10 +669,13 @@ async function runPipelineInner(options: PipelineOptions): Promise<BisvedaRespon
   // ── Branch: find_labs (P5.1) ─────────────────────────────────────────────
   if (understood.intent === "find_labs") {
     let targetStd = understood.standards[0] || context.activeStandards[0];
-    if (!targetStd && understood.product) {
-      if (/helmet/i.test(understood.product)) targetStd = "IS 4151";
-      else if (/toy/i.test(understood.product)) targetStd = "IS 9873 (Part 1)";
-      else if (/gold/i.test(understood.product)) targetStd = "IS 1417";
+    if (!targetStd) {
+      const productText = `${understood.product || ""} ${q}`;
+      if (/industrial|construction|safety\s*helmet/i.test(productText) && /helmet/i.test(productText)) targetStd = "IS 2925";
+      else if (/helmet/i.test(productText)) targetStd = "IS 4151";
+      else if (/toy/i.test(productText) && /electric|battery|remote|rechargeable/i.test(productText)) targetStd = "IS 15644";
+      else if (/toy|khilon/i.test(productText)) targetStd = "IS 9873 (Part 1)";
+      else if (/gold|jewel/i.test(productText)) targetStd = "IS 1417";
     }
 
     const labsResult = findLabs({
@@ -594,11 +698,16 @@ async function runPipelineInner(options: PipelineOptions): Promise<BisvedaRespon
       : undefined;
 
     try {
+      // The lab list itself comes from the directory card. The documents can only say what gets tested, so
+      // ask that; asking "where can I test" makes the model deny the list shown right under it.
+      const testsQuestion = targetStd
+        ? `In two or three sentences, which tests does ${targetStd} specify for this product?`
+        : understood.standalone_query || effectiveQuery;
       const canonicalForRetrieval = targetStd ? [{ id: targetStd } as any] : normalized.canonicalStandards;
       const rawRetrieval = await retrieveMultiStore(
-        understood.standalone_query || effectiveQuery,
+        targetStd ? `${targetStd} tests test methods requirements` : understood.standalone_query || effectiveQuery,
         canonicalForRetrieval,
-        context.activeStandards
+        targetStd ? [targetStd] : context.activeStandards
       );
       const fused = fuseRetrievalResults(rawRetrieval, 60);
       const adjudicated = adjudicateCandidates(fused, rawRetrieval);
@@ -606,15 +715,16 @@ async function runPipelineInner(options: PipelineOptions): Promise<BisvedaRespon
         const pkg = buildEvidencePackage(adjudicated, fused.rankedChunks);
         if (pkg.sources.length > 0) {
           const generated = await generateAnswer({
-            question: understood.standalone_query || effectiveQuery,
+            question: testsQuestion,
             pkg,
             language: understood.language,
             historyText,
             userProvidedText: labsResult.retrievedNote,
           });
           const trust = runTrustGate(generated.text, pkg);
-          if (!trust.allDropped && trust.text) {
-            answerText = `${labsPrefix}\n\n${trust.text}`;
+          const labsExtra = trust.allDropped ? "" : dropNotCoveredSentences(trust.text);
+          if (labsExtra) {
+            answerText = `${labsPrefix}\n\n${labsExtra}`;
             sources = pkg.sources;
             standardsList = pkg.standards;
           }
@@ -709,26 +819,43 @@ async function runPipelineInner(options: PipelineOptions): Promise<BisvedaRespon
       let sources: Source[] = [];
       let standardsList: BisvedaResponse["standards"] = undefined;
 
-      const stdToRetrieve = markResult.targetStandardId || "IS 1417";
-      const stdObj = getStandardById(stdToRetrieve);
+      // Only a purity mark has IS 1417 text behind it (grades + required markings). HUID and CM/L are not in
+      // the documents we hold, so those answers stay with the format check and the BIS Care / Manak Online route.
+      const purity = markResult.hallmarkCard?.purity_fineness;
+      const stdObj = purity ? getStandardById("IS 1417") : undefined;
       if (stdObj) {
+        const enrichQuestion = `What does gold fineness ${purity} (${markResult.hallmarkCard?.purity_karat || ""}) mean under IS 1417, and which markings must hallmarked gold jewellery carry?`;
         try {
-          const rawRetrieval = await retrieveMultiStore(q, [{ id: stdObj.id } as any], [stdObj.id]);
-          const fused = fuseRetrievalResults(rawRetrieval, 60);
-          const adjudicated = adjudicateCandidates(fused, rawRetrieval);
-          if (adjudicated.primaryStandard) {
-            const pkg = buildEvidencePackage(adjudicated, fused.rankedChunks);
+          // The clauses that answer a purity question are known: scope (the grades), the grades table, and the
+          // 2007 amendment listing the marks a hallmarked article carries. Retrieval ranks the garbled table low.
+          const all = getChunksByStandard(stdObj.id);
+          const pick = [
+            ...all.filter((c) => /\b4\s+GRADES\b/.test(c.text)),
+            ...all.filter((c) => /a\)\s*BIS Mark/.test(c.text)),
+            ...all.filter((c) => isScopeChunk(c.clause, c.clause_title)).slice(0, 1),
+          ];
+          const evidenceChunks = pick.map((c, i) => ({ ...c, similarity: undefined, rrfScore: 1000 - i })) as any[];
+          {
+            const pkg = buildEvidencePackage(
+              {
+                primaryStandard: { id: stdObj.id, title: stdObj.title },
+                standards: [{ id: stdObj.id, title: stdObj.title, class: "applies", why: "Defines gold fineness grades and hallmark markings.", source_url: `/api/docs/${stdObj.doc_id}` }],
+                grounding: "verified",
+              },
+              evidenceChunks
+            );
             if (pkg.sources.length > 0) {
               const generated = await generateAnswer({
-                question: q,
+                question: enrichQuestion,
                 pkg,
                 language: understood.language,
                 historyText,
                 userProvidedText: markResult.text,
               });
               const trust = runTrustGate(generated.text, pkg);
-              if (!trust.allDropped && trust.text) {
-                answerText = `${markText}\n\n${trust.text}`;
+              const markExtra = trust.allDropped ? "" : dropNotCoveredSentences(trust.text);
+              if (markExtra) {
+                answerText = `${markText}\n\n${markExtra}`;
                 sources = pkg.sources;
                 standardsList = pkg.standards;
               }
@@ -753,12 +880,13 @@ async function runPipelineInner(options: PipelineOptions): Promise<BisvedaRespon
 
   // ── Branch: form_i (P5.4) ────────────────────────────────────────────────
   if (understood.intent === "form_i") {
-    const deterministic = parseFormInputsFromText(effectiveQuery);
+    // The dedicated extractor reads the user's own words (any language); the router's guesses only fill gaps.
+    const extracted = await extractFormFields(effectiveQuery, options.formState);
     const combinedUpdates = {
       ...(understood.form_updates || {}),
-      ...deterministic,
+      ...extracted,
     };
-    const stepResult = stepFormI(options.formState, combinedUpdates);
+    const stepResult = stepFormI(options.formState, combinedUpdates, { finishNow: wantsFormIFinish(both) });
     formICard = stepResult.card;
 
     let sources: Source[] = [];
@@ -781,17 +909,34 @@ async function runPipelineInner(options: PipelineOptions): Promise<BisvedaRespon
       kind: stepResult.isComplete ? "answer" : "form_question",
       language: understood.language,
       grounding: sources.length > 0 ? "verified" : "none",
-      text: await translateTo(stepResult.text, understood.language),
+      // Line by line so the numbered checklist survives translation (a whole-text translation tends to summarize it).
+      text: isEnglish(understood.language)
+        ? stepResult.text
+        : (await translateUiBatch(stepResult.text.split("\n"), understood.language)).join("\n"),
       standards: standardsList,
       sources,
       cards: buildCards(),
       follow_ups: stepResult.isComplete
-        ? [`How to submit Form I on Manak Online?`, `What fees are required for jeweller registration?`]
-        : [`What documents are needed for Form I?`, `Which standards apply to jeweller registration?`],
+        ? [`Show hallmarking centres near me`, `What are the gold fineness grades under IS 1417?`]
+        : [`That's all, give me the draft`],
     };
   }
 
   // ── Branch: kb_question ──
+  // A named product outside helmets, toys and gold/silver hallmarking has no document here. Retrieval would
+  // still find loosely matching words (e.g. "stainless steel" in a toy test method), so refuse honestly.
+  if (isOutOfDomainProduct(understood.product, q, understood.standards, context.activeStandards.length > 0, understood.usedFallback)) {
+    return { ...(await refusalNotInSources(conversationId, understood.language, undefined, q)), cards: buildCards() };
+  }
+
+  // "Which standard applies to toys?" Retrieval favours IS 15644 because its introduction talks about toys for
+  // children in general, but its own title limits it to electric toys. Answer from each toy standard's scope.
+  const toyStandards = toyStandardsQuestion(`${effectiveQuery} ${q}`);
+  if (toyStandards) {
+    const resp = await answerFromScopes(conversationId, q, toyStandards, understood.language, historyText, userProvidedText);
+    if (resp) return { ...resp, cards: buildCards() };
+  }
+
   emit("search", "active");
   const tSearch = Date.now();
   const standardsFromUnderstand = understood.standards.filter((id) => getStandardById(id));

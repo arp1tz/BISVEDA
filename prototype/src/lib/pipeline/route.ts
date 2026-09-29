@@ -121,13 +121,15 @@ export function routeQuery(
     /\b(?:weather\s*(?:in|today|forecast)|temperature\s*in|will\s*it\s*rain)\b/i,
     /\b(?:cricket\s*score|football\s*match|movie\s*ticket|stock\s*price|horoscope)\b/i,
     /\b(?:quantum\s*teleportation|time\s*travel|warp\s*drive)\b/i,
+    // Romanised Hindi / Marathi small talk that must not reach retrieval when the router model is unavailable.
+    /\b(?:mausam|havaman|hawaman|baarish|barish|paus\s*padel|tapman|cricket\s*match|match\s*ka\s*score|picture\s*dekh|gaana|khana\s*kaise\s*banaye|recipe\s*bata)\b/i,
   ];
   for (const r of oosPatterns) {
     if (r.test(qLower)) {
       return {
         kind: "out_of_scope",
         topic: q,
-        message: "This inquiry is outside the scope of the Bureau of Indian Standards (BIS) and Indian Standards. BISVEDA provides guidance on product standards, mandatory Quality Control Orders (QCOs), certification schemes, and recognized testing laboratories.",
+        message: "This inquiry is outside the scope of the Bureau of Indian Standards (BIS) and Indian Standards. BISVEDA answers questions on Indian Standards for helmets, toys and gold hallmarking, and finds BIS-recognised labs and hallmarking centres.",
       };
     }
   }

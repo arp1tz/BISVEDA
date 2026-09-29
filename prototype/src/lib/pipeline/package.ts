@@ -32,9 +32,16 @@ export function buildEvidencePackage(adjudicated: AdjudicationPackage, rankedChu
   let sIndex = 1;
 
   const primaryId = adjudicated.primaryStandard?.id;
-  const relevantChunks = primaryId ? rankedChunks.filter((c) => c.standard_id === primaryId) : [];
+  // Other standards whose own scope clause matched also apply (e.g. a battery toy car: IS 15644 and IS 9873
+  // Part 1). Give each its top two chunks so the answer can name them, with the primary keeping the most.
+  const otherApplies = adjudicated.standards.filter((s) => s.class === "applies" && s.id !== primaryId).slice(0, 2);
+  const primaryChunks = primaryId ? rankedChunks.filter((c) => c.standard_id === primaryId) : [];
+  const relevantChunks = [
+    ...primaryChunks.slice(0, otherApplies.length > 0 ? 4 : 6),
+    ...otherApplies.flatMap((s) => rankedChunks.filter((c) => c.standard_id === s.id).slice(0, 2)),
+  ];
 
-  for (const chunk of relevantChunks.slice(0, 6)) {
+  for (const chunk of relevantChunks) {
     const text = (chunk.text || "").replace(/\s+/g, " ").trim();
     if (!text) continue;
     sources.push({
