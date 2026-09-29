@@ -112,7 +112,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen sm:h-screen w-screen overflow-x-hidden bg-white text-[#0F172A] font-sans justify-between">
       {/* Shared Minimal Header */}
-      <AppHeader onOpenHelpline={() => setIsHelplineOpen(true)} />
+      <AppHeader />
 
       {/* Center 1-Screen Landing View */}
       <main id="main-content" className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-6 max-w-4xl mx-auto w-full">
@@ -249,7 +249,11 @@ export default function HomePage() {
       <AppFooter />
 
       {/* Voice Call Helpline Modal */}
-      <HelplineModal isOpen={isHelplineOpen} onClose={() => setIsHelplineOpen(false)} />
+      <HelplineModal
+        isOpen={isHelplineOpen}
+        onClose={() => setIsHelplineOpen(false)}
+        allowContinueConversation={false}
+      />
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { PanelLeft, Sparkles, PhoneCall, Mic, X } from "lucide-react";
+import { PanelLeft, Sparkles, Mic, X } from "lucide-react";
 import { AppHeader } from "@/components/chat/v9/AppHeader";
 import { AppFooter } from "@/components/chat/v9/AppFooter";
 import { ChatSidebar, ChatSessionItem } from "@/components/chat/v9/ChatSidebar";
@@ -64,6 +64,7 @@ function ChatWorkspaceInner() {
   const [activeSource, setActiveSource] = useState<Source | null>(null);
   const [activeSourceIndex, setActiveSourceIndex] = useState<number>(1);
 
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const initialSentRef = useRef<boolean>(false);
 
@@ -133,14 +134,26 @@ function ChatWorkspaceInner() {
     voice.stop(true);
   };
 
-  // Auto-scroll on new content
+  // Auto-scroll on new content (scoped to messages container to avoid window scrolling)
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messages.length > 0 && messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
   };
 
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading]);
+
+  // Auto-close sidebar on mobile devices
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setSidebarOpen(false);
+    }
+  }, []);
 
   // Load sidebar conversations list
   useEffect(() => {
@@ -480,9 +493,12 @@ function ChatWorkspaceInner() {
   const latestAssistantMessage = [...messages].reverse().find((m) => m.role === "assistant" && m.response);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-[#0F172A]">
-      {/* Top Header */}
-      <AppHeader onOpenHelpline={() => setIsHelplineOpen(true)} />
+    <div className="min-h-screen flex flex-col bg-white text-[#0F172A] w-full max-w-full overflow-x-hidden">
+      {/* Top Header with Talk on Call */}
+      <AppHeader
+        onOpenHelpline={() => setIsHelplineOpen(true)}
+        callLabel="Talk on Call"
+      />
 
       {/* Main Container */}
       <div className="flex-1 flex overflow-hidden relative">
@@ -498,33 +514,23 @@ function ChatWorkspaceInner() {
 
         {/* Center Chat Column */}
         <main id="main-content" className="flex-1 flex flex-col min-w-0 bg-[#F7F8FA]/50 relative">
-          {/* Top Bar with Sidebar Reopen Toggle & Talk on Call */}
-          <div className="absolute top-3 left-4 right-4 z-10 flex items-center justify-between pointer-events-none">
-            {!sidebarOpen ? (
+          {/* Top Bar with Sidebar Reopen Toggle */}
+          {!sidebarOpen && (
+            <div className="absolute top-3 left-4 z-10 pointer-events-auto">
               <button
                 type="button"
                 onClick={() => setSidebarOpen(true)}
-                className="p-1.5 rounded-lg bg-white border border-[#E5E7EB] text-[#64748B] hover:text-[#0F172A] shadow-xs cursor-pointer pointer-events-auto"
+                className="p-1.5 rounded-lg bg-white border border-[#E5E7EB] text-[#64748B] hover:text-[#0F172A] shadow-xs cursor-pointer"
                 title="Open Sidebar"
                 aria-label="Open Sidebar"
               >
                 <PanelLeft className="h-4 w-4" />
               </button>
-            ) : <div />}
-
-            <button
-              type="button"
-              onClick={() => setIsHelplineOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-amber-200 text-xs font-bold text-[#0B2A4A] shadow-xs hover:bg-amber-50 transition-all pointer-events-auto cursor-pointer hover:scale-105"
-              title="Talk with BISVEDA on Call"
-            >
-              <PhoneCall className="h-3.5 w-3.5 text-[#E8710A]" />
-              <span>Talk on Call</span>
-            </button>
-          </div>
+            </div>
+          )}
 
           {/* Messages Scroll Area */}
-          <div className="flex-1 overflow-y-auto px-4 py-6">
+          <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-4 py-6">
             <div className="max-w-[760px] mx-auto w-full space-y-6">
               {messages.length === 0 && (
                 <div className="py-20 text-center space-y-4">
@@ -717,6 +723,7 @@ function ChatWorkspaceInner() {
       <HelplineModal
         isOpen={isHelplineOpen}
         onClose={() => setIsHelplineOpen(false)}
+        allowContinueConversation={true}
       />
     </div>
   );

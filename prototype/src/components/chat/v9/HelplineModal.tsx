@@ -17,10 +17,17 @@ interface HelplineModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialPhone?: string;
+  allowContinueConversation?: boolean;
 }
 
-export function HelplineModal({ isOpen, onClose, initialPhone = "" }: HelplineModalProps) {
+export function HelplineModal({
+  isOpen,
+  onClose,
+  initialPhone = "",
+  allowContinueConversation = false,
+}: HelplineModalProps) {
   const [phoneNumber, setPhoneNumber] = useState(initialPhone);
+  const [callMode, setCallMode] = useState<"new" | "continue">("new");
   const [loading, setLoading] = useState(false);
   const [successData, setSuccessData] = useState<{ phone: string; message: string; caller_id?: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -54,6 +61,7 @@ export function HelplineModal({ isOpen, onClose, initialPhone = "" }: HelplineMo
         body: JSON.stringify({
           phone_number: phoneNumber,
           source: "chat_modal",
+          mode: callMode,
         }),
       });
 
@@ -77,6 +85,7 @@ export function HelplineModal({ isOpen, onClose, initialPhone = "" }: HelplineMo
   const handleReset = () => {
     setSuccessData(null);
     setPhoneNumber("");
+    setCallMode("new");
     setError(null);
   };
 
@@ -162,6 +171,62 @@ export function HelplineModal({ isOpen, onClose, initialPhone = "" }: HelplineMo
             </div>
 
             <form onSubmit={handleTriggerCall} className="space-y-3 pt-1">
+              {allowContinueConversation && (
+                <div className="space-y-1.5 pb-1">
+                  <label className="block text-xs font-semibold text-slate-700">
+                    Call Session Context
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setCallMode("new")}
+                      className={`flex flex-col text-left p-2.5 rounded-xl border text-xs transition-all cursor-pointer ${
+                        callMode === "new"
+                          ? "border-[#0B2A4A] bg-[#0B2A4A]/5 text-[#0B2A4A] ring-1 ring-[#0B2A4A]"
+                          : "border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300"
+                      }`}
+                    >
+                      <span className="font-bold flex items-center gap-1.5 text-xs">
+                        <span className={`h-2 w-2 rounded-full ${callMode === "new" ? "bg-[#0B2A4A]" : "bg-slate-300"}`} />
+                        Start new
+                      </span>
+                      <span className="text-[10px] text-slate-500 mt-0.5">
+                        Fresh call session
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setCallMode("continue")}
+                      className={`flex flex-col text-left p-2.5 rounded-xl border text-xs transition-all cursor-pointer relative ${
+                        callMode === "continue"
+                          ? "border-[#E8710A] bg-amber-50/60 text-[#0B2A4A] ring-1 ring-[#E8710A]"
+                          : "border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="font-bold flex items-center gap-1.5 text-xs">
+                          <span className={`h-2 w-2 rounded-full shrink-0 ${callMode === "continue" ? "bg-[#E8710A]" : "bg-slate-300"}`} />
+                          Continue
+                        </span>
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded-full border border-amber-200 shrink-0">
+                          Upcoming
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-slate-500 mt-0.5">
+                        From conversation
+                      </span>
+                    </button>
+                  </div>
+
+                  {callMode === "continue" && (
+                    <div className="p-2 rounded-lg bg-amber-50/90 border border-amber-200 text-[11px] text-amber-900 leading-snug">
+                      <strong>Upcoming feature:</strong> Context-passing pipeline will automatically brief the voice agent with your active chat queries and standards findings when connected.
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Your Mobile Number
