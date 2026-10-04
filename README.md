@@ -27,7 +27,7 @@ Citizens, jewellers and small manufacturers ask BIS the same questions every day
 BISVEDA answers these questions in plain language and in the user's own language, by text, photo, voice or phone call. Every answer carries `[S1]`-style source tags that open the exact clause and page of the official document. When the documents don't support an answer, BISVEDA says so and points to the right BIS service instead of guessing.
 
 > [!IMPORTANT]
-> **Designed as a platform for the whole BIS catalogue.** BISVEDA is a layered, stateless, interface-driven system: channels, gateway, orchestration, tools, a governed ingestion plane and a replaceable data plane. The prototype in this repository already runs the full request path end to end. Growth means ingesting documents and adding infrastructure, not rewriting the system.
+> **Designed as a platform for the whole BIS catalogue.** BISVEDA is a layered, stateless, interface-driven system: channels, gateway, orchestration, tools, a governed ingestion plane and a replaceable data plane. The prototype in this repository already runs the full answer path end to end on a curated set of official BIS documents. The next build phase turns on live document ingestion and the Postgres-backed hybrid retrieval plane behind interfaces the prototype already uses, so growth means ingesting documents and adding infrastructure, not rewriting the system.
 
 ## What makes BISVEDA different
 
@@ -53,7 +53,7 @@ BISVEDA answers these questions in plain language and in the user's own language
 | **Multilingual** | Ask in English, Hindi, Hinglish, Marathi, Tamil, Telugu, Bengali, Kannada, Malayalam or Gujarati, in native or Roman script | Language detection + English working query + guarded translation |
 | **Page translation** | One language picker translates the whole interface, and answers follow the chosen language | Batched UI translation |
 | **Voice and phone** | Speak instead of typing, hear answers read aloud, or request a phone call and talk to BISVEDA | Speech-to-text, browser read-aloud, telephony voice bridge |
-| **Staff console** (`/admin`) | Knowledge graph explorer, edition and amendment register per standard, document and clause browser, lab and centre directories, ingestion workflow screen | The same knowledge base the chat uses |
+| **Staff console** (`/admin`) | Knowledge graph explorer, edition and amendment register per standard, document and clause browser, lab and centre directories, and the ingestion workflow interface | The same knowledge base the chat uses |
 
 BISVEDA **never declares a mark, licence or HUID valid or genuine**. It checks the format and sends the user to BIS Care or Manak Online, the only services that can confirm it.
 
@@ -61,7 +61,13 @@ BISVEDA **never declares a mark, licence or HUID valid or genuine**. It checks t
 
 A modular monolith behind interfaces: every component sits behind a small contract, so production infrastructure replaces the prototype's implementation without changing its callers.
 
-`●` running in the prototype · `○` production design
+`●` running in the prototype · `○` production design, next build phase
+
+| | Working in the prototype | Next build phase |
+|---|---|---|
+| **Answer path** | Understand, hybrid retrieval (exact, BM25, dense, graph), RRF, adjudication, answer writing, trust gate, streamed over SSE | Cross-encoder reranking and the model provider chain |
+| **Knowledge** | 8 standards and Form I plus the official lab and centre directories, built from the PDFs with one command and loaded in memory | Live staff ingestion with officer approval into PostgreSQL + pgvector |
+| **Channels** | Web chat, phone bridge, staff console | WhatsApp and a public API for BIS portals |
 
 ```mermaid
 flowchart TB
@@ -168,6 +174,8 @@ New and amended standards enter through a governed workflow, never by editing th
 
 `staff upload → MinIO → Temporal workflow (parse + OCR, chunk by clause, embed, link graph) → officer approval → published edition`
 
+The prototype already runs every processing step (parse, clause chunking, embedding, graph linking) as a repeatable build over the uploaded PDFs, and the staff console carries the workflow interface. Connecting the two behind an approval step is the next build phase.
+
 Every answer names the edition it used, and the staff console shows the edition and amendment register for each standard. Knowledge tiers decide how much may be claimed from a source: catalogue metadata supports identity and scope only, public official text supports paragraph citations, and full clause text supports clause-level citations with figures.
 
 ### Resilience
@@ -228,8 +236,10 @@ Per-case results are in `prototype/data/eval/results/`.
 
 ## Roadmap
 
+**Next build phase: a working ingestion layer and full-scale hybrid retrieval, on the interfaces the prototype already uses.**
+
+- **Governed ingestion:** staff upload runs the existing parse, chunk, embed and graph steps, then an officer approves before any edition goes live, with an audit log.
 - **PostgreSQL 16 data plane:** pgvector, full-text search, Apache AGE and PostGIS behind the existing store interface.
-- **Governed ingestion:** Temporal workflows with officer approval and an audit log before any edition goes live.
 - **Cross-encoder reranking:** bge-reranker-v2-m3 between fusion and adjudication.
 - **Model provider chain:** LiteLLM with hosted, self-hosted and evidence-only tiers, so an outage never takes answers offline.
 - **Phone agent on the same knowledge base:** route calls through retrieval and the trust gate, and carry the web conversation into the call.

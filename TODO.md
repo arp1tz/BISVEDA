@@ -315,6 +315,27 @@ Read: `README.md` and this section only. Every fact needed is below (extracted f
 - [x] **14.7 Tail sections.** Roadmap: keep, each item one line. Getting started, scripts, repository layout: unchanged. Tech stack: two short lines per group, "Production design" and "Prototype", with the Data line updated to match 14.3.
 - [x] **14.8 Check and commit.** Re-read once against G1 to G6 (grep for the banned words, `—`, "miss", "fail", "regression"); confirm both Mermaid blocks parse; `npm run typecheck`; update `progress.md` Latest State; commit `P14.1: README leads with the production architecture`.
 
+## P14.2 HIGH PRIORITY: make the admin ingestion screen honest `[Sonnet 5 / Medium]`
+Why: `api/admin/ingest/route.ts` and `components/admin/IngestionTab.tsx` simulate the pipeline. Visible in a demo and against the no-fabrication rule. Do this before recording or presenting anything.
+- [ ] **14.2.1** Replace the four hardcoded `INGESTED_RECORDS` (wrong editions such as "IS 1417:2016", a QCO gazette that is out of scope) with records built from the real knowledge base (`getAllDocs` / `getAllStandards`): real chunk counts, edition, graph node counts.
+- [ ] **14.2.2** Remove invented numbers from the UI log ("Extracted 38 pages", "avg 380 tokens/chunk", `fileSize / 40` chunk count, `/45` on the server) and the "registered in official KB index! Status: Active" message. Fixed copy: the upload is queued and becomes searchable after officer approval and a build.
+- [ ] **14.2.3** Actually accept the PDF and save it to `prototype/data/ingest-queue/` (gitignored); the history table lists queued files with status "Awaiting officer approval" and only facts we have (file name, size, time, uploader).
+- [ ] **14.2.4** Audit the "register revision / amendment" modals in `DocumentsTab.tsx` for the same problem; anything that implies a change went live must either work or say it is queued.
+- [ ] **14.2.5** `npm run typecheck`; README wording ("ingestion workflow interface") stays valid; commit `P14.2: honest ingestion screen`.
+
+## P15: Working document ingestion layer `[Opus 5.5 / High for design, Sonnet for build]` (planned, detail to be written)
+Goal: staff upload to published edition works for real. Reuses `scripts/kb/{parse,chunk,embed,standards,graph}` as a library, adds a job runner, a staging index that is not searchable, an officer Approve/Reject step with an audit log, and edition/amendment records created from the actual PDF.
+- [ ] Task breakdown to be written when P15 starts. Before building: update `CLAUDE.md` Boundaries (ingestion/upload UI is currently listed out of scope) and the data-source hard rule so uploaded-and-approved documents count as knowledge-base sources.
+- [ ] On completion flip the README ingestion plane from `○` to `●` and rewrite the "Next build phase" lines.
+
+## P16: Full-scale hybrid retrieval `[Opus 5.5 / High for design, Sonnet for build]` (planned, detail to be written)
+Goal: the retrieval plane the README describes, running: PostgreSQL 16 with pgvector (HNSW), full-text and trigram search, graph traversal, exact IS-number lookup, RRF, and a bge-reranker-v2-m3 cross-encoder, all behind `lib/kb/store.ts` and `pipeline/retrieve.ts`. Re-run `eval:rag` and `eval:multi` against it; the relevance floor must be recalibrated.
+- [ ] Task breakdown to be written when P16 starts.
+- [ ] On completion update the README layer table and architecture diagram (`○` to `●` for the data plane and rerank) and the measured table from a fresh run.
+
+## README maintenance rule
+Whenever a `○` component in `README.md` becomes real, flip it to `●` in the same commit as the feature. The README states prototype scope plainly but positively: say what runs, label the rest "next build phase", and don't narrate individual test results or limitations beyond that.
+
 ## Follow-ups & Backlog
 - [ ] **Re-run `npm run eval:rag` and `npm run eval:multi` once Groq's daily token quota resets.** The P12 session's numbers (23/32 golden) were degraded by quota exhaustion (confirmed 429 "tokens per day" error from heavy interactive testing), not a real regression; re-run both and update `progress.md`/`data/eval/results/baseline.json` with the clean numbers.
 - [ ] **Telephony Session Context Continuation Pipeline (Exotel + Gemini Live)**:
