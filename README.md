@@ -53,7 +53,7 @@ BISVEDA answers these questions in plain language and in the user's own language
 | **Multilingual** | Ask in English, Hindi, Hinglish, Marathi, Tamil, Telugu, Bengali, Kannada, Malayalam or Gujarati, in native or Roman script | Language detection + English working query + guarded translation |
 | **Page translation** | One language picker translates the whole interface, and answers follow the chosen language | Batched UI translation |
 | **Voice and phone** | Speak instead of typing, hear answers read aloud, or request a phone call and talk to BISVEDA | Speech-to-text, browser read-aloud, telephony voice bridge |
-| **Staff console** (`/admin`) | Knowledge graph explorer, edition and amendment register per standard, document and clause browser, lab and centre directories, and the ingestion workflow interface | The same knowledge base the chat uses |
+| **Staff console** (`/admin`) | Knowledge graph explorer, edition and amendment register per standard, document and clause browser, lab and centre directories, plus showcase interfaces for ingestion and revision registration | The same knowledge base the chat uses |
 
 BISVEDA **never declares a mark, licence or HUID valid or genuine**. It checks the format and sends the user to BIS Care or Manak Online, the only services that can confirm it.
 
@@ -233,6 +233,9 @@ The prototype holds **760 clause-level chunks** with 1024-dim bge-m3 vectors, a 
 | Multilingual set, 9 languages in native and Roman script | **23 / 24** |
 
 Per-case results are in `prototype/data/eval/results/`.
+
+> [!NOTE]
+> **Showcase interfaces.** To show the intended staff and caller experience, a few parts of the prototype are interface showcases: the staff console's document ingestion and revision/amendment registration screens, and the phone channel's call experience. They demonstrate the workflow and the design; connecting them to the live knowledge base (approval-gated ingestion, and phone answers cited from the same evidence) is the next build phase.
 
 ## Roadmap
 
