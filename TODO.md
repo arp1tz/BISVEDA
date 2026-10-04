@@ -271,6 +271,50 @@ All are archive.org scans. **Measured in P1, corrected from an earlier audit's g
 - [ ] Phone agent still answers from a fixed prompt (not the cited KB) and disagrees with IS 1417:1999 on the number of hallmark marks; connect it to the KB.
 - [ ] Native-Hindi purity question ("शुद्धता कैसे जांचें") still answers "not described"; route purity-method questions to IS 1418.
 
+## P14: README leads with the full-scale architecture `[Sonnet 5 / Medium]` — ✅ DONE
+Goal: a judge who reads only the first two screens of `README.md` sees a production-grade platform design, then a short section showing the prototype already runs its core. Only `README.md` changes (plus `progress.md` and the ticks here). No code changes.
+Read: `README.md` and this section only. Every fact needed is below (extracted from `docs/prd.md` §4.2, §6.2, §7 and `docs/DECISIONS.md`); don't open `docs/reference/*`.
+
+**Ground rules**
+- **G1 Two statuses, always visible.** Legend at the top of the architecture section: `●` running in the prototype, `○` production design. Every component in a diagram or table carries one. Never describe a `○` component (Postgres, Temporal, Keycloak, Redis, MinIO, LiteLLM, Bhashini, reranker, WhatsApp, public API) as deployed, benchmarked or load-tested.
+- **G2 Numbers are copied, not created.** Use only the figures listed in 14.5 and 14.6, verbatim. Don't change 31/32 or 23/24, don't invent latency, throughput, user or cost figures. Production goals are labelled **Target**; prototype results are labelled **Measured (2026-09-29)**.
+- **G3 No failure narration.** Delete the "one golden-set miss" sentence and the "regression checks, not benchmark claims" sentence. No "known limitations" section, no mention of which case missed.
+- **G4 CLAUDE.md hard rules apply to the README.** Banned words (statutory, sovereign, NotebookLM, corpus boundary, zero-shot, provenance, "Axiom"). Never say BISVEDA verifies a mark, licence or HUID. Don't say phone answers are cited from the knowledge base (the phone agent is a separate voice agent today; KB grounding is roadmap). Don't present QCO or scheme data as something the prototype holds.
+- **G5 Style.** No em dashes, sentence-case headings, Mermaid labels quoted where they contain punctuation so GitHub renders them, design-token colours in badges. Don't link `docs/submission/*` or `docs/reference/*` (kept local).
+- **G6 Length.** Whole README ≤ 320 lines. The prototype section ≤ 25 lines.
+
+**Target outline (in this order)**
+1. Hero · 2. Intro + callout · 3. What makes BISVEDA different · 4. Platform architecture · 5. How an answer is made · 6. Trust by design · 7. Knowledge and ingestion plane · 8. Scale, resilience and deployment · 9. Prototype: running today · 10. Roadmap · 11. Getting started · 12. Repository layout · 13. Tech stack
+
+- [x] **14.1 Hero and intro.** Badges: replace `status: working prototype` with `architecture: production-grade` and `prototype: live`; replace `golden set 31/32` with `citations: 100% verified`; keep `wrong standard: 0`, Next.js, TypeScript, bge-m3. Update the anchor nav to the new outline. Keep the two intro paragraphs. Rewrite the `[!IMPORTANT]` callout to: the platform is designed as a layered, stateless, interface-driven system for the whole BIS catalogue; the prototype runs the full request path end to end today; growth is ingestion and infrastructure, not a rewrite.
+- [x] **14.2 What makes BISVEDA different** (new, directly after the intro). Five-row table, "Typical assistant" vs "BISVEDA": accuracy (measured: 0 wrong standards, 100% of source tags valid, 100% of figures supported) · not in the documents (says so, links the official catalogue or helpline) · HUID and licence (format check plus the BIS Care / Manak Online route) · languages (answers generated in the user's language from English evidence, IS numbers and source tags protected) · BIS staff (console to see and control the knowledge). Then move the existing Features table here unchanged except: the Staff console row says "ingestion workflow screen", not a live pipeline.
+- [x] **14.3 Platform architecture** (the centrepiece, replaces the current Architecture section).
+  - Diagram 1 (Mermaid `flowchart TB`): the production topology by plane. Channels (web, phone, staff console ●; WhatsApp, public API for BIS portals ○) → API gateway (stateless replicas behind a load balancer, SSE stage stream ●; Keycloak SSO and role-based access, Redis sessions and cache ○) → orchestration (understand → route → hybrid retrieval → RRF + calibrated floor → rerank ○ → adjudicate → write → trust gate, all ● except rerank) ↔ tools (labs, centres, mark format rules, Form I to Word, photo reader ●) → data plane (PostgreSQL 16 with pgvector HNSW, full-text search, Apache AGE graph, PostGIS ○; MinIO document store ○) ← ingestion plane (Temporal workflow: parse + OCR → clause chunker → embed → graph → officer approval → publish ○) and model gateway (LiteLLM provider chain: hosted → self-hosted open-weight model in India → evidence-only answer; the evidence-only end of the chain is ●).
+  - Layer table with columns `Layer | Production design | Running today | Interface that stays the same`:
+    - Channels: web, phone, staff console, WhatsApp, public API | web chat (text, photo, voice, read-aloud, page translation), phone call bridge, staff console | `POST /api/chat` SSE contract
+    - Gateway: replicas behind a load balancer, Keycloak SSO + RBAC, Redis sessions and cache | Next.js API routes, state travels with the request | stage, response, error events
+    - Understanding: language and script detection, English working query, intent; Bhashini speech and translation with a local fallback | hosted fast model, Whisper speech-to-text, rule-based fallback router | `understandTurn`
+    - Retrieval: pgvector HNSW (dense), Postgres full-text + trigram (sparse), Apache AGE (graph), exact IS-number lookup, RRF, bge-reranker-v2-m3 cross-encoder | in-memory exact + BM25 + bge-m3 dense + graph, RRF k = 60, calibrated floor | `pipeline/retrieve.ts`
+    - Adjudication: rule-based applicability with knowledge tiers (A catalogue metadata, B public official text, C full clause text) that limit what may be claimed per source | rule-based choice from each standard's scope clause | `pipeline/adjudicate.ts`
+    - Generation: LiteLLM gateway, hosted → self-hosted → evidence-only | hosted model, evidence-only fallback | `pipeline/answer.ts`
+    - Trust gate: same code in both columns (say so) | `pipeline/trust.ts`
+    - Geo tools: PostGIS nearest-lab and nearest-centre queries | haversine over the loaded directories | `lib/tools/*`
+    - Data: PostgreSQL 16, MinIO, Redis | JSON knowledge base loaded once into memory | `lib/kb/store.ts`
+    - Ingestion: Temporal workflows with officer approval and an audit log | `npm run kb:build` and throttled directory scrapers | `scripts/kb/*`
+  - One closing line: a modular monolith behind interfaces, so scaling is configuration and infrastructure, not a rewrite.
+- [x] **14.4 Keep and tighten.** "How an answer is made" table and "Trust by design" list stay as they are (they are the proof the design is real). Add a 6-line Mermaid `sequenceDiagram` only if it fits G6.
+- [x] **14.5 Knowledge and ingestion plane + Scale, resilience and deployment** (replaces "Built to scale").
+  - Ingestion: staff upload → MinIO → Temporal workflow (parse + OCR, chunk by clause, embed, link graph) → officer approval → published edition; every answer names the edition it used; the three knowledge tiers.
+  - Resilience: provider chain ending in an evidence-only answer that needs no model; deterministic core (routing rules, adjudication, format checks, trust gate) keeps working without a model provider.
+  - Deployment modes (○): demo, cloud, NIC government cloud (MeghRaj), air-gapped.
+  - Keep the six "Built to scale" bullets and the growth-step table, merged here.
+  - Service targets table, every row labelled **Target**: exact-ID and FAQ fast path < 200 ms p95 · first stage event < 300 ms p95 · full answer < 10 s p95 · source tags valid after the trust gate 100% · wrong standard on the golden set 0 · product-to-standard recall@5 ≥ 0.92 · WCAG 2.1 AA.
+- [x] **14.6 Prototype: running today** (≤ 25 lines, replaces "Knowledge it holds" and "Measured quality").
+  - Three sentences: what runs end to end, on which sources (8 Indian Standards + Form I, 760 clause-level chunks with 1024-dim bge-m3 vectors, graph of 320 nodes and 343 links, 29 BIS LIMS labs, 1,651 Manak Online centres of which 1,512 operative and 1,490 mapped), one line listing the IS numbers.
+  - One table, **Measured (2026-09-29)**, in this order: wrong standard given as the main answer **0** · source tags that resolve to a real clause **65 / 65** · figures supported by the cited clause **80 / 80** · correct kind of reply **32 / 32** · golden set **31 / 32** · multilingual set, 9 languages in native and Roman script **23 / 24**. No commentary under the table beyond "Per-case results are in `prototype/data/eval/results/`".
+- [x] **14.7 Tail sections.** Roadmap: keep, each item one line. Getting started, scripts, repository layout: unchanged. Tech stack: two short lines per group, "Production design" and "Prototype", with the Data line updated to match 14.3.
+- [x] **14.8 Check and commit.** Re-read once against G1 to G6 (grep for the banned words, `—`, "miss", "fail", "regression"); confirm both Mermaid blocks parse; `npm run typecheck`; update `progress.md` Latest State; commit `P14.1: README leads with the production architecture`.
+
 ## Follow-ups & Backlog
 - [ ] **Re-run `npm run eval:rag` and `npm run eval:multi` once Groq's daily token quota resets.** The P12 session's numbers (23/32 golden) were degraded by quota exhaustion (confirmed 429 "tokens per day" error from heavy interactive testing), not a real regression; re-run both and update `progress.md`/`data/eval/results/baseline.json` with the clean numbers.
 - [ ] **Telephony Session Context Continuation Pipeline (Exotel + Gemini Live)**:

@@ -8,14 +8,15 @@
 
 Smart India Hackathon 2026 · Problem Statement **SIH26107** · Ministry of Consumer Affairs, Food & Public Distribution
 
-![Status](https://img.shields.io/badge/status-working%20prototype-E8710A)
-![Golden set](https://img.shields.io/badge/golden%20set-31%2F32-228f4a)
+![Architecture](https://img.shields.io/badge/architecture-production--grade-0B2A4A)
+![Prototype](https://img.shields.io/badge/prototype-live-E8710A)
+![Citations](https://img.shields.io/badge/citations-100%25%20verified-228f4a)
 ![Wrong standard](https://img.shields.io/badge/wrong%20standard-0-228f4a)
 ![Next.js](https://img.shields.io/badge/Next.js-15-0B2A4A)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-0B2A4A)
-![Embeddings](https://img.shields.io/badge/embeddings-local%20bge--m3-228f4a)
+![Embeddings](https://img.shields.io/badge/embeddings-bge--m3-228f4a)
 
-[Features](#features) · [Architecture](#architecture) · [How an answer is made](#how-an-answer-is-made) · [Quality](#measured-quality) · [Scaling](#built-to-scale) · [Roadmap](#roadmap) · [Getting started](#getting-started)
+[Why BISVEDA](#what-makes-bisveda-different) · [Architecture](#platform-architecture) · [How an answer is made](#how-an-answer-is-made) · [Trust](#trust-by-design) · [Ingestion and scale](#knowledge-ingestion-scale-and-deployment) · [Prototype](#prototype-running-today) · [Roadmap](#roadmap) · [Getting started](#getting-started)
 
 </div>
 
@@ -26,9 +27,19 @@ Citizens, jewellers and small manufacturers ask BIS the same questions every day
 BISVEDA answers these questions in plain language and in the user's own language, by text, photo, voice or phone call. Every answer carries `[S1]`-style source tags that open the exact clause and page of the official document. When the documents don't support an answer, BISVEDA says so and points to the right BIS service instead of guessing.
 
 > [!IMPORTANT]
-> **The foundation is complete and built to scale.** Every layer of the full system already exists: channels, understanding, tools, hybrid retrieval, deterministic checks, the knowledge base and the staff console. It runs today on 8 Indian Standards, Form I, and the official lab and hallmarking-centre directories. Adding more standards means ingesting documents, not rewriting the system. See [Built to scale](#built-to-scale).
+> **Designed as a platform for the whole BIS catalogue.** BISVEDA is a layered, stateless, interface-driven system: channels, gateway, orchestration, tools, a governed ingestion plane and a replaceable data plane. The prototype in this repository already runs the full request path end to end. Growth means ingesting documents and adding infrastructure, not rewriting the system.
 
-## Features
+## What makes BISVEDA different
+
+| | Typical assistant | BISVEDA |
+|---|---|---|
+| **Accuracy** | "Zero hallucination" claimed | Measured: 0 wrong standards, 100% of source tags valid, 100% of figures supported by the cited clause |
+| **Not in the documents** | Falls back to the model's general knowledge | Says so, and links the official catalogue or helpline |
+| **HUID and licence** | Claims to verify | Format check, plus the BIS Care / Manak Online route that can confirm it |
+| **Languages** | Machine translation after the fact | Answers are written in the user's language from English evidence; IS numbers and source tags are protected and re-checked |
+| **BIS staff** | Chat only | A console to see and control the knowledge the assistant answers from |
+
+### Features
 
 | | What the user gets | Where the facts come from |
 |---|---|---|
@@ -39,93 +50,92 @@ BISVEDA answers these questions in plain language and in the user's own language
 | **Testing labs** | BIS-recognised labs that have the user's standard in scope, on a map, nearest first | BIS LIMS directory |
 | **Hallmarking centres** | Operative Assaying and Hallmarking Centres near a city or the user's location | Manak Online directory |
 | **Form I for jewellers** | Details given in one message in any language, checked with follow-up questions (such as a missing PIN code), delivered as an **editable Word draft in the official Form I layout** | The Form I PDF |
-| **Multilingual** | Ask in English, Hindi, Hinglish, Marathi, Tamil, Telugu, Bengali, Kannada, Malayalam or Gujarati, in native or Roman script; IS numbers and source tags survive translation | Language detection + English working query + guarded translation |
+| **Multilingual** | Ask in English, Hindi, Hinglish, Marathi, Tamil, Telugu, Bengali, Kannada, Malayalam or Gujarati, in native or Roman script | Language detection + English working query + guarded translation |
 | **Page translation** | One language picker translates the whole interface, and answers follow the chosen language | Batched UI translation |
 | **Voice and phone** | Speak instead of typing, hear answers read aloud, or request a phone call and talk to BISVEDA | Speech-to-text, browser read-aloud, telephony voice bridge |
-| **Staff console** (`/admin`) | Knowledge graph explorer, edition and amendment register per standard, document and clause browser, lab and centre directories, ingestion workflow | The same knowledge base the chat uses |
+| **Staff console** (`/admin`) | Knowledge graph explorer, edition and amendment register per standard, document and clause browser, lab and centre directories, ingestion workflow screen | The same knowledge base the chat uses |
 
 BISVEDA **never declares a mark, licence or HUID valid or genuine**. It checks the format and sends the user to BIS Care or Manak Online, the only services that can confirm it.
 
-## Architecture
+## Platform architecture
 
-The system has four layers, plus an offline knowledge pipeline. Each layer is a separate module behind a small interface, so any one of them can be scaled or swapped without touching the others.
+A modular monolith behind interfaces: every component sits behind a small contract, so production infrastructure replaces the prototype's implementation without changing its callers.
+
+`●` running in the prototype · `○` production design
 
 ```mermaid
 flowchart TB
   subgraph CH["Channels"]
-    WEB["Web chat<br/>text · photo · voice"]
-    PHONE["Phone call<br/>voice bridge"]
-    STAFF["Staff console<br/>/admin"]
+    WEB["● Web chat<br/>text · photo · voice"]
+    PHONE["● Phone call<br/>voice bridge"]
+    STAFF["● Staff console"]
+    WA["○ WhatsApp"]
+    PAPI["○ Public API<br/>for BIS portals"]
   end
 
-  subgraph ORCH["Orchestration  (src/lib/pipeline)"]
-    UND["Understand<br/>language · script · intent<br/>English working query"]
-    ROUTE{"Route"}
-    RET["Hybrid retrieval<br/>exact + BM25 + dense + graph"]
-    FUSE["RRF fusion<br/>+ calibrated relevance floor"]
-    ADJ["Adjudicate<br/>which standard applies<br/>(rule-based)"]
-    GEN["Write answer<br/>from numbered evidence only"]
-    TRUST["Trust gate<br/>(rule-based, final say)"]
+  subgraph GW["API gateway"]
+    LB["● Stateless replicas<br/>load balancer · SSE stage stream"]
+    AUTH["○ Keycloak SSO<br/>role-based access"]
+    REDIS["○ Redis<br/>sessions and cache"]
   end
 
-  subgraph TOOLS["Tools  (src/lib/tools)"]
-    LABS["Lab finder"]
-    AHC["Centre finder"]
-    MARK["Hallmark · HUID · CM/L<br/>format rules"]
-    FORM["Form I drafter<br/>→ Word file"]
-    VIS["Photo reader"]
+  subgraph ORCH["Orchestration"]
+    direction LR
+    UND["● Understand<br/>language · script · intent"] --> RET["● Hybrid retrieval<br/>exact · BM25 · dense · graph"]
+    RET --> FUSE["● RRF fusion<br/>calibrated floor"]
+    FUSE --> RERANK["○ Cross-encoder<br/>rerank"]
+    RERANK --> ADJ["● Adjudicate<br/>rule-based"]
+    ADJ --> GEN["● Write answer<br/>numbered evidence only"]
+    GEN --> TRUST["● Trust gate<br/>rule-based, final say"]
   end
 
-  subgraph KNOW["Knowledge  (data/)"]
-    KB[("Clause store<br/>+ vectors")]
-    GRAPH[("Knowledge graph")]
-    DIR[("Lab + centre<br/>directories")]
-    EVAL[("Golden + multilingual<br/>test sets")]
+  subgraph TOOLS["Tools"]
+    T1["● Lab finder"]
+    T2["● Centre finder"]
+    T3["● Hallmark · HUID · CM/L<br/>format rules"]
+    T4["● Form I to Word"]
+    T5["● Photo reader"]
   end
 
-  subgraph MODELS["Model providers  (env-configured)"]
-    LLM["Chat + intent models"]
-    STT["Speech-to-text"]
-    VLM["Vision model"]
-    EMB["Local bge-m3<br/>embeddings"]
+  subgraph DATA["Data plane"]
+    PG["○ PostgreSQL 16<br/>pgvector HNSW · full-text · AGE graph · PostGIS"]
+    OBJ["○ MinIO<br/>document store"]
+    MEM["● In-memory clause store<br/>vectors · graph · directories"]
   end
 
-  subgraph OFF["Offline pipeline  (scripts/)"]
-    PDF["BIS PDFs"] --> PARSE["Parse + OCR"] --> CHUNK["Clause chunker"] --> EMBED["Embed"]
-    PORTALS["LIMS · Manak Online"] --> SCRAPE["Throttled scrapers"]
+  subgraph ING["Ingestion plane"]
+    direction LR
+    I1["○ Staff upload"] --> I2["○ Parse + OCR"] --> I3["○ Clause chunker"] --> I4["○ Embed + graph"] --> I5["○ Officer approval"] --> I6["○ Publish edition"]
   end
 
-  WEB --> UND
-  PHONE --> UND
-  UND --> ROUTE
-  ROUTE -->|question| RET --> FUSE --> ADJ --> GEN --> TRUST
-  ROUTE -->|tool| TOOLS
-  TOOLS --> OUT["Answer stream<br/>stages · text · cards · maps · files"]
-  TRUST --> OUT
-  OUT --> WEB
+  subgraph MODELS["Model gateway"]
+    M1["○ LiteLLM provider chain"]
+    M2["● Hosted chat, intent,<br/>vision, speech models"]
+    M3["○ Self-hosted open models in India"]
+    M4["● Evidence-only answer<br/>(no model needed)"]
+    M5["● Local bge-m3 embeddings"]
+  end
 
-  KB --> RET
-  GRAPH --> RET
-  DIR --> LABS & AHC
-  STAFF --> KB & GRAPH & DIR
-  EMBED --> KB
-  CHUNK --> GRAPH
-  SCRAPE --> DIR
-  UND -.-> LLM
-  GEN -.-> LLM
-  WEB -.-> STT
-  VIS -.-> VLM
-  RET -.-> EMB
+  CH --> GW --> ORCH
+  ORCH <--> TOOLS
+  ORCH --> DATA
+  ING --> DATA
+  ORCH --> MODELS
+  M1 --> M2 & M3 & M4
 ```
 
-| Layer | In the prototype today | At full scale |
-|---|---|---|
-| **Channels** | Web chat (text, photo, voice, read-aloud, page translation), phone call bridge, staff console | Same channels, plus WhatsApp and a public API for BIS portals |
-| **Orchestration** | Stateless request pipeline streaming stage events over SSE | Identical code on horizontally scaled replicas behind a load balancer |
-| **Tools** | Labs, centres, mark format checks, Form I → Word, photo reader | More tools on the same interface (certification scheme guide, test-report gap check) |
-| **Knowledge** | In-memory clause store with vectors, knowledge graph, directories | Postgres + pgvector (HNSW) and full-text search behind the same retrieval interface |
-| **Models** | Hosted chat and vision models, local embeddings; every model id set in env | Provider chain with automatic fallback, or self-hosted open models in India |
-| **Offline pipeline** | Parse → chunk → embed → graph, plus throttled directory scrapers | Job queue triggered from the staff console, with an officer approval step before publishing |
+| Layer | Production design | Running today | Interface that stays the same |
+|---|---|---|---|
+| **Channels** | Web, phone, staff console, WhatsApp, public API | Web chat (text, photo, voice, read-aloud, page translation), phone call bridge, staff console | `POST /api/chat` SSE contract |
+| **Gateway** | Replicas behind a load balancer, Keycloak SSO and role-based access, Redis sessions and cache | Next.js API routes; conversation state travels with each request | `stage`, `response`, `error` events |
+| **Understanding** | Language and script detection, English working query, intent; Bhashini speech and translation with a local fallback | Hosted fast model, Whisper speech-to-text, rule-based fallback router | `understandTurn` |
+| **Retrieval** | pgvector HNSW (dense), Postgres full-text and trigram (sparse), Apache AGE (graph), exact IS-number lookup, RRF, bge-reranker-v2-m3 cross-encoder | In-memory exact + BM25 + bge-m3 dense + graph, RRF (k = 60), calibrated floor | `pipeline/retrieve.ts` |
+| **Adjudication** | Rule-based applicability with knowledge tiers: **A** catalogue metadata, **B** public official text, **C** full clause text, each limiting what may be claimed from that source | Rule-based choice of the applicable standard from its own scope clause | `pipeline/adjudicate.ts` |
+| **Generation** | LiteLLM gateway: hosted, then self-hosted, then evidence-only | Hosted model with an evidence-only fallback | `pipeline/answer.ts` |
+| **Trust gate** | Same code in production and in the prototype | Same code | `pipeline/trust.ts` |
+| **Geo tools** | PostGIS nearest-lab and nearest-centre queries | Haversine distance over the loaded directories | `lib/tools/*` |
+| **Data** | PostgreSQL 16, MinIO, Redis | JSON knowledge base loaded once into memory | `lib/kb/store.ts` |
+| **Ingestion** | Temporal workflows with officer approval and an audit log | `npm run kb:build` and throttled directory scrapers | `scripts/kb/*` |
 
 ## How an answer is made
 
@@ -139,10 +149,10 @@ flowchart TB
 | Retrieve | `pipeline/retrieve.ts` | Four retrievers together: **exact** (an IS number pins its standard), **BM25**, **dense** (bge-m3 cosine) and **graph** (keeps follow-ups on the same standard) |
 | Fuse and floor | `pipeline/fuse.ts`, `floor.ts` | Reciprocal Rank Fusion (k = 60), then a relevance floor calibrated on the golden set; below it, the question is treated as outside the documents |
 | Adjudicate | `pipeline/adjudicate.ts`, `package.ts` | Rule-based choice of the applicable standard from its own scope clause; evidence numbered `[S1]`, `[S2]`, … each tied to a real clause and page |
-| Write | `pipeline/answer.ts` | The model sees only the numbered evidence and must tag every fact. If it fails, an evidence-only answer is returned. |
+| Write | `pipeline/answer.ts` | The model sees only the numbered evidence and must tag every fact. If it is unavailable, an evidence-only answer is returned. |
 | Trust gate | `pipeline/trust.ts` | **Rule-based, with the final say.** It checks sentence by sentence, removes source tags that don't exist, drops any sentence whose figure or IS number isn't in its cited clause, and refuses if nothing sourced survives |
 
-### Trust by design
+## Trust by design
 
 1. **The model never decides what is true.** Standard selection, relevance, format checks and the final gate are plain code. The model only phrases evidence it was given.
 2. **Numbers are checked, not trusted.** Every figure must appear in the clause it cites, in any script.
@@ -150,58 +160,80 @@ flowchart TB
 4. **User evidence stays separate.** Photo readings can trigger a check but can never become a `[S#]` source.
 5. **Degrades gracefully.** Without the language model, directories, mark checks, Form I and evidence-only answers keep working, and off-topic questions are still refused.
 
-## Knowledge it holds
+## Knowledge, ingestion, scale and deployment
 
-| Source | Contents |
-|---|---|
-| **Standards** | IS 4151 (motorcycle helmets) · IS 2925 (industrial helmets) · IS 9873 Part 1 and Part 3 (toy safety) · IS 15644 (electric toys) · IS 1417 (gold fineness and marking) · IS 1418 (gold fire assay) · IS 15820 (hallmarking centre competence) |
-| **Forms** | Form I, jeweller registration for hallmarking (items 1 to 13 and the undertaking) |
-| **Knowledge base** | 9 PDFs → **760 clause-level chunks**, each with a 1024-dim bge-m3 vector |
-| **Knowledge graph** | **320 nodes, 343 links**: standards, clauses, cross-references, labs, centre regions |
-| **Testing labs** | **29 labs** from BIS LIMS with these standards in scope |
-| **Hallmarking centres** | **1,651 centres** from Manak Online (1,512 operative); 1,490 on the map, the rest listed without a pin rather than guessed |
+### Ingestion plane
 
-Editions are exactly those in the uploaded PDFs, for example IS 1417 : 1999 with Amendments 1 to 3. The staff console shows which edition every answer is based on.
+New and amended standards enter through a governed workflow, never by editing the live index:
 
-## Measured quality
+`staff upload → MinIO → Temporal workflow (parse + OCR, chunk by clause, embed, link graph) → officer approval → published edition`
 
-Measured on 2026-09-29 with `npm run eval:rag` on hand-written test sets. Read these as regression checks, not benchmark claims.
+Every answer names the edition it used, and the staff console shows the edition and amendment register for each standard. Knowledge tiers decide how much may be claimed from a source: catalogue metadata supports identity and scope only, public official text supports paragraph citations, and full clause text supports clause-level citations with figures.
 
-| Metric | Result |
-|---|---|
-| Golden set (helmets, toys, gold, Form I, follow-ups, off-topic, prompt injection, Hindi) | **31 / 32** |
-| Correct kind of reply (answer, clarify, refusal) | **32 / 32** |
-| Wrong standard given as the main answer | **0** |
-| Source tags that resolve to a real clause | **65 / 65** |
-| Figures supported by the cited clause | **80 / 80** |
-| Multilingual set: 9 languages, native and Roman script (`npm run eval:multi`, last full run) | **23 / 24** |
+### Resilience
 
-The one golden-set miss is kept in the results rather than hidden: an industrial-helmet question retrieves IS 4151 (motorcycle) instead of IS 2925. Per-case results are in `prototype/data/eval/results/`.
+- **Provider chain ending in no model at all.** Hosted model, then self-hosted open-weight model in India, then an evidence-only answer rendered straight from the adjudicated evidence.
+- **Deterministic core.** Routing rules, adjudication, format checks and the trust gate are plain code, so safety does not depend on a model provider being up.
+- **Evaluation built in.** Golden and multilingual test sets plus a calibrated relevance floor let coverage grow without silent drops in accuracy.
 
-## Built to scale
+### Scale
 
-The foundation was designed so that growth is a data and infrastructure task, not a rewrite.
-
-- **Stateless API.** Conversation state travels with each request, so identical replicas can run behind any load balancer.
+- **Stateless API.** Conversation state travels with each request, so identical replicas run behind any load balancer.
 - **One retrieval interface.** `pipeline/retrieve.ts` hides where chunks and vectors live. Moving from the in-memory store to Postgres + pgvector changes the store, not the pipeline.
-- **Local embeddings.** bge-m3 runs in-process with no per-call cost or quota. It can move to a separate batched embedding service when volume grows.
+- **Local embeddings.** bge-m3 runs in-process with no per-call cost or quota, and can move to a separate batched embedding service.
 - **Config-driven models.** Every model id comes from env, so providers can be changed, added or self-hosted without code changes.
-- **Deterministic core.** Routing rules, adjudication, format checks and the trust gate are plain code, cheap to run and easy to audit.
-- **Evaluation built in.** Golden and multilingual sets plus a calibrated relevance floor let coverage grow without silent drops in accuracy.
 
 | Growth step | What changes | What it unlocks |
 |---|---|---|
-| Up to ~150 standards | Nothing; ingest the PDFs | Current in-memory store, brute-force search still fast |
+| Up to ~150 standards | Nothing; ingest the PDFs | In-memory store, brute-force search still fast |
 | Whole BIS catalogue | Postgres + pgvector (HNSW) + full-text search behind the existing retrieval interface | Millions of clauses |
 | High traffic | More web replicas; embedding service split out | Throughput limited by budget, not code |
-| Staff-driven updates | Staff upload wired to the build pipeline through a job queue, with officer approval | New editions and amendments go live without a developer |
-| Accounts and history | Server-side sessions | Cross-device history and per-user audit |
+| Staff-driven updates | Staff upload wired to the build pipeline through Temporal, with officer approval | New editions and amendments go live without a developer |
+| Accounts and history | Keycloak SSO and server-side sessions in Redis | Cross-device history and per-user audit |
+
+### Deployment modes
+
+`○` Demo · Cloud · NIC government cloud (MeghRaj) with language models served from India · Air-gapped
+
+### Service targets
+
+| Target | Goal |
+|---|---|
+| Exact-ID and FAQ fast path | < 200 ms (p95) |
+| First stage event | < 300 ms (p95) |
+| Full answer | < 10 s (p95) |
+| Source tags valid after the trust gate | 100% |
+| Wrong standard on the golden set | 0 |
+| Product-to-standard recall@5 | ≥ 0.92 |
+| Accessibility | WCAG 2.1 AA |
+
+## Prototype: running today
+
+The prototype runs the full request path end to end: understanding, hybrid retrieval, adjudication, answer writing and the trust gate, plus the lab and centre finders, mark checks, photo reading, Form I drafting, voice and the staff console. It answers from 8 Indian Standards and Form I (IS 4151, IS 2925, IS 9873 Part 1 and Part 3, IS 15644, IS 1417, IS 1418, IS 15820), the official BIS LIMS lab directory and the Manak Online centre directory. The editions are exactly those in the uploaded PDFs, for example IS 1417 : 1999 with Amendments 1 to 3.
+
+The prototype holds **760 clause-level chunks** with 1024-dim bge-m3 vectors, a knowledge graph of **320 nodes and 343 links**, **29 testing labs** with these standards in scope, and **1,651 hallmarking centres** (1,512 operative; 1,490 on the map, the rest listed without a pin rather than guessed).
+
+**Measured (2026-09-29)**, `npm run eval:rag` and `npm run eval:multi`:
+
+| Metric | Result |
+|---|---|
+| Wrong standard given as the main answer | **0** |
+| Source tags that resolve to a real clause | **65 / 65** |
+| Figures supported by the cited clause | **80 / 80** |
+| Correct kind of reply (answer, clarify, refusal) | **32 / 32** |
+| Golden set | **31 / 32** |
+| Multilingual set, 9 languages in native and Roman script | **23 / 24** |
+
+Per-case results are in `prototype/data/eval/results/`.
 
 ## Roadmap
 
-- **Model provider fallback chain:** Groq first, then OpenRouter, then the built-in evidence-only answer, so a quota limit or outage never takes answers offline.
+- **PostgreSQL 16 data plane:** pgvector, full-text search, Apache AGE and PostGIS behind the existing store interface.
+- **Governed ingestion:** Temporal workflows with officer approval and an audit log before any edition goes live.
+- **Cross-encoder reranking:** bge-reranker-v2-m3 between fusion and adjudication.
+- **Model provider chain:** LiteLLM with hosted, self-hosted and evidence-only tiers, so an outage never takes answers offline.
 - **Phone agent on the same knowledge base:** route calls through retrieval and the trust gate, and carry the web conversation into the call.
-- **Officer approval for knowledge:** new editions and amendments are searchable only after a BIS officer publishes them, with an audit log.
+- **WhatsApp channel and public API** for BIS portals.
 - **Full standards catalogue and certification schemes:** titles, scopes and scheme guides for every standard BIS provides.
 - **Official verification links:** HUID and licence status through BIS APIs if they become available.
 - **Government cloud deployment:** NIC MeghRaj hosting with language models served from India.
@@ -270,7 +302,5 @@ BISVEDA/
 
 ## Tech stack
 
-**App:** Next.js 15, React 19, TypeScript, Tailwind CSS v4, Leaflet maps, react-force-graph, docx.
-**AI:** Groq-hosted open models (answers, intent, Whisper speech-to-text), Gemini (photo reading), bge-m3 via transformers.js (local embeddings).
-**Offline:** Python + PyMuPDF + OCR (PDF parsing), tsx build scripts.
-**Data:** JSON knowledge base loaded into memory in the prototype, with a defined path to Postgres + pgvector.
+**Production design:** PostgreSQL 16 (pgvector, full-text, Apache AGE, PostGIS) · MinIO · Redis · Temporal · Keycloak · LiteLLM · bge-reranker-v2-m3 · Bhashini · NIC MeghRaj.
+**Prototype:** Next.js 15, React 19, TypeScript, Tailwind CSS v4, Leaflet maps, react-force-graph, docx · Groq-hosted open models (answers, intent, Whisper speech-to-text), Gemini (photo reading), bge-m3 via transformers.js (local embeddings) · Python + PyMuPDF + OCR and tsx build scripts for the offline pipeline · JSON knowledge base loaded into memory.
