@@ -251,7 +251,7 @@ Captured from the running prototype. Click any image for full size.
 </table>
 
 <details>
-<summary><b>More from the citizen and jeweller experience</b> (6)</summary>
+<summary><b>More from the citizen and jeweller experience</b> (8)</summary>
 <br>
 
 <table>
@@ -266,6 +266,10 @@ Captured from the running prototype. Click any image for full size.
   <tr>
     <td width="50%"><a href="docs/screenshots/07-testing-labs.png"><img src="docs/screenshots/07-testing-labs.png" alt="Testing labs sorted by distance"></a><br><sub><b>Testing labs</b> with the standards in scope, nearest first.</sub></td>
     <td width="50%"><a href="docs/screenshots/08-honest-refusal.png"><img src="docs/screenshots/08-honest-refusal.png" alt="Answer outside the documents"></a><br><sub><b>Outside the documents:</b> says so and points to the official route.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><a href="docs/screenshots/12-helmet-photo-check.png"><img src="docs/screenshots/12-helmet-photo-check.png" alt="Helmet label photo check"></a><br><sub><b>Helmet photo check.</b> Reads the ISI mark and licence number, then points to Manak Online to verify.</sub></td>
+    <td width="50%"><a href="docs/screenshots/13-context-aware-follow-up.png"><img src="docs/screenshots/13-context-aware-follow-up.png" alt="Context-aware follow-up question"></a><br><sub><b>Follow-ups keep their context:</b> "which standards apply on that?" stays on the helmet.</sub></td>
   </tr>
 </table>
 
