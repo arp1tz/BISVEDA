@@ -16,7 +16,7 @@ Smart India Hackathon 2026 · Problem Statement **SIH26107** · Ministry of Cons
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-0B2A4A)
 ![Embeddings](https://img.shields.io/badge/embeddings-bge--m3-228f4a)
 
-[Why BISVEDA](#what-makes-bisveda-different) · [Architecture](#platform-architecture) · [How an answer is made](#how-an-answer-is-made) · [Trust](#trust-by-design) · [Ingestion and scale](#knowledge-ingestion-scale-and-deployment) · [Prototype](#prototype-running-today) · [Roadmap](#roadmap) · [Getting started](#getting-started)
+[Why BISVEDA](#what-makes-bisveda-different) · [Architecture](#platform-architecture) · [How an answer is made](#how-an-answer-is-made) · [Trust](#trust-by-design) · [Ingestion and scale](#knowledge-ingestion-scale-and-deployment) · [Prototype](#prototype-running-today) · [Screenshots](#screenshots) · [Roadmap](#roadmap) · [Getting started](#getting-started)
 
 </div>
 
@@ -237,6 +237,52 @@ Per-case results are in `prototype/data/eval/results/`.
 
 > [!NOTE]
 > **Showcase interfaces.** To show the intended staff and caller experience, a few parts of the prototype are interface showcases: the staff console's document ingestion and revision/amendment registration screens, and the phone channel's call experience. They demonstrate the workflow and the design; connecting them to the live knowledge base (approval-gated ingestion, and phone answers cited from the same evidence) is the next build phase.
+
+## Screenshots
+
+Captured from the running prototype. Click any image for full size.
+
+<table>
+  <tr>
+    <td width="33%"><a href="docs/screenshots/02-cited-answer.png"><img src="docs/screenshots/02-cited-answer.png" alt="Cited answer with the source drawer open"></a><br><sub><b>Cited answer.</b> Every claim opens its clause and page.</sub></td>
+    <td width="33%"><a href="docs/screenshots/03-hallmark-photo.png"><img src="docs/screenshots/03-hallmark-photo.png" alt="Hallmark photo check"></a><br><sub><b>Photo check.</b> Reads the mark, explains it from IS 1417.</sub></td>
+    <td width="33%"><a href="docs/screenshots/09-staff-knowledge-graph.png"><img src="docs/screenshots/09-staff-knowledge-graph.png" alt="Staff console knowledge graph"></a><br><sub><b>Staff console.</b> Standards, clauses, labs and centres in one graph.</sub></td>
+  </tr>
+</table>
+
+<details>
+<summary><b>More from the citizen and jeweller experience</b> (6)</summary>
+<br>
+
+<table>
+  <tr>
+    <td width="50%"><a href="docs/screenshots/01-home.png"><img src="docs/screenshots/01-home.png" alt="Home page"></a><br><sub><b>One entry point</b> for text, photo, voice and phone.</sub></td>
+    <td width="50%"><a href="docs/screenshots/04-hallmarking-centres.png"><img src="docs/screenshots/04-hallmarking-centres.png" alt="Hallmarking centres on a map"></a><br><sub><b>Hallmarking centres</b> from the Manak Online directory, on a map.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><a href="docs/screenshots/05-form-i.png"><img src="docs/screenshots/05-form-i.png" alt="Form I draft ready"></a><br><sub><b>Form I</b> drafted in chat and delivered as an editable Word file (sample details).</sub></td>
+    <td width="50%"><a href="docs/screenshots/06-hinglish.png"><img src="docs/screenshots/06-hinglish.png" alt="Answer in Hinglish"></a><br><sub><b>Hinglish answer</b> with source tags kept intact.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><a href="docs/screenshots/07-testing-labs.png"><img src="docs/screenshots/07-testing-labs.png" alt="Testing labs sorted by distance"></a><br><sub><b>Testing labs</b> with the standards in scope, nearest first.</sub></td>
+    <td width="50%"><a href="docs/screenshots/08-honest-refusal.png"><img src="docs/screenshots/08-honest-refusal.png" alt="Answer outside the documents"></a><br><sub><b>Outside the documents:</b> says so and points to the official route.</sub></td>
+  </tr>
+</table>
+
+</details>
+
+<details>
+<summary><b>More from the staff console</b> (2)</summary>
+<br>
+
+<table>
+  <tr>
+    <td width="50%"><a href="docs/screenshots/10-staff-documents.png"><img src="docs/screenshots/10-staff-documents.png" alt="Edition and amendment register"></a><br><sub><b>Edition and amendment register</b> for each standard (IS 1417 shown).</sub></td>
+    <td width="50%"><a href="docs/screenshots/11-staff-directory.png"><img src="docs/screenshots/11-staff-directory.png" alt="Official lab and centre directories"></a><br><sub><b>Official directories:</b> 29 LIMS labs and 1,651 Manak Online centres.</sub></td>
+  </tr>
+</table>
+
+</details>
 
 ## Roadmap
 

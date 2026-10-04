@@ -4,8 +4,8 @@ _archive/
 # Competitor repos (large zips)
 repos/
 
-# Screenshots & competitor artifacts
-screenshots/
+# Screenshots & competitor artifacts (root-level working folder only; docs/screenshots is published)
+/screenshots/
 
 # Python & Virtual Environments
 __pycache__/

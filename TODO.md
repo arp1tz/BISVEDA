@@ -281,7 +281,7 @@ Read: `README.md` and this section only. Every fact needed is below (extracted f
 - **G3 No failure narration.** Delete the "one golden-set miss" sentence and the "regression checks, not benchmark claims" sentence. No "known limitations" section, no mention of which case missed.
 - **G4 CLAUDE.md hard rules apply to the README.** Banned words (statutory, sovereign, NotebookLM, corpus boundary, zero-shot, provenance, "Axiom"). Never say BISVEDA verifies a mark, licence or HUID. Don't say phone answers are cited from the knowledge base (the phone agent is a separate voice agent today; KB grounding is roadmap). Don't present QCO or scheme data as something the prototype holds.
 - **G5 Style.** No em dashes, sentence-case headings, Mermaid labels quoted where they contain punctuation so GitHub renders them, design-token colours in badges. Don't link `docs/submission/*` or `docs/reference/*` (kept local).
-- **G6 Length.** Whole README ≤ 320 lines. The prototype section ≤ 25 lines.
+- **G6 Length.** README prose ≤ 320 lines, plus the Screenshots section (images in `docs/screenshots/`, one visible row and the rest collapsed). The prototype section ≤ 25 lines.
 
 **Target outline (in this order)**
 1. Hero · 2. Intro + callout · 3. What makes BISVEDA different · 4. Platform architecture · 5. How an answer is made · 6. Trust by design · 7. Knowledge and ingestion plane · 8. Scale, resilience and deployment · 9. Prototype: running today · 10. Roadmap · 11. Getting started · 12. Repository layout · 13. Tech stack
@@ -321,6 +321,7 @@ Why: `api/admin/ingest/route.ts` and `components/admin/IngestionTab.tsx` simulat
 - [ ] **14.2.2** Remove invented numbers from the UI log ("Extracted 38 pages", "avg 380 tokens/chunk", `fileSize / 40` chunk count, `/45` on the server) and the "registered in official KB index! Status: Active" message. Fixed copy: the upload is queued and becomes searchable after officer approval and a build.
 - [ ] **14.2.3** Actually accept the PDF and save it to `prototype/data/ingest-queue/` (gitignored); the history table lists queued files with status "Awaiting officer approval" and only facts we have (file name, size, time, uploader).
 - [ ] **14.2.4** Audit the "register revision / amendment" modals in `DocumentsTab.tsx` for the same problem; anything that implies a change went live must either work or say it is queued.
+- [ ] **14.2.6** Retake the staff-console screenshots (add the ingestion tab once it is honest) and any frame that changed; keep one visible row and the rest collapsed in the README Screenshots section.
 - [ ] **14.2.5** `npm run typecheck`; README wording ("ingestion workflow interface") stays valid; commit `P14.2: honest ingestion screen`.
 
 ## P15: Working document ingestion layer `[Opus 5.5 / High for design, Sonnet for build]` (planned, detail to be written)
