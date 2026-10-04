@@ -269,7 +269,7 @@ Captured from the running prototype. Click any image for full size.
   </tr>
   <tr>
     <td width="50%"><a href="docs/screenshots/12-helmet-photo-check.png"><img src="docs/screenshots/12-helmet-photo-check.png" alt="Helmet label photo check"></a><br><sub><b>Helmet photo check.</b> Reads the ISI mark and licence number, then points to Manak Online to verify.</sub></td>
-    <td width="50%"><a href="docs/screenshots/13-context-aware-follow-up.png"><img src="docs/screenshots/13-context-aware-follow-up.png" alt="Context-aware follow-up question"></a><br><sub><b>Follow-ups keep their context:</b> "which standards apply on that?" stays on the helmet.</sub></td>
+    <td width="50%"><a href="docs/screenshots/13-context-aware-follow-up.png"><img src="docs/screenshots/13-context-aware-follow-up.png" alt="Context-aware follow-up question"></a><br><sub><b>Follow-ups keep their context:</b> "which standards apply on that?"In Helmet photo conversation,Context stays on the helmet.</sub></td>
   </tr>
 </table>
 
