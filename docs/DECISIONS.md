@@ -83,3 +83,8 @@
 - **Decision:** Every metric in BISVEDA documentation and UI is labeled as **Target** (aspirational goal) or **Measured (YYYY-MM-DD, suite-ID)**. No claim is presented as fact without a stored evaluation run in `eval_runs`.
 - **Rationale:** Enforces institutional integrity and resolves V7's A6 violations.
 - **Trace:** Axiom A6, C11.
+
+### D46: OpenRouter as the production model gateway
+- **Decision:** Production model access goes through OpenRouter: one managed key, routed hosted models and automatic fallback. This replaces LiteLLM as the gateway named in D12 and D40. The chain stays hosted, then self-hosted open models in India, then evidence-only, and every model id still comes from env.
+- **Rationale:** One key and one billing surface instead of a key per provider; fallback routing without running a proxy service.
+- **Not changed:** D2 stands. Vectors stay in PostgreSQL with pgvector (Qdrant was considered and rejected: no extra service, co-located with the relational data, scales to 10M+ vectors).

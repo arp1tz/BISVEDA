@@ -115,8 +115,8 @@ flowchart TB
   end
 
   subgraph MODELS["Model gateway"]
-    M1["○ LiteLLM provider chain"]
-    M2["● Hosted chat, intent,<br/>vision, speech models"]
+    M1["○ OpenRouter<br/>one managed key · routed models · fallback"]
+    M2["● Hosted chat, intent,<br/>vision, speech models<br/>(keys in env)"]
     M3["○ Self-hosted open models in India"]
     M4["● Evidence-only answer<br/>(no model needed)"]
     M5["● Local bge-m3 embeddings"]
@@ -137,10 +137,10 @@ flowchart TB
 | **Understanding** | Language and script detection, English working query, intent; Bhashini speech and translation with a local fallback | Hosted fast model, Whisper speech-to-text, rule-based fallback router | `understandTurn` |
 | **Retrieval** | pgvector HNSW (dense), Postgres full-text and trigram (sparse), Apache AGE (graph), exact IS-number lookup, RRF, bge-reranker-v2-m3 cross-encoder | In-memory exact + BM25 + bge-m3 dense + graph, RRF (k = 60), calibrated floor | `pipeline/retrieve.ts` |
 | **Adjudication** | Rule-based applicability with knowledge tiers: **A** catalogue metadata, **B** public official text, **C** full clause text, each limiting what may be claimed from that source | Rule-based choice of the applicable standard from its own scope clause | `pipeline/adjudicate.ts` |
-| **Generation** | LiteLLM gateway: hosted, then self-hosted, then evidence-only | Hosted model with an evidence-only fallback | `pipeline/answer.ts` |
+| **Generation** | OpenRouter as the model gateway (one managed key, routed hosted models, automatic fallback), then self-hosted open models in India, then evidence-only | Hosted model with keys in env, and an evidence-only fallback | `pipeline/answer.ts` |
 | **Trust gate** | Same code in production and in the prototype | Same code | `pipeline/trust.ts` |
 | **Geo tools** | PostGIS nearest-lab and nearest-centre queries | Haversine distance over the loaded directories | `lib/tools/*` |
-| **Data** | PostgreSQL 16, MinIO, Redis | JSON knowledge base loaded once into memory | `lib/kb/store.ts` |
+| **Data** | PostgreSQL 16 with pgvector holding vectors beside the relational data (no separate vector service), MinIO, Redis | JSON knowledge base loaded once into memory | `lib/kb/store.ts` |
 | **Ingestion** | Temporal workflows with officer approval and an audit log | `npm run kb:build` and throttled directory scrapers | `scripts/kb/*` |
 
 ## How an answer is made
@@ -189,7 +189,7 @@ Every answer names the edition it used, and the staff console shows the edition 
 - **Stateless API.** Conversation state travels with each request, so identical replicas run behind any load balancer.
 - **One retrieval interface.** `pipeline/retrieve.ts` hides where chunks and vectors live. Moving from the in-memory store to Postgres + pgvector changes the store, not the pipeline.
 - **Local embeddings.** bge-m3 runs in-process with no per-call cost or quota, and can move to a separate batched embedding service.
-- **Config-driven models.** Every model id comes from env, so providers can be changed, added or self-hosted without code changes.
+- **Config-driven models.** Every model id comes from env, so providers can be changed, added or self-hosted without code changes; in production OpenRouter manages the provider keys behind one gateway.
 
 | Growth step | What changes | What it unlocks |
 |---|---|---|
@@ -244,7 +244,7 @@ Per-case results are in `prototype/data/eval/results/`.
 - **Governed ingestion:** staff upload runs the existing parse, chunk, embed and graph steps, then an officer approves before any edition goes live, with an audit log.
 - **PostgreSQL 16 data plane:** pgvector, full-text search, Apache AGE and PostGIS behind the existing store interface.
 - **Cross-encoder reranking:** bge-reranker-v2-m3 between fusion and adjudication.
-- **Model provider chain:** LiteLLM with hosted, self-hosted and evidence-only tiers, so an outage never takes answers offline.
+- **Model gateway:** OpenRouter for managed keys and routed fallback across hosted models, then self-hosted and evidence-only tiers, so an outage never takes answers offline.
 - **Phone agent on the same knowledge base:** route calls through retrieval and the trust gate, and carry the web conversation into the call.
 - **WhatsApp channel and public API** for BIS portals.
 - **Full standards catalogue and certification schemes:** titles, scopes and scheme guides for every standard BIS provides.
@@ -315,5 +315,5 @@ BISVEDA/
 
 ## Tech stack
 
-**Production design:** PostgreSQL 16 (pgvector, full-text, Apache AGE, PostGIS) · MinIO · Redis · Temporal · Keycloak · LiteLLM · bge-reranker-v2-m3 · Bhashini · NIC MeghRaj.
+**Production design:** PostgreSQL 16 (pgvector, full-text, Apache AGE, PostGIS) · MinIO · Redis · Temporal · Keycloak · OpenRouter · bge-reranker-v2-m3 · Bhashini · NIC MeghRaj.
 **Prototype:** Next.js 15, React 19, TypeScript, Tailwind CSS v4, Leaflet maps, react-force-graph, docx · Groq-hosted open models (answers, intent, Whisper speech-to-text), Gemini (photo reading), bge-m3 via transformers.js (local embeddings) · Python + PyMuPDF + OCR and tsx build scripts for the offline pipeline · JSON knowledge base loaded into memory.
