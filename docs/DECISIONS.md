@@ -84,7 +84,7 @@
 - **Rationale:** Enforces institutional integrity and resolves V7's A6 violations.
 - **Trace:** Axiom A6, C11.
 
-### D46: OpenRouter as the production model gateway
-- **Decision:** Production model access goes through OpenRouter: one managed key, routed hosted models and automatic fallback. This replaces LiteLLM as the gateway named in D12 and D40. The chain stays hosted, then self-hosted open models in India, then evidence-only, and every model id still comes from env.
-- **Rationale:** One key and one billing surface instead of a key per provider; fallback routing without running a proxy service.
+### D46: LiteLLM gateway with OpenRouter as the hosted tier
+- **Decision:** D12 stands: LiteLLM is the gateway. OpenRouter is added as its hosted-model provider, so hosted access uses one managed key with routed fallback. The chain is hosted (via OpenRouter), then self-hosted open models in India, then evidence-only, and every model id still comes from env.
+- **Rationale:** LiteLLM is self-hosted, so it can also route to models we run in India and work in the air-gapped and government-cloud modes, which OpenRouter (hosted only) cannot. OpenRouter removes the need for a key per hosted provider.
 - **Not changed:** D2 stands. Vectors stay in PostgreSQL with pgvector (Qdrant was considered and rejected: no extra service, co-located with the relational data, scales to 10M+ vectors).

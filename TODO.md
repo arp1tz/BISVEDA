@@ -331,7 +331,7 @@ Goal: staff upload to published edition works for real. Reuses `scripts/kb/{pars
 ## P16: Full-scale hybrid retrieval `[Opus 5.5 / High for design, Sonnet for build]` (planned, detail to be written)
 Goal: the retrieval plane the README describes, running: PostgreSQL 16 with pgvector (HNSW; D2 chose pgvector over Qdrant, do not add a separate vector service), full-text and trigram search, graph traversal, exact IS-number lookup, RRF, and a bge-reranker-v2-m3 cross-encoder, all behind `lib/kb/store.ts` and `pipeline/retrieve.ts`. Re-run `eval:rag` and `eval:multi` against it; the relevance floor must be recalibrated.
 - [ ] Task breakdown to be written when P16 starts.
-- [ ] Model gateway (D46): route chat, intent and vision through OpenRouter with fallback models, keys in env only, model ids still env-configured; keep the evidence-only end of the chain.
+- [ ] Model gateway (D46): LiteLLM proxy in front of chat, intent and vision, with OpenRouter as the hosted provider (one managed key) and a self-hosted tier; keys in env only, model ids still env-configured; keep the evidence-only end of the chain.
 - [ ] On completion update the README layer table and architecture diagram (`○` to `●` for the data plane and rerank) and the measured table from a fresh run.
 
 ## README maintenance rule
