@@ -116,7 +116,7 @@ flowchart TB
 
   subgraph MODELS["Model gateway"]
     M1["○ LiteLLM gateway<br/>provider chain · budgets · fallback"]
-    M2["● Hosted chat, intent,<br/>vision, speech models<br/>(keys in env)"]
+    M2["● Hosted chat, intent,<br/>vision, speech models<br/>(direct provider keys)"]
     M6["○ OpenRouter<br/>hosted models, one managed key"]
     M3["○ Self-hosted open models in India"]
     M4["● Evidence-only answer<br/>(no model needed)"]
@@ -129,7 +129,6 @@ flowchart TB
   ING --> DATA
   ORCH --> MODELS
   M1 --> M6 & M3 & M4
-  M6 -.-> M2
 ```
 
 | Layer | Production design | Running today | Interface that stays the same |
