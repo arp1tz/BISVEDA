@@ -181,3 +181,9 @@ R6, R7 independent (any time after R1)
 - **Not verified:** clicking through the admin form in the browser pane (pane would not render). The form now posts to the real endpoint; typecheck passes.
 - **Still simulated:** the "Pipeline Visualizer" steps on the admin form and the chunk/node counts; both are removed in slice 2.
 - **Next (slice 2):** R2.3 parse with quality scoring and OCR fallback, R2.4 clause tree and chunker, R2.6 graph links.
+
+### R2 slice 2 status (2026-11-12)
+- **Done:** the worker runs parsing → chunking → embedding → staging with the existing parser (`scripts/parse_pdf_json.py`, OCR fallback per page) and chunker. Clauses get parent links from their numbering; chunks get 1024-dim bge-m3 embeddings. A staged version is not searchable. Temp output is on D: (storage/tmp), not C:.
+- **Verified:** a copy of the Form I PDF (1 byte appended, so it is not a duplicate) went through the real upload API and the worker: 2 pages, 1 clause, 3 chunks, 1024-dim vectors, status staged. The test rows and file were then removed; the database is back to 9 documents and 760 chunks.
+- **Not done yet:** R2.4 clause-tree quality (fragment titles, clause "0" bucket), R2.5 metadata suggestions, R2.6 graph edges, R2.7 publish/reject, the admin list showing "staged" (it currently shows "processing"), and the browser check of the form.
+- **Known limits:** the first embedding run takes about a minute to load the model. Clause text for a split clause repeats the overlap between chunks.
