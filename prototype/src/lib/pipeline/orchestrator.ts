@@ -21,7 +21,7 @@ import { buildEvidencePackage, EvidencePackage, Source } from "./package";
 import { generateAnswer, evidenceOnlyAnswer, generateGeneralQueryAnswer } from "./answer";
 import { runTrustGate } from "./trust";
 import { BisvedaResponse, StageEvent, STAGE_LABELS, PipelineStage, buildFollowUps, ImageReadCard, MarkCard, HallmarkCard, LabsCard, AhcCard, FormICard, HelplineCard } from "./respond";
-import { getAllStandards, getChunksByStandard, getStandardById, isScopeChunk, loadStore } from "../kb/store";
+import { getAllStandards, getChunksByStandard, getStandardById, isScopeChunk, loadStore, matchesProductTerms } from "../kb/store";
 import { inspectImage, normalizeCmlNumber, validateHuid, parsePurity, VisionInspectionResult } from "../vision";
 import { findLabs } from "../tools/labs";
 import { findAhc } from "../tools/ahc";
@@ -169,8 +169,9 @@ function isOutOfDomainProduct(
   routerUnavailable = false
 ): boolean {
   if (standards.some((s) => getStandardById(s))) return false; // the user named one of our standards
-  if (DOMAIN_RE.test(query)) return false;
-  if (product && product.trim()) return !DOMAIN_RE.test(product);
+  // Built-in product words, plus the products officers confirmed for standards published through ingestion.
+  if (DOMAIN_RE.test(query) || matchesProductTerms(query)) return false;
+  if (product && product.trim()) return !(DOMAIN_RE.test(product) || matchesProductTerms(product));
   // Without the router model nothing was translated or classified: a new question with none of our words
   // would only match stray text (a committee list, an address), so refuse instead of guessing.
   if (routerUnavailable && !hasActiveContext && !GENERIC_BIS_RE.test(query)) return true;

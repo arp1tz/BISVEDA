@@ -43,6 +43,76 @@ def get_ocr():
     return _rapid_ocr_instance if _rapid_ocr_instance is not False else None
 
 
+# ─── Enhanced mode (R2.3): text-quality check and column-aware reading order ──
+# Used only by the ingestion worker (parse_pdf_json.py --enhanced). kb:build keeps
+# the original behaviour so the current knowledge base stays reproducible (TD-14).
+
+_COMMON_WORDS = set("""
+the of and to in a for be shall is as by with on or that at from are which not this an it when than per
+each all may should test tested standard specimen sample its under after before between any other such
+been have has used use specified given accordance method clause table figure part see also no into where
+""".split())
+
+
+def common_word_ratio(text):
+    """Share of Latin words that are common English function words. Normal text: ~0.25-0.45.
+    Text from a broken font mapping is letters in the wrong order, so the ratio collapses to ~0.
+    Returns None when there are too few Latin words to judge (e.g. a Hindi page)."""
+    words = re.findall(r"[A-Za-z]{2,}", text)
+    if len(words) < 30:
+        return None
+    common = sum(1 for w in words if w.lower() in _COMMON_WORDS)
+    return common / len(words)
+
+
+_CLAUSE_NUM_RE = re.compile(r"^\s*(\d{1,2}(?:\.\d{1,2}){1,4})\s+[A-Z]", re.M)
+
+
+def clause_inversions(text):
+    """How often a clause number is lower than the one before it (0 = numbers read in order)."""
+    nums = [tuple(int(x) for x in m.group(1).split(".")) for m in _CLAUSE_NUM_RE.finditer(text)]
+    return sum(1 for a, b in zip(nums, nums[1:]) if b < a)
+
+
+def column_ordered_text(page):
+    """Returns (text, is_two_column) for the page's native text blocks. See order_blocks_by_column."""
+    try:
+        blocks = [b for b in page.get_text("blocks") if len(b) >= 7 and b[6] == 0 and b[4].strip()]
+    except Exception:
+        return None, False
+    return order_blocks_by_column(blocks, page.rect.width)
+
+
+def order_blocks_by_column(blocks, width):
+    """blocks: (x0, y0, x1, y1, text, ...). On a clear two-column layout, reads the left column then
+    the right column between full-width blocks. Returns (text, is_two_column)."""
+    if len(blocks) < 6:
+        return None, False
+    left = [b for b in blocks if b[2] <= width * 0.52]
+    right = [b for b in blocks if b[0] >= width * 0.48]
+    span = [b for b in blocks if b not in left and b not in right]
+    chars = lambda bs: sum(len(b[4]) for b in bs)
+    total = max(chars(blocks), 1)
+    two_col = (
+        len(left) >= 3 and len(right) >= 3
+        and chars(left) > 0.2 * total and chars(right) > 0.2 * total
+        and chars(left) + chars(right) > 0.6 * total
+    )
+    if not two_col:
+        return None, False
+    out = []
+    pending_left = sorted(left, key=lambda b: (b[1], b[0]))
+    pending_right = sorted(right, key=lambda b: (b[1], b[0]))
+    for s in sorted(span, key=lambda b: b[1]):
+        out += [b[4] for b in pending_left if b[1] < s[1]]
+        out += [b[4] for b in pending_right if b[1] < s[1]]
+        pending_left = [b for b in pending_left if b[1] >= s[1]]
+        pending_right = [b for b in pending_right if b[1] >= s[1]]
+        out.append(s[4])
+    out += [b[4] for b in pending_left] + [b[4] for b in pending_right]
+    return "\n".join(t.rstrip("\n") for t in out) + "\n", True
+
+
 # ─── Formatting & Table Helpers ──────────────────────────────────────────────
 
 def format_table_as_markdown(headers, rows):
@@ -236,7 +306,7 @@ def extract_image_data(img_path_or_bytes):
     if result:
         extracted_lines = [line[1] for line in result]
         full_text = "\n".join(extracted_lines)
-        confidences = [line[2] for line in result if len(line) > 2]
+        confidences = [float(line[2]) for line in result if len(line) > 2]
         mean_quality = sum(confidences) / len(confidences) if confidences else 0.85
     else:
         full_text = ""
@@ -265,7 +335,7 @@ def extract_image_data(img_path_or_bytes):
     }
 
 
-def extract_pdf_data(pdf_path_or_bytes):
+def extract_pdf_data(pdf_path_or_bytes, enhanced=False):
     """
     High-fidelity PDF processing using PyMuPDF + RapidOCR.
     - Native digital text layout extraction
@@ -305,6 +375,16 @@ def extract_pdf_data(pdf_path_or_bytes):
         
         # 1. Native digital text extraction
         native_text = page.get_text("text") or ""
+        page_layout = "single"
+        if enhanced:
+            ordered, is_two_col = column_ordered_text(page)
+            if is_two_col and ordered:
+                page_layout = "two_column"
+                # Archive.org text layers are usually already in column order; switch only when the
+                # column order reads clause numbers in order more often than the native order does.
+                if clause_inversions(ordered) < clause_inversions(native_text):
+                    native_text = ordered
+                    page_layout = "two_column_reordered"
         page_tables = []
         md_tables = []
 
@@ -326,6 +406,15 @@ def extract_pdf_data(pdf_path_or_bytes):
         alnum_count = len(re.findall(r"[a-zA-Z0-9\u0900-\u097F]", native_text))
         alnum_ratio = alnum_count / max(len(native_text), 1)
         is_scanned_or_corrupted = (len(native_text.strip()) < 60) or (len(native_text.strip()) > 100 and alnum_ratio < 0.35)
+        word_ratio = common_word_ratio(native_text) if enhanced else None
+        ocr_reason = None
+        if len(native_text.strip()) < 60:
+            ocr_reason = "little_text"
+        elif is_scanned_or_corrupted:
+            ocr_reason = "low_alnum"
+        elif enhanced and len(native_text.strip()) > 200 and word_ratio is not None and word_ratio < 0.05:
+            ocr_reason = "garbled_words"
+            is_scanned_or_corrupted = True
 
         final_page_text = native_text
         page_is_ocr = False
@@ -341,9 +430,22 @@ def extract_pdf_data(pdf_path_or_bytes):
                     if res:
                         ocr_lines = [l[1] for l in res]
                         ocr_text = "\n".join(ocr_lines)
+                        if enhanced:
+                            # Same column check on the OCR line boxes (RapidOCR reads across both columns).
+                            boxes = []
+                            for l in res:
+                                xs = [pt[0] for pt in l[0]]
+                                ys = [pt[1] for pt in l[0]]
+                                boxes.append((min(xs), min(ys), max(xs), max(ys), l[1] + "\n"))
+                            ordered_ocr, ocr_two_col = order_blocks_by_column(boxes, pix.width)
+                            if ocr_two_col and ordered_ocr:
+                                page_layout = "two_column"
+                                if clause_inversions(ordered_ocr) < clause_inversions(ocr_text):
+                                    ocr_text = ordered_ocr
+                                    page_layout = "two_column_reordered"
                         if len(ocr_text.strip()) > 30:
                             final_page_text = ocr_text
-                            confidences = [l[2] for l in res if len(l) > 2]
+                            confidences = [float(l[2]) for l in res if len(l) > 2]
                             page_ocr_quality = sum(confidences) / len(confidences) if confidences else 0.85
                             page_is_ocr = True
                             ocr_pages_count += 1
@@ -357,7 +459,7 @@ def extract_pdf_data(pdf_path_or_bytes):
 
         headings = extract_headings(final_page_text)
 
-        pages.append({
+        page_record = {
             "pageNumber": page_num + 1,
             "text": final_page_text,
             "charCount": len(final_page_text),
@@ -365,7 +467,15 @@ def extract_pdf_data(pdf_path_or_bytes):
             "tables": page_tables,
             "isOcr": page_is_ocr,
             "ocrQuality": round(page_ocr_quality, 2)
-        })
+        }
+        if enhanced:
+            page_record["layout"] = page_layout
+            page_record["quality"] = {
+                "alnumRatio": round(alnum_ratio, 3),
+                "wordRatio": None if word_ratio is None else round(word_ratio, 3),
+                "ocrReason": ocr_reason,
+            }
+        pages.append(page_record)
         raw_texts.append(final_page_text)
 
     # 4. Clean repetitive headers and footers across pages

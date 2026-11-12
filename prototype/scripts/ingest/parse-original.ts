@@ -1,10 +1,10 @@
 /**
  * BISVEDA — parse one stored original (R2.3, ARCHITECTURE.md §6).
  *
- * Runs the existing PyMuPDF + RapidOCR parser (scripts/parse_pdf_json.py).
- * Per-page OCR fallback is already done by the parser; this adds a quality
- * summary and a garbage-glyph check. The parser's temp output goes under
- * storage/tmp (project drive), not os.tmpdir() (C:).
+ * Runs scripts/parse_pdf_json.py --enhanced (PyMuPDF + RapidOCR): OCR for scanned,
+ * low-alphanumeric or garbled-word pages, and column-aware reading order where it
+ * reads clause numbers in order more often. Adds a garbage-glyph check per page.
+ * The parser's temp output goes under storage/tmp (project drive), not os.tmpdir() (C:).
  */
 
 import { spawnSync } from "child_process";
@@ -21,18 +21,22 @@ const BOILERPLATE_PATTERNS: RegExp[] = [
   /IGNORANTIA\s*JURIS\s*NONEXCUSAT/i,
 ];
 
+/** A failure that retrying cannot fix (corrupt or unreadable file, no text). */
+export class PermanentError extends Error {}
+
 export interface ParsedDocument {
   totalPages: number;
   pages: RawPage[];
-  /** Pages with almost no text (blank scans, cover pages). */
   emptyPages: number[];
-  /** Pages where a high share of characters are not letters, digits, punctuation or spaces. */
   lowQualityPages: number[];
-  ocrPages: number;
+  ocrPages: number[];
+  ocrReasons: Record<string, number[]>;
+  twoColumnPages: number[];
+  reorderedPages: number[];
   /** 0..1: share of pages that carry usable text. */
   parseQuality: number;
-  /** Boilerplate pages (RTI cover, copyright), excluded from chunking. */
   strippedPages: number[];
+  parser: { standard: string | null; title: string | null; year: string | number | null };
 }
 
 /** Share of characters that look like garbage (control chars, replacement chars, odd symbols). */
@@ -51,14 +55,18 @@ export function parseOriginal(pdfPath: string, tag: string): ParsedDocument {
   fs.mkdirSync(tmpDir, { recursive: true });
   const outJson = path.join(tmpDir, `${tag}.${Date.now()}.json`);
 
-  const res = spawnSync("python", [PARSE_SCRIPT, pdfPath, outJson], {
+  const res = spawnSync("python", [PARSE_SCRIPT, pdfPath, outJson, "--enhanced"], {
     encoding: "utf-8",
-    timeout: 900_000,
+    timeout: 1_800_000,
     cwd: path.dirname(PARSE_SCRIPT),
   });
   if (res.error) throw new Error(`Could not start the PDF parser: ${res.error.message}`);
   if (res.status !== 0 || !fs.existsSync(outJson)) {
-    throw new Error(`The PDF parser failed (exit ${res.status}): ${(res.stderr || res.stdout || "").trim().slice(0, 500)}`);
+    const detail = (res.stderr || res.stdout || "").trim().slice(0, 500);
+    if (/FileDataError|cannot open|broken|not a pdf|format error|password/i.test(detail)) {
+      throw new PermanentError(`The PDF could not be opened (it may be corrupt or encrypted): ${detail}`);
+    }
+    throw new Error(`The PDF parser failed (exit ${res.status}): ${detail}`);
   }
 
   let parsed: any;
@@ -84,18 +92,26 @@ export function parseOriginal(pdfPath: string, tag: string): ParsedDocument {
       ocrQuality: typeof p.ocrQuality === "number" ? p.ocrQuality : undefined,
     };
   });
-  if (pages.length === 0) throw new Error("The parser returned no pages.");
+  if (pages.length === 0) throw new PermanentError("The PDF has no pages.");
 
   const emptyPages: number[] = [];
   const lowQualityPages: number[] = [];
   const strippedPages: number[] = [];
+  const ocrReasons: Record<string, number[]> = {};
+  const twoColumnPages: number[] = [];
+  const reorderedPages: number[] = [];
   let withText = 0;
-  for (const p of pages) {
-    const t = p.text.trim();
-    if (t.length < 15) emptyPages.push(p.pageNumber);
+  for (const raw of parsed.pages ?? []) {
+    const n = raw.pageNumber as number;
+    const t = String(raw.text ?? "").trim();
+    if (t.length < 15) emptyPages.push(n);
     else withText++;
-    if (BOILERPLATE_PATTERNS.some((re) => re.test(t)) || t.length < 15) strippedPages.push(p.pageNumber);
-    if (t.length >= 15 && garbageRatio(t) > 0.2) lowQualityPages.push(p.pageNumber);
+    if (BOILERPLATE_PATTERNS.some((re) => re.test(t)) || t.length < 15) strippedPages.push(n);
+    if (t.length >= 15 && garbageRatio(t) > 0.2) lowQualityPages.push(n);
+    const reason = raw.quality?.ocrReason;
+    if (reason) (ocrReasons[reason] ??= []).push(n);
+    if (raw.layout === "two_column" || raw.layout === "two_column_reordered") twoColumnPages.push(n);
+    if (raw.layout === "two_column_reordered") reorderedPages.push(n);
   }
 
   return {
@@ -103,8 +119,16 @@ export function parseOriginal(pdfPath: string, tag: string): ParsedDocument {
     pages,
     emptyPages,
     lowQualityPages,
-    ocrPages: pages.filter((p) => p.isOcr).length,
+    ocrPages: pages.filter((p) => p.isOcr).map((p) => p.pageNumber),
+    ocrReasons,
+    twoColumnPages,
+    reorderedPages,
     parseQuality: Math.round((withText / pages.length) * 1000) / 1000,
     strippedPages,
+    parser: {
+      standard: parsed.detectedStandardNumber ?? null,
+      title: parsed.detectedTitle ?? null,
+      year: parsed.editionYear ?? null,
+    },
   };
 }

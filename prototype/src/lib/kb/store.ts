@@ -92,8 +92,12 @@ function loadJson<T>(subpath: string, fallback: T): T {
 
 /** Reads the JSON knowledge base exactly as written by kb:build / dir:* scripts. */
 export function loadJsonSources(): StoreData {
+  // KB_JSON_CHUNKS (experiments only): read chunks from another file, e.g. to compare chunkers in eval:retrieval.
+  const altChunks = process.env.KB_JSON_CHUNKS;
   return {
-    chunks: loadJson<KbChunk[]>(path.join("kb", "chunks.json"), []),
+    chunks: altChunks
+      ? (JSON.parse(fs.readFileSync(path.resolve(altChunks), "utf-8")) as KbChunk[])
+      : loadJson<KbChunk[]>(path.join("kb", "chunks.json"), []),
     standards: loadJson<KbStandard[]>(path.join("kb", "standards.json"), []),
     graph: loadJson<KbGraph>(path.join("kb", "graph.json"), { nodes: [], edges: [] }),
     labs: loadJson<LabRecord[]>(path.join("directory", "labs.json"), []),
@@ -111,18 +115,26 @@ export async function loadDbSources(): Promise<StoreData> {
   const [chunkRows, stdRows, docRows, nodeRows, edgeRows, labRows, ahcRows] = await Promise.all([
     query<{
       row_id: string; chunk_id: string; doc_id: string; standard_id: string; clause: string | null; clause_title: string | null;
-      path: string; page_start: number; page_end: number; text: string; tokens: number; sha256: string;
+      path: string; page_start: number; page_end: number; text: string; tokens: number; sha256: string; amended_by: string[] | null;
     }>(
-      `SELECT sc.id AS row_id, COALESCE(sc.legacy_id, sc.id::text) AS chunk_id, COALESCE(d.legacy_doc_id, d.id) AS doc_id,
+      // An amendment's chunks link to the amendment's own PDF ("is-4151~amd1"). A clause changed by a
+      // published amendment carries that amendment's label (R2.8).
+      `SELECT sc.id AS row_id, COALESCE(sc.legacy_id, sc.id::text) AS chunk_id,
+              COALESCE(d.legacy_doc_id, d.id) || CASE WHEN sc.version_kind = 'amendment' THEN '~amd' || av.amendment_no ELSE '' END AS doc_id,
               sc.document_id AS standard_id, cl.number AS clause, cl.title AS clause_title, cl.path,
-              sc.page_start, sc.page_end, sc.text, sc.tokens, sc.sha256
+              sc.page_start, sc.page_end, sc.text, sc.tokens, sc.sha256,
+              CASE WHEN cardinality(cl.amended_by) > 0 THEN (
+                SELECT array_agg('Amendment No. ' || a.amendment_no ORDER BY a.amendment_no)
+                  FROM document_versions a WHERE a.id = ANY(cl.amended_by) AND a.status = 'published'
+              ) END AS amended_by
          FROM searchable_chunks sc
          JOIN clauses cl ON cl.id = sc.clause_id
          JOIN documents d ON d.id = sc.document_id
+         JOIN document_versions av ON av.id = sc.version_id
         ORDER BY sc.seq, sc.id`
     ),
-    query<{ id: string; title: string; year: number | null; domain: string; scope_text: string | null; doc_id: string; chunk_count: string }>(
-      `SELECT d.id, d.title, v.edition_year AS year, d.domain, d.scope_text, COALESCE(d.legacy_doc_id, d.id) AS doc_id,
+    query<{ id: string; title: string; year: number | null; domain: string; scope_text: string | null; doc_id: string; chunk_count: string; product_terms: string[] }>(
+      `SELECT d.id, d.title, v.edition_year AS year, d.domain, d.scope_text, COALESCE(d.legacy_doc_id, d.id) AS doc_id, d.product_terms,
               (SELECT count(*) FROM searchable_chunks sc WHERE sc.document_id = d.id) AS chunk_count
          FROM documents d
          JOIN document_versions v ON v.document_id = d.id AND v.status = 'published' AND v.kind = 'edition'
@@ -139,7 +151,11 @@ export async function loadDbSources(): Promise<StoreData> {
       `SELECT id, type, label, props FROM graph_nodes ORDER BY ord`
     ),
     query<{ src_id: string; dst_id: string; type: string; weight: number | null; evidence: string | null }>(
-      `SELECT src_id, dst_id, type, weight, evidence FROM edges ORDER BY id`
+      // Only edges between graph nodes; clause-level links of ingested versions (clause ids) are for R4 retrieval.
+      `SELECT e.src_id, e.dst_id, e.type, e.weight, e.evidence FROM edges e
+        WHERE EXISTS (SELECT 1 FROM graph_nodes n WHERE n.id = e.src_id)
+          AND EXISTS (SELECT 1 FROM graph_nodes n WHERE n.id = e.dst_id)
+        ORDER BY e.id`
     ),
     query<{
       id: string; name: string; city: string | null; state: string | null; lat: number | null; lng: number | null; geocode: string;
@@ -152,30 +168,38 @@ export async function loadDbSources(): Promise<StoreData> {
     }>(`SELECT * FROM ahcs ORDER BY ord`),
   ]);
 
-  const chunks: KbChunk[] = chunkRows.map((r) => ({
-    chunk_id: r.chunk_id,
-    doc_id: r.doc_id,
-    standard_id: r.standard_id,
-    clause: r.clause ?? "0",
-    clause_title: r.clause_title ?? "",
-    breadcrumb: r.path.split(PATH_SEP),
-    page_start: r.page_start,
-    page_end: r.page_end,
-    text: r.text,
-    tokens: r.tokens,
-    sha256: r.sha256,
-    embedding: null,
-  }));
+  const chunks: KbChunk[] = chunkRows.map((r) => {
+    const c: KbChunk = {
+      chunk_id: r.chunk_id,
+      doc_id: r.doc_id,
+      standard_id: r.standard_id,
+      clause: r.clause ?? "0",
+      clause_title: r.clause_title ?? "",
+      breadcrumb: r.path.split(PATH_SEP),
+      page_start: r.page_start,
+      page_end: r.page_end,
+      text: r.text,
+      tokens: r.tokens,
+      sha256: r.sha256,
+      embedding: null,
+    };
+    if (r.amended_by && r.amended_by.length) c.amended_by = r.amended_by;
+    return c;
+  });
 
-  const standards: KbStandard[] = stdRows.map((r) => ({
-    id: r.id,
-    title: r.title,
-    year: und(r.year),
-    domain: r.domain as Domain,
-    scope_text: r.scope_text ?? "",
-    doc_id: r.doc_id,
-    chunk_count: Number(r.chunk_count),
-  }));
+  const standards: KbStandard[] = stdRows.map((r) => {
+    const s: KbStandard = {
+      id: r.id,
+      title: r.title,
+      year: und(r.year),
+      domain: r.domain as Domain,
+      scope_text: r.scope_text ?? "",
+      doc_id: r.doc_id,
+      chunk_count: Number(r.chunk_count),
+    };
+    if (r.product_terms && r.product_terms.length) s.product_terms = r.product_terms;
+    return s;
+  });
 
   const docs: KbDoc[] = docRows.map((r) => ({
     doc_id: r.doc_id,
@@ -305,6 +329,26 @@ export function invalidateStoreCache() {
 /** Identifies the current snapshot; derived caches (e.g. the BM25 index) rebuild when it changes. */
 export function getStoreGeneration(): number {
   return load().generation;
+}
+
+let productTermsCache: { gen: number; re: RegExp | null } = { gen: -1, re: null };
+
+/**
+ * Whether a text names a product that a published standard covers, by the product terms an officer
+ * confirmed when publishing it (R2.5). Lets the chat accept questions about newly ingested standards
+ * whose products are outside the built-in helmets/toys/gold vocabulary.
+ */
+export function matchesProductTerms(text: string): boolean {
+  const gen = getStoreGeneration();
+  if (productTermsCache.gen !== gen) {
+    const terms = Array.from(new Set(getAllStandards().flatMap((s) => s.product_terms ?? []).map((t) => t.toLowerCase().trim()).filter(Boolean)));
+    const alts = terms.flatMap((t) => {
+      const esc = t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+");
+      return t.endsWith("s") ? [`${esc}(?:es)?`, esc.slice(0, -1)] : [`${esc}(?:s|es)?`];
+    });
+    productTermsCache = { gen, re: alts.length ? new RegExp(`\\b(?:${alts.join("|")})\\b`, "i") : null };
+  }
+  return productTermsCache.re ? productTermsCache.re.test(text) : false;
 }
 
 // ── Getters (synchronous, over the loaded snapshot) ─────────────────────────

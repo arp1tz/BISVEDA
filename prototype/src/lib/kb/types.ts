@@ -23,6 +23,8 @@ export interface KbChunk {
   tokens: number;
   sha256: string;
   embedding: number[] | null;
+  /** Published amendments that change this clause, e.g. ["Amendment No. 1"] (DB source only; R2.8). */
+  amended_by?: string[];
 }
 
 /** One entry from the closed source registry (scripts/kb/sources.ts), serialized
@@ -45,6 +47,8 @@ export interface KbStandard {
   scope_text: string;
   doc_id: string;
   chunk_count: number;
+  /** Officer-confirmed products this standard covers (ingested documents only; R2.5). */
+  product_terms?: string[];
 }
 
 export type GraphNodeType = "domain" | "standard" | "clause" | "reference" | "form" | "lab" | "ahc_region";
