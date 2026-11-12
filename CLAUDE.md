@@ -6,8 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 BISVEDA is a conversational assistant for Indian Standards and BIS services (SIH26107). Its answers are cited only from the PDFs in `example docs uploaded by employees\` plus the official BIS lab (LIMS) and AHC (Manak Online) directories.
 
 ## Read first
-1. `progress.md`: current state.
-2. The current phase section of `TODO.md`: task detail, with the model and effort to use.
+1. `PROJECT_CONTEXT.md`: architecture and per-module status (working / partial / broken / missing), audited 2026-11-11.
+2. `IMPLEMENTATION_ROADMAP.md`: the forward plan (R0–R7) and the decisions it waits on. Supersedes TODO.md P14.2–P16.
+3. `ARCHITECTURE.md`: approved target design (schema, ingestion, retrieval, APIs, auth). Build against it; update it when you deviate.
+4. `TECHNICAL_DEBT.md`: known bugs and simulated features (TD-xx ids). `RESEARCH.md`: STAIR evaluation and retrieval direction.
+5. `progress.md` / `TODO.md`: history of P0–P14. `HANDOFF.md` is stale history.
+
+Session rules from the project owner: no sub-agents, no new test files and no paid API calls (Groq/Gemini/eval runs) without explicit approval for that task; never claim a feature works without verifying it in the running app.
 
 Read other files only when a task names them. Reference earlier reads instead of re-reading.
 
@@ -44,7 +49,9 @@ L0/L2 scripts/kb, scripts/directory  (offline)
 
 ## Boundaries
 - Don't read `C:\BISVEDA_archive` or `docs/reference/*` unless asked.
-- Out of scope: the ingestion/upload UI, QCO and scheme data, Postgres/MinIO, and the Python API. (Voice is in scope since P11: Groq Whisper speech-to-text via `/api/stt`, browser speechSynthesis read-aloud, hands-free chat.)
+- In scope since 2026-11-12 (owner-approved): real document ingestion with officer approval, PostgreSQL 16 + pgvector + pg_trgm, a Node ingestion worker, a cross-encoder reranker. See ARCHITECTURE.md.
+- Still out of scope: QCO and scheme data, MinIO, Temporal, Redis, Keycloak, a separate Python API service (Python is only the parse/OCR subprocess), STAIR-style model training. (Voice is in scope since P11.)
+- Facts rule extension: documents uploaded through ingestion count as knowledge-base sources **only after officer approval** (status `published`).
 
 ## Design tokens
 Primary `#0B2A4A` · accent `#E8710A` · border `#E5E7EB` · text `#0F172A` · muted `#64748B` · verified `#228f4a` · mandatory `#bd2f2f` · warning `#B45309`. No gradients or glassmorphism. Chat column 760px.

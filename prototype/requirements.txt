@@ -1,0 +1,4 @@
+# Python dependencies for the PDF parse/OCR subprocess (scripts/parse_pdf.py).
+# Install: pip install -r requirements.txt   (Python 3.12 or 3.13)
+PyMuPDF==1.28.2
+rapidocr-onnxruntime==1.2.3

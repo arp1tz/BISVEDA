@@ -17,12 +17,19 @@ import { pipeline, type FeatureExtractionPipeline } from "@huggingface/transform
 
 const EMBEDDING_DIMENSION = 1024;
 const MODEL_ID = process.env.EMBED_MODEL || "Xenova/bge-m3";
+// Pinned explicitly so stored vectors and query vectors always come from the same weights.
+// fp32 is what transformers.js used by default on Node CPU when the current KB was built
+// (verified R0.2, 2026-11-12). Changing it means re-embedding every chunk.
+const EMBED_DTYPE = (process.env.EMBED_DTYPE || "fp32") as "fp32" | "fp16" | "q8" | "int8" | "uint8" | "q4" | "bnb4" | "q4f16";
+
+/** Identifies the vector space; stored with every embedded version so vectors from different models/dtypes never mix. */
+export const EMBED_MODEL_TAG = `${MODEL_ID}@${EMBED_DTYPE}`;
 
 let extractorPromise: Promise<FeatureExtractionPipeline> | null = null;
 
 function getExtractor(): Promise<FeatureExtractionPipeline> {
   if (!extractorPromise) {
-    extractorPromise = pipeline("feature-extraction", MODEL_ID) as unknown as Promise<FeatureExtractionPipeline>;
+    extractorPromise = pipeline("feature-extraction", MODEL_ID, { dtype: EMBED_DTYPE }) as unknown as Promise<FeatureExtractionPipeline>;
   }
   return extractorPromise;
 }
