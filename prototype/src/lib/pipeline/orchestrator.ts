@@ -21,7 +21,7 @@ import { buildEvidencePackage, EvidencePackage, Source } from "./package";
 import { generateAnswer, evidenceOnlyAnswer, generateGeneralQueryAnswer } from "./answer";
 import { runTrustGate } from "./trust";
 import { BisvedaResponse, StageEvent, STAGE_LABELS, PipelineStage, buildFollowUps, ImageReadCard, MarkCard, HallmarkCard, LabsCard, AhcCard, FormICard, HelplineCard } from "./respond";
-import { getAllStandards, getChunksByStandard, getStandardById, isScopeChunk } from "../kb/store";
+import { getAllStandards, getChunksByStandard, getStandardById, isScopeChunk, loadStore } from "../kb/store";
 import { inspectImage, normalizeCmlNumber, validateHuid, parsePurity, VisionInspectionResult } from "../vision";
 import { findLabs } from "../tools/labs";
 import { findAhc } from "../tools/ahc";
@@ -286,6 +286,7 @@ function tidyResponseDashes(res: BisvedaResponse): BisvedaResponse {
  * language. Answer text is already written in the user's language by each branch.
  */
 export async function runPipeline(options: PipelineOptions): Promise<BisvedaResponse> {
+  await loadStore(); // snapshot of the published knowledge base (refreshes when index_state changes)
   const res = tidyResponseDashes(await runPipelineInner(options));
   if (isEnglish(res.language)) return res;
   try {

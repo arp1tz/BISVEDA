@@ -19,6 +19,7 @@ import { loadEnv } from "./kb/env";
 loadEnv();
 
 import { runPipeline } from "../src/lib/pipeline/orchestrator";
+import { closePool } from "../src/lib/db/client";
 import type { BisvedaResponse } from "../src/lib/pipeline/respond";
 
 interface GoldenCase {
@@ -295,7 +296,7 @@ async function main() {
   }
 }
 
-main().catch((err) => {
+main().then(() => closePool()).catch((err) => {
   console.error("Evaluation runner error:", err);
   process.exit(1);
 });

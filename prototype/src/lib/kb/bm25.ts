@@ -7,7 +7,7 @@
  */
 
 import { generateEmbedding } from "../embeddings";
-import { getAllChunks } from "./store";
+import { denseSearchChunks, getAllChunks, getStoreGeneration } from "./store";
 import type { KbChunk } from "./types";
 
 const K1 = 1.2;
@@ -26,7 +26,7 @@ interface Bm25Index {
 }
 
 let bm25Index: Bm25Index | null = null;
-let indexedChunkCount = -1;
+let indexedGeneration = -1; // store snapshot the index was built from
 
 function buildIndex(chunks: KbChunk[]): Bm25Index {
   const docTokens = new Map<string, string[]>();
@@ -52,10 +52,10 @@ function buildIndex(chunks: KbChunk[]): Bm25Index {
 }
 
 function getIndex(): Bm25Index {
-  const chunks = getAllChunks();
-  if (!bm25Index || indexedChunkCount !== chunks.length) {
-    bm25Index = buildIndex(chunks);
-    indexedChunkCount = chunks.length;
+  const generation = getStoreGeneration();
+  if (!bm25Index || indexedGeneration !== generation) {
+    bm25Index = buildIndex(getAllChunks());
+    indexedGeneration = generation;
   }
   return bm25Index;
 }
@@ -97,27 +97,15 @@ export function bm25Search(query: string, limit = 30, standardIds?: string[]): B
   return scored.slice(0, limit);
 }
 
-function cosineSimilarity(a: number[], b: number[]): number {
-  let dot = 0,
-    normA = 0,
-    normB = 0;
-  for (let i = 0; i < a.length; i++) {
-    dot += a[i] * b[i];
-    normA += a[i] * a[i];
-    normB += b[i] * b[i];
-  }
-  const denom = Math.sqrt(normA) * Math.sqrt(normB);
-  return denom === 0 ? 0 : dot / denom;
-}
-
 export interface DenseHit {
   chunk: KbChunk;
   similarity: number;
 }
 
 /**
- * Dense search: embeds the query via Gemini and ranks chunks by cosine
- * similarity. Returns [] (not fabricated results) if embedding fails —
+ * Dense search: embeds the query with local bge-m3 and ranks chunks by cosine
+ * similarity (pgvector in db mode, in-memory in json mode — see
+ * store.denseSearchChunks). Returns [] (not fabricated results) if embedding fails —
  * callers should treat that as "dense signal unavailable this turn", not
  * as evidence of anything.
  */
@@ -130,16 +118,10 @@ export async function denseSearch(query: string, limit = 30, standardIds?: strin
     return [];
   }
 
-  const chunks = getAllChunks();
-  const scoped = standardIds ? chunks.filter((c) => standardIds.includes(c.standard_id)) : chunks;
-
-  const scored: DenseHit[] = [];
-  for (const chunk of scoped) {
-    if (!chunk.embedding || chunk.embedding.length === 0) continue;
-    const sim = cosineSimilarity(queryEmbedding, chunk.embedding);
-    scored.push({ chunk, similarity: sim });
+  try {
+    return await denseSearchChunks(queryEmbedding, limit, standardIds);
+  } catch (err) {
+    console.warn("[kb/bm25] dense search skipped — vector query failed:", err instanceof Error ? err.message : err);
+    return [];
   }
-
-  scored.sort((a, b) => b.similarity - a.similarity);
-  return scored.slice(0, limit);
 }

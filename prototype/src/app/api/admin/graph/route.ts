@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGraph } from "@/lib/kb/store";
+import { getGraph, loadStore } from "@/lib/kb/store";
 import type { GraphApiNode, GraphApiLink, GraphApiResponse } from "@/lib/knowledge/types";
 
 export async function GET(req: NextRequest) {
@@ -9,6 +9,7 @@ export async function GET(req: NextRequest) {
     const depth = parseInt(searchParams.get("depth") || "1", 10);
     const typesParam = searchParams.get("types");
 
+    await loadStore();
     const kbGraph = getGraph();
     const allNodes = kbGraph.nodes || [];
     const allEdges = kbGraph.edges || [];

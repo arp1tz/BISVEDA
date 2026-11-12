@@ -216,6 +216,13 @@ INSERT INTO index_state VALUES (1, 1, now());
 CREATE TABLE schema_migrations (name text PRIMARY KEY, applied_at timestamptz NOT NULL DEFAULT now());
 ```
 
+**As built in R1 (2026-11-12): deviations from the sketch above.** `db/migrations/0001_init.sql` is the source of truth.
+- `documents` gained `legacy_doc_id` (the old `is-4151` ids still used by `/api/docs/{id}` links), `scope_text`, and `display_order` (registry order).
+- `chunks` gained `page_start`/`page_end`, because a chunk's own pages differ from its clause's span. `legacy_id` is **not unique**: the JSON KB has 22 colliding chunk ids (TD-23).
+- `graph_nodes` (new table) holds the imported graph.json nodes verbatim. Edges keep the old `REFERENCES` type, and `evidence` holds the old `source` text. R2 rebuilds the graph from the clause tree.
+- Labs keep `standards_in_scope text[]` instead of a `lab_standards` join table. Labs, AHCs and graph nodes carry an `ord` column so listings keep their JSON order.
+- Imported clauses are one row per distinct (label, title, breadcrumb). The parent is the nearest numeric ancestor seen so far, best effort. R2 replaces this with real clause-tree induction.
+
 **Searchable set** = chunks whose `version_id` belongs to a `published` edition, plus `published` amendments of that edition. One SQL view `searchable_chunks` encodes this, and every retrieval query goes through it. Staged versions are searchable only through the officer's preview endpoint (§9).
 
 **Why amendments are separate versions**: BIS amendments are separate documents that change specific clauses. The prototype stores them as their own clause trees, links them to the clauses they name (`AMENDS` edges, `clauses.amended_by`), and retrieves both. Answers show "amended by Amendment No. N" on affected clauses. Merging the amendment text into the base clause text automatically is out of scope because it is error-prone and needs human review.
@@ -342,7 +349,8 @@ answer.ts         [keep] ; trust.ts [keep rules, now on full source text]
 
 - The existing exported functions (`getAllChunks`, `getStandardById`, `getChunksByStandard`, `getAllLabs`, `getAllAhcs`, `getAllDocs`, `getGraph`, …) keep their signatures and return the **searchable set**.
 - They read from Postgres into an in-process cache keyed by `index_state.version`.
-- Synchronous getters become `async`; this ripples through roughly 10 call sites, and typecheck finds every one.
+- ~~Synchronous getters become `async`~~ **As built (R1.3):** the getters stay synchronous over a snapshot. Every entry point (`runPipeline`, the API routes, scripts) calls `await loadStore()` first, and a getter used before that throws. This avoided making 31 call sites, many inside pure synchronous functions, async. `KB_SOURCE=json` keeps the JSON files as an offline source.
+- Dense search: below 20k chunks it is an exact scan (`enable_indexscan = off`), so results are identical to the old in-memory cosine; above that, HNSW with `ef_search = 100`.
 - `getGraph()` for the admin explorer is built from `edges` + `clauses` + `documents`.
 - Dense search no longer loads vectors into memory; it calls pgvector.
 

@@ -66,3 +66,6 @@ UX4G Handbook Final - UX4G-Handbook.pdf
 docs/submission/
 docs/reference/Competitor Research/
 .env.bak*
+
+# Ingestion file storage (R1/R2)
+prototype/storage/

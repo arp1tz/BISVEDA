@@ -22,6 +22,8 @@ Conventions: every task lists the files it touches, the expected outcome and how
 
 > **R0.1 ✅ and R0.2 ✅ done 2026-11-12** (uncommitted). PyMuPDF 1.28.2 + RapidOCR 1.2.3 installed. `kb:build` reproduced **760 chunks, 320 nodes, 343 edges** with identical per-standard counts. 758/760 chunk texts are byte-identical; the 2 others differ only by a collapsed double space (IS 9873-1 cl. 5.16.3 and its table). A full re-embed with `EMBED_DTYPE=fp32` gave **cosine 1.000000 for all 758 unchanged chunks**, so the stored KB is fp32 and the pin is correct. Note: the fp32 weights (`model.onnx_data`, 2.27 GB, SHA-256 `1eebfb28…16b4`) had to be fetched with a resumable `curl`, because transformers.js can't resume a dropped download.
 
+> **R0.3 ✅ done 2026-11-12.** `data/eval/retrieval.jsonl` (95 cases: 84 English, 3 raw Hinglish, 8 out-of-scope; gold = evidence regexes checked against the chunks) and `scripts/eval-retrieval.ts` (`npm run eval:retrieval [-- --baseline | --check-gold | --only ids]`). Baseline saved to `data/eval/results/retrieval-baseline.json`; numbers are in PROJECT_CONTEXT §5a. **The R1 parity test compares per-case `primary`, `evRank` and `top5` with this baseline.**
+
 ### R0.1 Python parser dependencies
 - **Files:** new `prototype/requirements.txt` (`PyMuPDF`, `rapidocr-onnxruntime`, pinned versions); README "Getting started" one-liner.
 - **Do:** `pip install -r requirements.txt` into the user Python 3.13. Check `rapidocr-onnxruntime` has a 3.13 wheel; if not, use a 3.12 venv in `prototype/.venv-parse` and set `PYTHON_BIN`.
@@ -42,6 +44,18 @@ Conventions: every task lists the files it touches, the expected outcome and how
 ### R0.4 💲 One live chat smoke test (optional, needs keys in `prototype/.env`)
 - **Do:** `npm run dev`, ask 2 questions in the browser (one cited answer, one out of scope). About 4 Groq calls.
 - **Verify:** an answer with a working `[S#]` drawer and a refusal. This confirms the inherited "working" status before refactoring the store.
+
+> **R1.0 ✅ verified 2026-11-12.** Docker Desktop 29.9.3 is running, with its disk at `D:\DockerData\DockerDesktopWSL`. A throwaway container of `pgvector/pgvector:pg16` ran PostgreSQL 16.15 with vector 0.8.7 and pg_trgm 1.6, and a cosine-distance query worked. Shells opened before the install need `C:\Program Files\Docker\Docker\resources\bin` added to PATH.
+
+> **R1 ✅ done 2026-11-12 (uncommitted).**
+> - **R1.1:** `docker-compose.yml` (pgvector/pgvector:pg16, localhost-only), `db/migrations/0001_init.sql`, `scripts/db/migrate.ts` (`db:up`, `db:migrate`, `db:reset -- --yes`), `src/lib/db/client.ts`. Migrating twice is a no-op.
+> - **R1.2:** `scripts/db/import-json.ts` (`db:import [-- --verify]`) imports 9 documents, 510 clauses, 760 chunks with their existing vectors, 320 nodes, 343 edges, 29 labs and 1,651 AHCs in one transaction. Read-back parity: all entities identical (labs compare null city == missing city), vectors within 3e-8.
+> - **R1.3:** `store.ts` is DB-backed behind the same getters (`loadStore()` at entry points), with dense search on pgvector.
+> - **Acceptance:**
+>   - `eval:retrieval` is **identical to the R0 baseline on all 95 cases** (including top-5 chunk ids) for both `KB_SOURCE=db` and `KB_SOURCE=json`;
+>   - typecheck and `next build` are green;
+>   - in the running app, `/api/labs` (29), `/api/docs/is-4151` (PDF), admin graph (320/343), directory (29/1,651) and docs (9, with per-document chunk counts) match; unauthenticated admin requests get 401;
+>   - `/api/chat` with no LLM key gave a verified answer citing IS 2925 cl. 7 MASS from Postgres. No paid calls were made.
 
 ### R1.0 Database host: **Docker Desktop (owner decision 2026-11-12)**
 - Owner installs Docker Desktop. It needs admin/UAC, which Claude can't do. WSL2 + Ubuntu are already present and the hypervisor is active. C: has only 21 GB free, so move the Docker disk image to D: (356 GB free) in Settings → Resources → Advanced.

@@ -59,7 +59,8 @@ Browser ──POST /api/chat (SSE: stage | response | error)──► runPipelin
    package.ts     [S#] evidence (text truncated to 500 chars)
    answer.ts      Groq gpt-oss-120b writes answer from evidence only; evidence-only fallback without LLM
    trust.ts       deterministic sentence gate: unknown [S#] stripped, unsupported numbers / IS ids dropped, refuse if nothing survives
-Data: data/kb/*.json loaded once per process by lib/kb/store.ts (chunks.json = 23.8 MB incl. 1024-d vectors)
+Data (since R1, 2026-11-12): PostgreSQL 16 + pgvector (docker-compose) → lib/kb/store.ts snapshot via loadStore();
+      dense search runs in Postgres. data/kb/*.json stays the import source and the KB_SOURCE=json fallback.
 ```
 
 **Technologies**: Next.js 15 / React 19 / TypeScript 5 / Tailwind 4 · Groq (`openai/gpt-oss-120b` chat, `gpt-oss-20b` fast, Whisper STT) · Gemini (vision only) · `@huggingface/transformers` running `Xenova/bge-m3` locally (dense only) · Python PyMuPDF + RapidOCR (offline parse) · react-force-graph-2d, Leaflet, docx · Exotel/Twilio + Python voice bridge. **No database, no queue, no object store.** Auth is a single shared password.
@@ -76,6 +77,21 @@ Data: data/kb/*.json loaded once per process by lib/kb/store.ts (chunks.json = 2
 | Directories | 29 labs (BIS LIMS), 1,651 AHCs (Manak Online; 1,490 geocoded) |
 | Eval | golden 32 cases, multilingual 24; last clean baseline 31/32 *(prior, 2026-09-29)* |
 | Embedded PDF outline (ToC) | **none** of the 10 PDFs |
+
+## 5a. Retrieval baseline (R0.3, measured 2026-11-12, `npm run eval:retrieval`)
+
+95 cases in `data/eval/retrieval.jsonl`. The gold is evidence text verified against the chunks (`--check-gold`). The eval runs retrieval only, with no LLM. In production, understand.ts (Groq) and route.ts run first: they often name the standard, which pins retrieval to it, and they refuse many off-topic products. So these numbers describe the retrieval layer alone. Full per-case output: `data/eval/results/retrieval-baseline.json`.
+
+| Metric | English working query (n=84) |
+|---|---|
+| Standard ranked first / adjudicated primary correct | 88.1% / 79.8% (**wrong standard 20.2%**) |
+| Evidence chunk at rank 1 / in top 5 / in top 50 | 20.2% / 63.1% / 92.9% (MRR 0.386) |
+| Evidence in the [S#] package (full chunk) / in the text actually sent to the LLM | 52.4% / 47.6% (4 cases lost only to the 500-char cut, TD-03) |
+| Raw Hinglish with no LLM (n=3) | 0/3 evidence found |
+| **Out-of-scope refused by retrieval (n=8)** | **0/8**: the 0.67 cosine floor sits below the similarity of unrelated queries (0.69–0.74), and the active-standard bypass passes everything (TD-05) |
+| Median retrieval time | ~100 ms (CPU) |
+
+What this means: the right document is usually found, but the right clause often isn't in the 8 chunks passed on (the evidence is in the top 50 for 93% of cases, yet in the package for only 52%). The retrieval floor does no filtering on its own. These are the R4 targets: clause-level aggregation, a reranker, a reranker-based floor, and full-clause context.
 
 ## 6. Module status
 
@@ -111,7 +127,8 @@ Legend: ✅ working · 🟡 partial · 🔴 broken / simulated · ⚪ not implem
 | **Document ingestion (upload → index)** | 🔴 | Fully simulated: hardcoded records, fake logs, file never saved (TD-01) |
 | **Revision / amendment registration** | 🔴 | React state only, lost on refresh, no effect on answers (TD-02) |
 | Metadata editing, reprocessing, job status, approval | ⚪ | |
-| Database, schema, versioning | ⚪ | JSON files rebuilt by a script |
+| Database + schema | ✅ R1 (2026-11-12) | PostgreSQL 16 + pgvector in Docker; the app reads the published KB from it (parity with the JSON KB verified); `KB_SOURCE=json` fallback |
+| Versioning / amendments | 🟡 | Schema exists (document_versions, amendments as versions, searchable view); nothing creates new versions until R2 |
 
 ### Offline build
 | Module | Status | Notes |

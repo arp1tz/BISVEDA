@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllLabs } from "@/lib/kb/store";
+import { getAllLabs, loadStore } from "@/lib/kb/store";
 
 export async function GET(req: NextRequest) {
   try {
@@ -8,6 +8,7 @@ export async function GET(req: NextRequest) {
     const city = searchParams.get("city") || "";
     const state = searchParams.get("state") || "";
 
+    await loadStore();
     let labs = getAllLabs();
 
     if (standard) {

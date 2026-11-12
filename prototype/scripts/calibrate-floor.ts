@@ -13,9 +13,11 @@ import fs from "fs";
 import path from "path";
 import { loadEnv } from "./kb/env";
 loadEnv();
+// Needs chunk vectors in memory, which the DB snapshot does not hold: read the JSON KB (R4 rewrites this for the reranker).
+process.env.KB_SOURCE = "json";
 
 import { generateEmbedding } from "../src/lib/embeddings";
-import { getAllChunks } from "../src/lib/kb/store";
+import { getAllChunks, loadStore } from "../src/lib/kb/store";
 
 function cosineSimilarity(a: number[], b: number[]): number {
   let dot = 0,
@@ -48,6 +50,7 @@ async function calibrateFloor() {
     .filter((l) => l.trim().length > 0)
     .map((l) => JSON.parse(l));
 
+  await loadStore();
   const chunks = getAllChunks().filter((c) => c.embedding && c.embedding.length > 0);
   if (chunks.length === 0) {
     throw new Error("No embedded chunks found. Run `npm run kb:build` first.");

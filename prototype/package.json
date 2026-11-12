@@ -10,10 +10,16 @@
     "typecheck": "tsc --noEmit",
     "eval:rag": "tsx scripts/eval-rag.ts",
     "eval:multi": "tsx scripts/eval-rag.ts --file multilingual.jsonl",
+    "eval:retrieval": "tsx scripts/eval-retrieval.ts",
     "calibrate:floor": "tsx scripts/calibrate-floor.ts",
     "kb:build": "tsx scripts/kb/build.ts",
     "dir:labs": "tsx scripts/directory/labs.ts",
-    "dir:ahc": "tsx scripts/directory/ahc.ts"
+    "dir:ahc": "tsx scripts/directory/ahc.ts",
+    "db:up": "docker compose up -d --wait db",
+    "db:down": "docker compose down",
+    "db:migrate": "tsx scripts/db/migrate.ts",
+    "db:reset": "tsx scripts/db/migrate.ts --reset",
+    "db:import": "tsx scripts/db/import-json.ts"
   },
   "dependencies": {
     "@huggingface/transformers": "^4.3.0",
@@ -23,6 +29,7 @@
     "leaflet": "^1.9.4",
     "lucide-react": "^0.475.0",
     "next": "^15.1.7",
+    "pg": "^8.23.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-force-graph-2d": "^1.29.1",
@@ -35,6 +42,7 @@
     "@tailwindcss/postcss": "^4.0.6",
     "@types/leaflet": "^1.9.16",
     "@types/node": "^22.13.4",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "postcss": "^8.5.2",

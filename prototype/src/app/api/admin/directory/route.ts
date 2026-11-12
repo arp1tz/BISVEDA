@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllLabs, getAllAhcs } from "@/lib/kb/store";
+import { getAllLabs, getAllAhcs, loadStore } from "@/lib/kb/store";
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const type = searchParams.get("type"); // "labs" | "ahc" | undefined
 
+    await loadStore();
     const labs = getAllLabs();
     const ahcs = getAllAhcs();
 

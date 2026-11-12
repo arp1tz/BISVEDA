@@ -11,7 +11,7 @@
 import fs from "fs";
 import path from "path";
 import { NextRequest, NextResponse } from "next/server";
-import { getDocById } from "@/lib/kb/store";
+import { getDocById, loadStore } from "@/lib/kb/store";
 
 const DOCS_DIR = "example docs uploaded by employees";
 
@@ -28,6 +28,7 @@ function resolveDocsDir(): string | null {
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ docId: string }> }) {
   const { docId } = await params;
+  await loadStore();
   const doc = getDocById(docId);
   if (!doc) {
     return NextResponse.json({ error: `Unknown document id "${docId}".` }, { status: 404 });

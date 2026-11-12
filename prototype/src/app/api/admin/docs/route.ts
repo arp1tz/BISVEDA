@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllDocs, getAllChunks } from "@/lib/kb/store";
+import { getAllDocs, getAllChunks, loadStore } from "@/lib/kb/store";
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const docId = searchParams.get("doc_id");
 
+    await loadStore();
     const allDocs = getAllDocs();
     const allChunks = getAllChunks();
 

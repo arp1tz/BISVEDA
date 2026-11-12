@@ -1,0 +1,24 @@
+# BIS VEDA local database (ARCHITECTURE.md §2, R1.1).
+# Start: npm run db:up   Stop: npm run db:down   Data persists in the named volume.
+# Credentials are for local development only; production uses its own secrets.
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: bisveda-db
+    environment:
+      POSTGRES_USER: bisveda
+      POSTGRES_PASSWORD: bisveda_dev
+      POSTGRES_DB: bisveda
+    ports:
+      - "127.0.0.1:5432:5432"   # localhost only
+    volumes:
+      - bisveda_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bisveda -d bisveda"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+volumes:
+  bisveda_pgdata:
