@@ -27,11 +27,23 @@ interface IngestionRecord {
   file_name: string;
   file_size_kb: number;
   chunk_count: number;
-  node_count: number;
-  status: "indexed" | "processing" | "failed";
+  /** document_versions.status: uploaded | processing | failed | staged | published | superseded | rejected */
+  status: string;
+  job_state?: string | null;
+  error?: string | null;
   timestamp: string;
   ingested_by: string;
 }
+
+const STATUS_BADGE: Record<string, { label: string; cls: string; dot: string }> = {
+  uploaded: { label: "Queued", cls: "bg-slate-100 text-slate-700", dot: "bg-slate-500" },
+  processing: { label: "Processing", cls: "bg-blue-50 text-blue-800", dot: "bg-blue-600" },
+  staged: { label: "Awaiting approval", cls: "bg-amber-50 text-[#B45309]", dot: "bg-[#B45309]" },
+  published: { label: "Published", cls: "bg-emerald-50 text-[#228f4a]", dot: "bg-[#228f4a]" },
+  superseded: { label: "Superseded", cls: "bg-slate-100 text-slate-500", dot: "bg-slate-400" },
+  rejected: { label: "Rejected", cls: "bg-slate-100 text-slate-600", dot: "bg-slate-500" },
+  failed: { label: "Failed", cls: "bg-red-50 text-[#bd2f2f]", dot: "bg-[#bd2f2f]" },
+};
 
 const DOMAIN_OPTIONS = [
   "Helmets & Head Protection",
@@ -100,6 +112,30 @@ export function IngestionTab() {
       console.error("Failed to load ingestion records:", err);
     } finally {
       setLoadingRecords(false);
+    }
+  };
+
+  const [decidingId, setDecidingId] = useState<string | null>(null);
+
+  const decide = async (r: IngestionRecord, action: "publish" | "reject") => {
+    const verb = action === "publish" ? "Publish" : "Reject";
+    if (!window.confirm(`${verb} ${r.standard_id} (${r.file_name})?${action === "publish" ? " It becomes searchable in chat and replaces any earlier published edition." : ""}`)) return;
+    setDecidingId(r.id);
+    setErrorMessage(null);
+    try {
+      const res = await fetch(`/api/admin/ingest/${r.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `${verb} failed (HTTP ${res.status}).`);
+      setSuccessMessage(action === "publish" ? `${r.standard_id} is published and searchable.` : `${r.standard_id} was rejected.`);
+      fetchRecords();
+    } catch (err: any) {
+      setErrorMessage(err.message || `${verb} failed.`);
+    } finally {
+      setDecidingId(null);
     }
   };
 
@@ -415,11 +451,11 @@ export function IngestionTab() {
               {/* Steps List */}
               <div className="space-y-2 pt-2 text-xs">
                 {[
-                  { step: 1, label: "Document Verification & Parsing", icon: FileText },
-                  { step: 2, label: "Clause Chunking & Hierarchy", icon: Layers },
-                  { step: 3, label: "Semantic Vector Embeddings", icon: Sparkles },
-                  { step: 4, label: "Knowledge Graph Linking", icon: Network },
-                  { step: 5, label: "Trust Gate Indexed & Live", icon: Database },
+                  { step: 1, label: "Upload & file checks", icon: FileText },
+                  { step: 2, label: "Parse (OCR fallback per page)", icon: Layers },
+                  { step: 3, label: "Clause chunking", icon: Sparkles },
+                  { step: 4, label: "Local embeddings (bge-m3)", icon: Network },
+                  { step: 5, label: "Staged: awaiting officer approval", icon: Database },
                 ].map((s) => {
                   const isDone = progress >= s.step * 20;
                   const isCurrent = currentStep === s.step;
@@ -513,7 +549,7 @@ export function IngestionTab() {
                   <th className="py-2.5 px-3 font-semibold">Domain</th>
                   <th className="py-2.5 px-3 font-semibold">Classification</th>
                   <th className="py-2.5 px-3 font-semibold">Chunks</th>
-                  <th className="py-2.5 px-3 font-semibold">Graph Nodes</th>
+                  <th className="py-2.5 px-3 font-semibold">Actions</th>
                   <th className="py-2.5 px-3 font-semibold">Status</th>
                   <th className="py-2.5 px-3 font-semibold">Ingested Date</th>
                 </tr>
@@ -534,12 +570,46 @@ export function IngestionTab() {
                       </span>
                     </td>
                     <td className="py-2.5 px-3 font-mono text-slate-600">{r.chunk_count}</td>
-                    <td className="py-2.5 px-3 font-mono text-slate-600">{r.node_count}</td>
                     <td className="py-2.5 px-3">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
-                        <span>Indexed &amp; Live</span>
-                      </span>
+                      {r.status === "staged" ? (
+                        <div className="flex gap-1.5">
+                          <button
+                            onClick={() => decide(r, "publish")}
+                            disabled={decidingId === r.id}
+                            className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[#0B2A4A] text-white hover:bg-[#0B2A4A]/90 disabled:opacity-50 cursor-pointer"
+                          >
+                            Publish
+                          </button>
+                          <button
+                            onClick={() => decide(r, "reject")}
+                            disabled={decidingId === r.id}
+                            className="px-2 py-0.5 rounded-md text-[10px] font-semibold border border-[#E5E7EB] text-slate-700 hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
+                    </td>
+                    <td className="py-2.5 px-3">
+                      {(() => {
+                        const b = STATUS_BADGE[r.status] ?? { label: r.status, cls: "bg-slate-100 text-slate-700", dot: "bg-slate-500" };
+                        return (
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${b.cls}`}
+                            title={r.error ?? undefined}
+                          >
+                            <span className={`h-1.5 w-1.5 rounded-full ${b.dot}`} />
+                            <span>{b.label}</span>
+                          </span>
+                        );
+                      })()}
+                      {r.status === "failed" && r.error && (
+                        <div className="mt-1 max-w-[220px] text-[10px] text-[#bd2f2f] truncate" title={r.error}>
+                          {r.error}
+                        </div>
+                      )}
                     </td>
                     <td className="py-2.5 px-3 text-slate-500 font-mono text-[11px]">
                       {r.timestamp}

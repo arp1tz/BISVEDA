@@ -4,8 +4,6 @@ import { checkPdfBuffer, storeOriginal } from "@/lib/ingest/upload";
 
 export const runtime = "nodejs";
 
-type RecordStatus = "indexed" | "processing" | "failed";
-
 interface IngestRecordRow {
   version_id: string;
   document_id: string;
@@ -18,12 +16,7 @@ interface IngestRecordRow {
   extracted_meta: { domain?: string; doc_class?: string; uploaded_by_label?: string } | null;
   job_state: string | null;
   job_error: string | null;
-}
-
-function mapStatus(status: string): RecordStatus {
-  if (status === "published") return "indexed";
-  if (status === "failed") return "failed";
-  return "processing";
+  chunk_count: string;
 }
 
 /** Lists the most recent uploaded versions with their latest job state (real data, no simulation). */
@@ -31,7 +24,8 @@ export async function GET() {
   const rows = await query<IngestRecordRow>(
     `SELECT v.id AS version_id, v.document_id, d.title, v.edition_label, v.status,
             v.file_name, v.file_bytes, v.uploaded_at, v.extracted_meta,
-            j.state AS job_state, j.error AS job_error
+            j.state AS job_state, j.error AS job_error,
+            (SELECT count(*) FROM chunks c WHERE c.version_id = v.id) AS chunk_count
        FROM document_versions v
        JOIN documents d ON d.id = v.document_id
        LEFT JOIN LATERAL (
@@ -51,10 +45,8 @@ export async function GET() {
     doc_class: r.extracted_meta?.doc_class ?? "",
     file_name: r.file_name,
     file_size_kb: Math.round(Number(r.file_bytes) / 1024),
-    chunk_count: 0,
-    node_count: 0,
-    status: mapStatus(r.status),
-    raw_status: r.status,
+    chunk_count: Number(r.chunk_count),
+    status: r.status,
     job_state: r.job_state,
     error: r.job_error,
     timestamp: new Date(r.uploaded_at).toISOString(),
