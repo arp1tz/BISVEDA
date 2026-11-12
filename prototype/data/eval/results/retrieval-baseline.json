@@ -1,21 +1,21 @@
 {
-  "timestamp": "2026-11-12T09:49:37.577Z",
+  "timestamp": "2026-11-12T10:48:13.928Z",
   "cases": 95,
   "summary": {
     "answer_english": {
       "label": "answer (English working query)",
       "n": 84,
       "answered": "84/84 (100.0%)",
-      "std1": "74/84 (88.1%)",
-      "primary": "67/84 (79.8%)",
-      "wrongStandard": "17/84 (20.2%)",
-      "ev1": "17/84 (20.2%)",
-      "ev5": "53/84 (63.1%)",
-      "ev50": "78/84 (92.9%)",
-      "mrr": 0.386,
-      "pkg": "44/84 (52.4%)",
-      "pkgSent": "40/84 (47.6%)",
-      "pass": "40/84 (47.6%)"
+      "std1": "76/84 (90.5%)",
+      "primary": "75/84 (89.3%)",
+      "wrongStandard": "9/84 (10.7%)",
+      "ev1": "40/84 (47.6%)",
+      "ev5": "61/84 (72.6%)",
+      "ev50": "83/84 (98.8%)",
+      "mrr": 0.607,
+      "pkg": "57/84 (67.9%)",
+      "pkgSent": "52/84 (61.9%)",
+      "pass": "52/84 (61.9%)"
     },
     "answer_raw": {
       "label": "answer (raw non-English, no LLM)",
@@ -24,11 +24,11 @@
       "std1": "1/3 (33.3%)",
       "primary": "1/3 (33.3%)",
       "wrongStandard": "2/3 (66.7%)",
-      "ev1": "0/3 (0.0%)",
-      "ev5": "0/3 (0.0%)",
-      "ev50": "0/3 (0.0%)",
-      "mrr": 0,
-      "pkg": "0/3 (0.0%)",
+      "ev1": "1/3 (33.3%)",
+      "ev5": "1/3 (33.3%)",
+      "ev50": "1/3 (33.3%)",
+      "mrr": 0.333,
+      "pkg": "1/3 (33.3%)",
       "pkgSent": "0/3 (0.0%)",
       "pass": "0/3 (0.0%)"
     },
@@ -47,7 +47,7 @@
         ]
       }
     ],
-    "median_ms": 98
+    "median_ms": 147
   },
   "results": [
     {
@@ -69,9 +69,9 @@
         "is-4151-1-0",
         "is-4151-0-1",
         "is-4151-1.2-0",
-        "is-4151-6.1.1-0"
+        "is-2925-1-0"
       ],
-      "ms": 3765,
+      "ms": 14560,
       "pass": true
     },
     {
@@ -89,13 +89,13 @@
       "pkgSentHit": false,
       "floorScore": 0.828,
       "top5": [
-        "is-4151-11-0",
         "is-2925-7-0",
         "is-4151-1-0",
+        "is-4151-11-0~2",
         "is-4151-ANNEX_E-0",
         "is-4151-9.8-0"
       ],
-      "ms": 130,
+      "ms": 212,
       "pass": false
     },
     {
@@ -108,18 +108,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 3,
+      "evRank": 1,
       "pkgHit": true,
       "pkgSentHit": true,
       "floorScore": 0.7885,
       "top5": [
-        "is-4151-ANNEX_C-0",
-        "is-2925-8.5-0",
         "is-4151-8-2",
+        "is-2925-8-0",
+        "is-2925-8.5-0",
         "is-2925-8.2-0",
         "is-4151-15-0"
       ],
-      "ms": 113,
+      "ms": 168,
       "pass": true
     },
     {
@@ -132,7 +132,7 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 11,
+      "evRank": 12,
       "pkgHit": false,
       "pkgSentHit": false,
       "floorScore": 0.8217,
@@ -140,10 +140,10 @@
         "is-2925-8.2-0",
         "is-4151-1-0",
         "is-4151-0-3",
-        "is-2925-8.3-0",
-        "is-2925-8.4-0"
+        "is-2925-8-0",
+        "is-2925-8.3-0"
       ],
-      "ms": 117,
+      "ms": 172,
       "pass": false
     },
     {
@@ -156,18 +156,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 3,
+      "evRank": 1,
       "pkgHit": true,
       "pkgSentHit": true,
       "floorScore": 0.804,
       "top5": [
-        "is-4151-ANNEX_C-0",
-        "is-9873-1-Figure_32-0",
         "is-4151-9.3-0",
         "is-4151-6.2.7-0",
-        "is-4151-9.6-0"
+        "is-4151-9.6-0",
+        "is-4151-1-0",
+        "is-4151-ANNEX_H-0"
       ],
-      "ms": 127,
+      "ms": 155,
       "pass": true
     },
     {
@@ -180,18 +180,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 5,
+      "evRank": 4,
       "pkgHit": true,
       "pkgSentHit": true,
       "floorScore": 0.8286,
       "top5": [
-        "is-4151-ANNEX_C-0",
         "is-4151-6.4-0",
         "is-4151-6.4.4-0",
         "is-4151-3.6.2-0",
-        "is-4151-9.6-0"
+        "is-4151-9.6-0",
+        "is-4151-3.6.1-0"
       ],
-      "ms": 105,
+      "ms": 212,
       "pass": true
     },
     {
@@ -204,18 +204,18 @@
       "std1": false,
       "primaryOk": false,
       "alsoFound": [],
-      "evRank": 2,
+      "evRank": 1,
       "pkgHit": false,
       "pkgSentHit": false,
       "floorScore": 0.86,
       "top5": [
-        "is-4151-ANNEX_C-0",
         "is-4151-3.6.2-0",
         "is-2925-5.3-0",
         "is-2925-2.2-0",
-        "is-4151-3.6.3-0"
+        "is-4151-3.6.3-0",
+        "is-4151-11-0"
       ],
-      "ms": 100,
+      "ms": 157,
       "pass": false
     },
     {
@@ -239,7 +239,7 @@
         "is-4151-1.2-0",
         "is-9873-1-5.25.2.3.4-0"
       ],
-      "ms": 173,
+      "ms": 178,
       "pass": true
     },
     {
@@ -257,13 +257,13 @@
       "pkgSentHit": false,
       "floorScore": 0.8053,
       "top5": [
-        "is-4151-11-0",
         "is-4151-6.4.4-0",
         "is-4151-1-0",
         "is-4151-6.2.4-0",
-        "is-4151-0-3"
+        "is-4151-0-3",
+        "is-4151-3.2-0"
       ],
-      "ms": 102,
+      "ms": 156,
       "pass": false
     },
     {
@@ -276,18 +276,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 7,
+      "evRank": 8,
       "pkgHit": false,
       "pkgSentHit": false,
       "floorScore": 0.8072,
       "top5": [
-        "is-4151-11-0",
         "is-4151-0-3",
         "is-4151-1-0",
+        "is-4151-ANNEX_C-0",
         "is-4151-ANNEX_E-0",
         "is-4151-0-1"
       ],
-      "ms": 126,
+      "ms": 136,
       "pass": false
     },
     {
@@ -300,19 +300,19 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": null,
-      "pkgHit": false,
-      "pkgSentHit": false,
+      "evRank": 1,
+      "pkgHit": true,
+      "pkgSentHit": true,
       "floorScore": 0.831,
       "top5": [
+        "is-4151-11-0~2",
         "is-4151-11-0",
-        "is-4151-ANNEX_C-0",
         "is-2925-10-0",
         "is-4151-0-3",
         "is-4151-1-0"
       ],
-      "ms": 113,
-      "pass": false
+      "ms": 138,
+      "pass": true
     },
     {
       "id": "h4151-sampling",
@@ -324,7 +324,7 @@
       "std1": false,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 8,
+      "evRank": 6,
       "pkgHit": true,
       "pkgSentHit": true,
       "floorScore": 0.8204,
@@ -333,9 +333,9 @@
         "is-4151-0-3",
         "is-4151-1-0",
         "is-4151-1.2-0",
-        "is-4151-11-0"
+        "is-2925-3.3-0"
       ],
-      "ms": 107,
+      "ms": 212,
       "pass": true
     },
     {
@@ -357,9 +357,9 @@
         "is-4151-9.8-0",
         "is-2925-2.4-0",
         "is-2925-7-0",
-        "is-4151-1-0"
+        "is-4151-ANNEX_C-0"
       ],
-      "ms": 111,
+      "ms": 162,
       "pass": true
     },
     {
@@ -372,18 +372,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 2,
+      "evRank": 1,
       "pkgHit": true,
       "pkgSentHit": true,
       "floorScore": 1,
       "top5": [
-        "is-4151-ANNEX_C-0",
         "is-4151-6.4-0",
         "is-4151-6.4.4-0",
         "is-4151-3.5-0",
-        "is-4151-6-0"
+        "is-4151-6-0",
+        "is-4151-3.6.2-0"
       ],
-      "ms": 105,
+      "ms": 186,
       "pass": true
     },
     {
@@ -401,13 +401,13 @@
       "pkgSentHit": false,
       "floorScore": 1,
       "top5": [
-        "is-4151-ANNEX_C-0",
         "is-4151-ANNEX_E-0",
         "is-4151-ANNEX_C-2",
         "is-4151-6.2.3-0",
+        "is-4151-ANNEX_C-0~2",
         "is-4151-ANNEX_F-0"
       ],
-      "ms": 96,
+      "ms": 138,
       "pass": false
     },
     {
@@ -425,13 +425,13 @@
       "pkgSentHit": false,
       "floorScore": 0.7984,
       "top5": [
-        "is-4151-11-0",
+        "is-4151-11-0~2",
         "is-2925-7-0",
+        "is-4151-11-0",
         "is-4151-9.6-0",
-        "is-9873-1-Figure_14-0",
-        "is-4151-3.6.1-0"
+        "is-9873-1-Figure_14-0"
       ],
-      "ms": 101,
+      "ms": 107,
       "pass": false
     },
     {
@@ -444,18 +444,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 6,
+      "evRank": 2,
       "pkgHit": true,
       "pkgSentHit": true,
-      "floorScore": 0.799,
+      "floorScore": 0.8084,
       "top5": [
         "is-2925-0-2",
+        "is-2925-1-0",
         "is-4151-1.2-0",
-        "is-4151-11-0",
         "is-4151-0-3",
         "is-2925-3.3-0"
       ],
-      "ms": 160,
+      "ms": 140,
       "pass": true
     },
     {
@@ -468,18 +468,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 2,
+      "evRank": 1,
       "pkgHit": true,
       "pkgSentHit": true,
       "floorScore": 0.8082,
       "top5": [
-        "is-4151-11-0",
         "is-2925-7-0",
         "is-2925-0-2",
-        "is-4151-ANNEX_H-0",
-        "is-4151-ANNEX_E-0"
+        "is-4151-11-0~2",
+        "is-2925-1-0",
+        "is-4151-ANNEX_H-0"
       ],
-      "ms": 98,
+      "ms": 147,
       "pass": true
     },
     {
@@ -488,23 +488,23 @@
       "raw": false,
       "answered": true,
       "topStandard": "IS 2925",
-      "primary": "IS 4151",
+      "primary": "IS 2925",
       "std1": true,
-      "primaryOk": false,
+      "primaryOk": true,
       "alsoFound": [],
       "evRank": 2,
-      "pkgHit": false,
-      "pkgSentHit": false,
+      "pkgHit": true,
+      "pkgSentHit": true,
       "floorScore": 0.7951,
       "top5": [
         "is-4151-5-0",
         "is-2925-4-0",
         "is-2925-0-2",
-        "is-4151-1.2-0",
-        "is-15820-5.4.6.3-0"
+        "is-2925-1-0",
+        "is-4151-1.2-0"
       ],
-      "ms": 111,
-      "pass": false
+      "ms": 226,
+      "pass": true
     },
     {
       "id": "h2925-vent-holes",
@@ -516,7 +516,7 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 11,
+      "evRank": 12,
       "pkgHit": false,
       "pkgSentHit": false,
       "floorScore": 0.8066,
@@ -524,10 +524,10 @@
         "is-2925-2.6-0",
         "is-9873-1-4.16.3-0",
         "is-2925-3-0",
-        "is-2925-0-2",
-        "is-4151-11-0"
+        "is-4151-4.1-0",
+        "is-2925-0-2"
       ],
-      "ms": 123,
+      "ms": 130,
       "pass": false
     },
     {
@@ -551,7 +551,7 @@
         "is-4151-3.6.1-0",
         "is-2925-4-0"
       ],
-      "ms": 114,
+      "ms": 185,
       "pass": true
     },
     {
@@ -571,11 +571,11 @@
       "top5": [
         "is-2925-8.3-0",
         "is-2925-3-0",
-        "is-2925-8.4-0",
+        "is-4151-4.1-0",
         "is-2925-0-2",
-        "is-2925-8.6-0"
+        "is-2925-8.4-0"
       ],
-      "ms": 122,
+      "ms": 174,
       "pass": true
     },
     {
@@ -599,7 +599,7 @@
         "is-9873-1-5.11.3-0",
         "is-4151-6-0"
       ],
-      "ms": 122,
+      "ms": 119,
       "pass": true
     },
     {
@@ -612,18 +612,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 2,
+      "evRank": 1,
       "pkgHit": true,
       "pkgSentHit": true,
       "floorScore": 0.8499,
       "top5": [
-        "is-4151-ANNEX_C-0",
         "is-2925-8.5-0",
+        "is-2925-8-0",
         "is-2925-8.2-0",
-        "is-2925-3-0",
-        "is-2925-8.3-0"
+        "is-4151-4.1-0",
+        "is-2925-3-0"
       ],
-      "ms": 114,
+      "ms": 113,
       "pass": true
     },
     {
@@ -631,23 +631,23 @@
       "kind": "answer",
       "raw": false,
       "answered": true,
-      "topStandard": "IS 4151",
-      "primary": "IS 4151",
-      "std1": false,
-      "primaryOk": false,
+      "topStandard": "IS 2925",
+      "primary": "IS 2925",
+      "std1": true,
+      "primaryOk": true,
       "alsoFound": [],
-      "evRank": 12,
+      "evRank": 13,
       "pkgHit": false,
       "pkgSentHit": false,
       "floorScore": 0.8054,
       "top5": [
-        "is-4151-ANNEX_C-0",
+        "is-2925-8-0",
         "is-2925-8.2-0",
         "is-4151-ANNEX_E-0",
         "is-9873-1-5.24.2-0",
         "is-4151-15-0"
       ],
-      "ms": 142,
+      "ms": 151,
       "pass": false
     },
     {
@@ -660,18 +660,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 4,
+      "evRank": 3,
       "pkgHit": true,
       "pkgSentHit": true,
       "floorScore": 0.8041,
       "top5": [
-        "is-4151-11-0",
-        "is-4151-ANNEX_C-0",
         "is-2925-0-2",
+        "is-4151-11-0~2",
         "is-2925-10-0",
+        "is-2925-1-0",
         "is-15644-0-23"
       ],
-      "ms": 191,
+      "ms": 193,
       "pass": true
     },
     {
@@ -680,23 +680,23 @@
       "raw": false,
       "answered": true,
       "topStandard": "IS 2925",
-      "primary": "IS 4151",
+      "primary": "IS 2925",
       "std1": true,
-      "primaryOk": false,
+      "primaryOk": true,
       "alsoFound": [],
       "evRank": 1,
-      "pkgHit": false,
-      "pkgSentHit": false,
+      "pkgHit": true,
+      "pkgSentHit": true,
       "floorScore": 0.8097,
       "top5": [
         "is-2925-10.1.1-0",
         "is-2925-0-2",
-        "is-4151-11-0",
+        "is-2925-1-0",
         "is-9873-1-4.17-0",
         "is-4151-1.2-0"
       ],
-      "ms": 141,
-      "pass": false
+      "ms": 132,
+      "pass": true
     },
     {
       "id": "h2925-nape",
@@ -708,7 +708,7 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 8,
+      "evRank": 7,
       "pkgHit": true,
       "pkgSentHit": true,
       "floorScore": 0.7143,
@@ -717,9 +717,9 @@
         "is-2925-5.3-0",
         "is-9873-1-Figure_28-0",
         "is-4151-ANNEX_E-0",
-        "is-9873-1-Figure_32-0"
+        "is-9873-1-Table_4-0"
       ],
-      "ms": 117,
+      "ms": 147,
       "pass": true
     },
     {
@@ -732,18 +732,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 13,
+      "evRank": 14,
       "pkgHit": false,
       "pkgSentHit": false,
       "floorScore": 0.7979,
       "top5": [
         "is-2925-8.6-0",
         "is-2925-8.3-0",
-        "is-2925-3-0",
         "is-2925-8.4-0",
-        "is-2925-8.2-0"
+        "is-2925-3-0",
+        "is-2925-8-0"
       ],
-      "ms": 113,
+      "ms": 112,
       "pass": false
     },
     {
@@ -756,18 +756,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": null,
-      "pkgHit": false,
+      "evRank": 2,
+      "pkgHit": true,
       "pkgSentHit": false,
       "floorScore": 0.7249,
       "top5": [
-        "is-1417-6.2-0",
-        "is-1417-4-0",
         "is-1417-3.4-0",
+        "is-1417-4-0~2",
         "is-1417-1-0",
-        "is-15820-5.4.4-0"
+        "is-1417-6.2-0~2",
+        "is-1417-6.2-0"
       ],
-      "ms": 146,
+      "ms": 107,
       "pass": false
     },
     {
@@ -785,13 +785,13 @@
       "pkgSentHit": true,
       "floorScore": 0.8453,
       "top5": [
-        "is-1417-4-0",
+        "is-1417-4-0~2",
         "is-1417-1-0",
         "is-1417-3.7-0",
         "is-1417-0-1",
         "is-1417-3.4-0"
       ],
-      "ms": 110,
+      "ms": 129,
       "pass": true
     },
     {
@@ -804,18 +804,18 @@
       "std1": false,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 3,
+      "evRank": 2,
       "pkgHit": true,
       "pkgSentHit": true,
       "floorScore": 0.7781,
       "top5": [
-        "is-1417-4-0",
         "is-1418-3.3-0",
         "is-1417-3.4-0",
+        "is-1417-4-0~2",
         "is-1417-5.1-0",
         "is-1417-1-0"
       ],
-      "ms": 86,
+      "ms": 130,
       "pass": true
     },
     {
@@ -828,18 +828,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 3,
+      "evRank": 1,
       "pkgHit": true,
       "pkgSentHit": true,
       "floorScore": 0.75,
       "top5": [
-        "is-1417-4-0",
-        "is-15820-1-0",
         "is-1417-3.7-0",
         "is-1417-1-0",
-        "is-1417-3.4-0"
+        "is-1417-3.4-0",
+        "is-1417-3.5-0",
+        "is-1417-5.1-0"
       ],
-      "ms": 91,
+      "ms": 109,
       "pass": true
     },
     {
@@ -847,9 +847,9 @@
       "kind": "answer",
       "raw": false,
       "answered": true,
-      "topStandard": "IS 15820",
+      "topStandard": "IS 1417",
       "primary": "IS 1417",
-      "std1": false,
+      "std1": true,
       "primaryOk": true,
       "alsoFound": [],
       "evRank": 13,
@@ -857,13 +857,13 @@
       "pkgSentHit": false,
       "floorScore": 0.775,
       "top5": [
-        "is-1417-6.2-0",
-        "is-1417-4-0",
+        "is-1417-6.2-0~2",
         "is-15820-4.4.3-0",
+        "is-1417-6.2-0",
         "is-15820-4.4.4-0",
         "is-1417-0-0"
       ],
-      "ms": 102,
+      "ms": 162,
       "pass": false
     },
     {
@@ -872,23 +872,23 @@
       "raw": false,
       "answered": true,
       "topStandard": "IS 1417",
-      "primary": "IS 15820",
+      "primary": "IS 1417",
       "std1": true,
-      "primaryOk": false,
+      "primaryOk": true,
       "alsoFound": [],
-      "evRank": 6,
-      "pkgHit": false,
-      "pkgSentHit": false,
+      "evRank": 3,
+      "pkgHit": true,
+      "pkgSentHit": true,
       "floorScore": 0.814,
       "top5": [
-        "is-1417-6.2-0",
-        "is-15820-1-0",
-        "is-1417-4-0",
         "is-1417-3.4-0",
-        "is-1418-3.3-0"
+        "is-1418-3.3-0",
+        "is-1417-5.5-0",
+        "is-1417-3.7-0",
+        "is-1417-5.1-0"
       ],
-      "ms": 167,
-      "pass": false
+      "ms": 135,
+      "pass": true
     },
     {
       "id": "g1417-solder-23k",
@@ -900,18 +900,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 4,
+      "evRank": 1,
       "pkgHit": true,
       "pkgSentHit": true,
       "floorScore": 0.8432,
       "top5": [
-        "is-1417-4-0",
-        "is-1417-6.2-0",
-        "is-9873-3-ANNEX_D-0",
         "is-1417-2-0",
-        "is-1417-5.2-0"
+        "is-1417-5.2-0",
+        "is-1417-4-0~2",
+        "is-1418-2-0~3",
+        "is-1417-5.2-1"
       ],
-      "ms": 127,
+      "ms": 148,
       "pass": true
     },
     {
@@ -924,18 +924,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 4,
+      "evRank": 3,
       "pkgHit": true,
       "pkgSentHit": true,
       "floorScore": 0.7524,
       "top5": [
-        "is-1417-4-0",
-        "is-1417-2-0",
         "is-15820-5.4.3-0",
+        "is-1417-2-0",
         "is-1417-5.2-1",
-        "is-1417-5.2-0"
+        "is-1417-5.2-0",
+        "is-1417-4-0~2"
       ],
-      "ms": 99,
+      "ms": 108,
       "pass": true
     },
     {
@@ -948,18 +948,18 @@
       "std1": false,
       "primaryOk": false,
       "alsoFound": [],
-      "evRank": 1,
+      "evRank": 2,
       "pkgHit": false,
       "pkgSentHit": false,
       "floorScore": 0.8445,
       "top5": [
-        "is-1417-4-0",
         "is-15820-5.4.3-0",
+        "is-1417-4-0",
         "is-1418-9.3-0",
         "is-1417-0-2",
-        "is-1418-2-0"
+        "is-1417-4-0~2"
       ],
-      "ms": 113,
+      "ms": 164,
       "pass": false
     },
     {
@@ -978,12 +978,12 @@
       "floorScore": 1,
       "top5": [
         "is-1417-5.5-0",
-        "is-1417-3.5-0",
         "is-1417-5.1-0",
         "is-1417-3.2-0",
-        "is-1417-0-2"
+        "is-1417-6.2-0",
+        "is-1417-4-0"
       ],
-      "ms": 89,
+      "ms": 143,
       "pass": true
     },
     {
@@ -996,18 +996,18 @@
       "std1": false,
       "primaryOk": false,
       "alsoFound": [],
-      "evRank": 3,
+      "evRank": 2,
       "pkgHit": false,
       "pkgSentHit": false,
       "floorScore": 0.807,
       "top5": [
-        "is-4151-11-0",
         "is-15820-5.4.6.3-0",
         "is-1417-6.1.1-0",
         "is-15820-5.4.6-0",
-        "is-15820-5.4.6.2-0"
+        "is-15820-5.4.6.2-0",
+        "is-1417-5.1-0"
       ],
-      "ms": 109,
+      "ms": 117,
       "pass": false
     },
     {
@@ -1020,18 +1020,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": null,
-      "pkgHit": false,
+      "evRank": 1,
+      "pkgHit": true,
       "pkgSentHit": false,
       "floorScore": 0.6475,
       "top5": [
-        "is-1417-4-0",
+        "is-1417-4-0~2",
         "is-4151-15-0",
-        "is-1418-8.6-0",
         "is-15820-5.10-5",
+        "is-1418-8.6-0",
         "is-1417-3.4-0"
       ],
-      "ms": 79,
+      "ms": 127,
       "pass": false
     },
     {
@@ -1044,18 +1044,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 4,
+      "evRank": 1,
       "pkgHit": true,
       "pkgSentHit": false,
       "floorScore": 0.7748,
       "top5": [
-        "is-1418-2-0",
-        "is-1417-6.2-0",
-        "is-1417-4-0",
         "is-1418-0-1",
-        "is-1417-3.1-0"
+        "is-1417-3.1-0",
+        "is-1418-8-0",
+        "is-1417-3.7-0",
+        "is-1418-2-0~3"
       ],
-      "ms": 85,
+      "ms": 189,
       "pass": false
     },
     {
@@ -1068,18 +1068,18 @@
       "std1": true,
       "primaryOk": false,
       "alsoFound": [],
-      "evRank": 3,
+      "evRank": 1,
       "pkgHit": false,
       "pkgSentHit": false,
       "floorScore": 0.751,
       "top5": [
-        "is-15820-2-0",
-        "is-15820-1-0",
         "is-1418-3.2-0",
         "is-1418-8.4-0",
-        "is-1418-9.2-0"
+        "is-1418-9.2-0",
+        "is-1418-9.1.3-0",
+        "is-15820-2-0~3"
       ],
-      "ms": 81,
+      "ms": 131,
       "pass": false
     },
     {
@@ -1092,18 +1092,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 2,
+      "evRank": 1,
       "pkgHit": true,
       "pkgSentHit": true,
       "floorScore": 0.7699,
       "top5": [
-        "is-1417-4-0",
         "is-1418-8.7-0",
         "is-1418-10.2-0",
         "is-1418-10-0",
-        "is-1418-9.1.2-0"
+        "is-1418-9.1.2-0",
+        "is-1418-8.2-1"
       ],
-      "ms": 77,
+      "ms": 259,
       "pass": true
     },
     {
@@ -1116,18 +1116,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 3,
+      "evRank": 2,
       "pkgHit": true,
       "pkgSentHit": true,
       "floorScore": 0.8022,
       "top5": [
-        "is-1417-4-0",
         "is-1418-9.3-0",
         "is-1418-9.2-0",
         "is-1418-8-0",
-        "is-1418-9.2.2-0"
+        "is-1418-2-0~3",
+        "is-1418-4-0"
       ],
-      "ms": 80,
+      "ms": 160,
       "pass": true
     },
     {
@@ -1140,18 +1140,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 3,
+      "evRank": 1,
       "pkgHit": true,
       "pkgSentHit": true,
       "floorScore": 0.8306,
       "top5": [
-        "is-1417-4-0",
-        "is-1417-6.2-0",
         "is-1418-9.3-0",
+        "is-1418-4-0",
+        "is-1418-2-0~3",
         "is-1418-8-0",
-        "is-1418-2-0"
+        "is-15820-5.4.4-0"
       ],
-      "ms": 137,
+      "ms": 155,
       "pass": true
     },
     {
@@ -1160,23 +1160,23 @@
       "raw": false,
       "answered": true,
       "topStandard": "IS 1418",
-      "primary": "IS 15820",
+      "primary": "IS 1418",
       "std1": true,
-      "primaryOk": false,
+      "primaryOk": true,
       "alsoFound": [],
-      "evRank": 3,
-      "pkgHit": false,
-      "pkgSentHit": false,
-      "floorScore": 0.7288,
+      "evRank": 1,
+      "pkgHit": true,
+      "pkgSentHit": true,
+      "floorScore": 0.7296,
       "top5": [
-        "is-15820-1-0",
-        "is-1418-2-0",
         "is-1418-6.2-0",
         "is-1418-9.1.1-0",
-        "is-1418-9.2.2-0"
+        "is-1418-9.2.2-0",
+        "is-1418-8.4-0",
+        "is-1418-9.1.3-0"
       ],
-      "ms": 108,
-      "pass": false
+      "ms": 122,
+      "pass": true
     },
     {
       "id": "g1418-proof",
@@ -1184,23 +1184,23 @@
       "raw": false,
       "answered": true,
       "topStandard": "IS 1418",
-      "primary": "IS 15820",
+      "primary": "IS 1418",
       "std1": true,
-      "primaryOk": false,
+      "primaryOk": true,
       "alsoFound": [],
-      "evRank": 5,
-      "pkgHit": false,
-      "pkgSentHit": false,
+      "evRank": 3,
+      "pkgHit": true,
+      "pkgSentHit": true,
       "floorScore": 0.8105,
       "top5": [
-        "is-15820-1-0",
-        "is-1417-6.2-0",
         "is-1418-9.1.2-0",
         "is-1418-9.3-0",
-        "is-1418-8.6-0"
+        "is-1418-8.6-0",
+        "is-1418-8-0",
+        "is-1418-10-0"
       ],
-      "ms": 86,
-      "pass": false
+      "ms": 167,
+      "pass": true
     },
     {
       "id": "g1418-pd-reagent",
@@ -1208,23 +1208,23 @@
       "raw": false,
       "answered": true,
       "topStandard": "IS 1418",
-      "primary": "IS 15820",
+      "primary": "IS 1418",
       "std1": true,
-      "primaryOk": false,
+      "primaryOk": true,
       "alsoFound": [],
-      "evRank": 3,
-      "pkgHit": false,
-      "pkgSentHit": false,
+      "evRank": 1,
+      "pkgHit": true,
+      "pkgSentHit": true,
       "floorScore": 0.7845,
       "top5": [
-        "is-1418-2-0",
-        "is-15820-1-0",
         "is-1418-6.7-0",
         "is-1418-9.3-0",
-        "is-1418-6.2-0"
+        "is-1418-6.2-0",
+        "is-1418-2-0~3",
+        "is-15820-5.5.2-0"
       ],
-      "ms": 91,
-      "pass": false
+      "ms": 140,
+      "pass": true
     },
     {
       "id": "g1418-furnace-temp",
@@ -1232,23 +1232,23 @@
       "raw": false,
       "answered": true,
       "topStandard": "IS 1418",
-      "primary": "IS 15820",
+      "primary": "IS 1418",
       "std1": true,
-      "primaryOk": false,
+      "primaryOk": true,
       "alsoFound": [],
-      "evRank": 4,
-      "pkgHit": false,
-      "pkgSentHit": false,
+      "evRank": 1,
+      "pkgHit": true,
+      "pkgSentHit": true,
       "floorScore": 0.8356,
       "top5": [
-        "is-1417-4-0",
-        "is-15820-2-0",
-        "is-15820-1-0",
         "is-1418-8.4-0",
-        "is-1418-9.1.3-0"
+        "is-1418-9.1.3-0",
+        "is-1418-7.5-0",
+        "is-1418-4-0",
+        "is-1418-8.2-0"
       ],
-      "ms": 94,
-      "pass": false
+      "ms": 174,
+      "pass": true
     },
     {
       "id": "a15820-scope",
@@ -1260,19 +1260,19 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 9,
-      "pkgHit": false,
-      "pkgSentHit": false,
+      "evRank": 1,
+      "pkgHit": true,
+      "pkgSentHit": true,
       "floorScore": 0.8453,
       "top5": [
+        "is-15820-1-0",
         "is-15820-4.1.2-0",
         "is-15820-5-0",
-        "is-15820-4.1.5-0",
-        "is-15820-5.5-0",
-        "is-15820-3.4-0"
+        "is-15820-2-0",
+        "is-15820-5.5-0"
       ],
-      "ms": 111,
-      "pass": false
+      "ms": 185,
+      "pass": true
     },
     {
       "id": "a15820-xrf",
@@ -1292,10 +1292,10 @@
         "is-15820-5.4.2-0",
         "is-15820-5.4.5-0",
         "is-15820-5.6.6-0",
-        "is-15820-5.4.6-0",
-        "is-15820-4.1.2-0"
+        "is-15820-2-0",
+        "is-15820-5.4.6-0"
       ],
-      "ms": 85,
+      "ms": 140,
       "pass": true
     },
     {
@@ -1319,7 +1319,7 @@
         "is-15820-5.4.6-0",
         "is-15820-5.4.6.4-0"
       ],
-      "ms": 79,
+      "ms": 112,
       "pass": true
     },
     {
@@ -1343,7 +1343,7 @@
         "is-15820-5.3.2-0",
         "is-15820-4.13.1.3-0"
       ],
-      "ms": 88,
+      "ms": 165,
       "pass": true
     },
     {
@@ -1356,7 +1356,7 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 18,
+      "evRank": 17,
       "pkgHit": false,
       "pkgSentHit": false,
       "floorScore": 0.7558,
@@ -1367,7 +1367,7 @@
         "is-15820-5.4.6-0",
         "is-15820-5-0"
       ],
-      "ms": 81,
+      "ms": 170,
       "pass": false
     },
     {
@@ -1388,10 +1388,10 @@
         "is-15820-5.5-0",
         "is-15820-4.1.6-0",
         "is-15820-5.7.2-0",
-        "is-15820-0-1",
-        "is-15820-5-0"
+        "is-15820-2-0",
+        "is-15820-0-1"
       ],
-      "ms": 86,
+      "ms": 115,
       "pass": false
     },
     {
@@ -1415,7 +1415,7 @@
         "is-15820-5.2.6-0",
         "is-15820-4.1.5-0"
       ],
-      "ms": 146,
+      "ms": 110,
       "pass": true
     },
     {
@@ -1439,7 +1439,7 @@
         "is-15820-5.2.4-0",
         "is-15820-4.1.2-0"
       ],
-      "ms": 102,
+      "ms": 145,
       "pass": true
     },
     {
@@ -1452,18 +1452,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 13,
+      "evRank": 12,
       "pkgHit": false,
       "pkgSentHit": false,
       "floorScore": 0.7981,
       "top5": [
-        "is-15820-1-0",
         "is-15820-5.6.6-0",
         "is-15820-5.4.2-0",
         "is-15820-5.3.2-0",
-        "is-15820-5.4.3-0"
+        "is-15820-5.4.3-0",
+        "is-15820-5.10-7"
       ],
-      "ms": 86,
+      "ms": 116,
       "pass": false
     },
     {
@@ -1476,18 +1476,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 3,
+      "evRank": 2,
       "pkgHit": true,
       "pkgSentHit": true,
       "floorScore": 0.8479,
       "top5": [
-        "is-9873-1-Figure_8-0",
         "is-9873-1-4.4-1",
         "is-9873-1-4.4-0",
         "is-9873-1-4.11.3-0",
+        "is-9873-1-Figure_3-0~2",
         "is-9873-1-4.7-1"
       ],
-      "ms": 95,
+      "ms": 222,
       "pass": true
     },
     {
@@ -1500,19 +1500,19 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": null,
-      "pkgHit": false,
-      "pkgSentHit": false,
+      "evRank": 1,
+      "pkgHit": true,
+      "pkgSentHit": true,
       "floorScore": 0.8282,
       "top5": [
-        "is-9873-1-Figure_3-0",
-        "is-9873-1-Figure_8-0",
-        "is-9873-1-Figure_8-1",
+        "is-9873-1-Figure_8-0~2",
         "is-9873-1-4.7-1",
-        "is-9873-1-Figure_1-2"
+        "is-9873-1-Figure_8-1",
+        "is-9873-1-Figure_1-2",
+        "is-9873-1-Figure_8-2"
       ],
-      "ms": 96,
-      "pass": false
+      "ms": 176,
+      "pass": true
     },
     {
       "id": "t9873-1-balloons",
@@ -1527,15 +1527,15 @@
       "evRank": 5,
       "pkgHit": true,
       "pkgSentHit": true,
-      "floorScore": 0.7423,
+      "floorScore": 0.7336,
       "top5": [
-        "is-9873-1-Figure_3-0",
         "is-9873-1-ANNEX_B-2",
         "is-9873-1-4.25-0",
         "is-9873-1-4.2-0",
+        "is-9873-1-4.7-1",
         "is-9873-1-Figure_7-0"
       ],
-      "ms": 104,
+      "ms": 124,
       "pass": true
     },
     {
@@ -1548,18 +1548,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 2,
+      "evRank": 1,
       "pkgHit": true,
       "pkgSentHit": true,
       "floorScore": 0.7594,
       "top5": [
-        "is-9873-1-Figure_3-0",
         "is-9873-1-4.10-0",
         "is-9873-1-4.11.4-0",
         "is-9873-1-Figure_7-2",
-        "is-9873-1-4.7-1"
+        "is-9873-1-4.7-1",
+        "is-9873-3-11.1.4.3-0"
       ],
-      "ms": 78,
+      "ms": 125,
       "pass": true
     },
     {
@@ -1583,7 +1583,7 @@
         "is-9873-1-5.24.3-0",
         "is-9873-1-5.24.7-0"
       ],
-      "ms": 76,
+      "ms": 100,
       "pass": true
     },
     {
@@ -1607,7 +1607,7 @@
         "is-9873-1-Figure_27-0",
         "is-9873-1-Figure_3-15"
       ],
-      "ms": 82,
+      "ms": 129,
       "pass": true
     },
     {
@@ -1620,18 +1620,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 3,
+      "evRank": 2,
       "pkgHit": true,
       "pkgSentHit": true,
       "floorScore": 0.7969,
       "top5": [
-        "is-9873-3-ANNEX_D-0",
         "is-9873-1-4.28-1",
         "is-9873-1-4.28-0",
         "is-9873-3-0-4",
-        "is-9873-1-5.25.2.4.2-0"
+        "is-9873-1-5.25.2.4.2-0",
+        "is-9873-3-11-0"
       ],
-      "ms": 80,
+      "ms": 133,
       "pass": true
     },
     {
@@ -1655,7 +1655,7 @@
         "is-9873-1-4.29.4-0",
         "is-9873-1-5.24.2-0"
       ],
-      "ms": 80,
+      "ms": 138,
       "pass": true
     },
     {
@@ -1668,7 +1668,7 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 32,
+      "evRank": 7,
       "pkgHit": false,
       "pkgSentHit": false,
       "floorScore": 0.7641,
@@ -1676,10 +1676,10 @@
         "is-9873-1-4.18-0",
         "is-9873-1-5.15-0",
         "is-9873-1-4.18.2-1",
-        "is-9873-1-Figure_3-11",
-        "is-9873-1-4.18.2-0"
+        "is-9873-1-4.18.2-0",
+        "is-9873-1-Figure_3-11"
       ],
-      "ms": 76,
+      "ms": 132,
       "pass": false
     },
     {
@@ -1703,7 +1703,7 @@
         "is-9873-1-4.7-1",
         "is-15644-0-2"
       ],
-      "ms": 165,
+      "ms": 178,
       "pass": false
     },
     {
@@ -1716,18 +1716,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 4,
+      "evRank": 1,
       "pkgHit": true,
       "pkgSentHit": true,
       "floorScore": 0.7463,
       "top5": [
-        "is-9873-1-Figure_3-0",
-        "is-9873-1-Figure_8-0",
-        "is-9873-1-Figure_3-1",
         "is-9873-1-Figure_1-1",
-        "is-9873-1-Figure_1-2"
+        "is-9873-1-Figure_1-2",
+        "is-9873-1-Figure_20-1",
+        "is-9873-1-Figure_8-0~2",
+        "is-9873-1-5.8-1"
       ],
-      "ms": 94,
+      "ms": 187,
       "pass": true
     },
     {
@@ -1740,18 +1740,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 33,
+      "evRank": 32,
       "pkgHit": false,
       "pkgSentHit": false,
       "floorScore": 0.7992,
       "top5": [
         "is-9873-3-0-4",
-        "is-1418-2-0",
         "is-9873-3-0-0",
         "is-9873-1-5.22-0",
-        "is-9873-3-0-2"
+        "is-9873-3-0-2",
+        "is-9873-3-Table_1-0~2"
       ],
-      "ms": 88,
+      "ms": 145,
       "pass": false
     },
     {
@@ -1764,19 +1764,19 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": null,
-      "pkgHit": false,
-      "pkgSentHit": false,
+      "evRank": 1,
+      "pkgHit": true,
+      "pkgSentHit": true,
       "floorScore": 0.7637,
       "top5": [
-        "is-9873-3-Table_1-0",
-        "is-9873-3-ANNEX_D-0",
+        "is-9873-3-Table_1-0~2",
         "is-9873-3-0-4",
         "is-9873-3-1-0",
-        "is-9873-3-Table_2-0"
+        "is-9873-1-4.26-0",
+        "is-9873-3-ANNEX_D-3"
       ],
-      "ms": 85,
-      "pass": false
+      "ms": 148,
+      "pass": true
     },
     {
       "id": "t9873-3-clay",
@@ -1788,19 +1788,19 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": null,
-      "pkgHit": false,
-      "pkgSentHit": false,
+      "evRank": 1,
+      "pkgHit": true,
+      "pkgSentHit": true,
       "floorScore": 0.8129,
       "top5": [
-        "is-9873-3-Table_1-0",
-        "is-9873-3-ANNEX_D-0",
-        "is-1418-2-0",
+        "is-9873-3-Table_1-0~2",
         "is-9873-3-5-0",
-        "is-9873-3-0-4"
+        "is-9873-3-0-4",
+        "is-9873-3-ANNEX_D-4",
+        "is-1418-2-0~4"
       ],
-      "ms": 115,
-      "pass": false
+      "ms": 146,
+      "pass": true
     },
     {
       "id": "t9873-3-hcl",
@@ -1823,7 +1823,7 @@
         "is-9873-3-8-15",
         "is-9873-3-5-0"
       ],
-      "ms": 89,
+      "ms": 136,
       "pass": false
     },
     {
@@ -1841,13 +1841,13 @@
       "pkgSentHit": false,
       "floorScore": 0.7575,
       "top5": [
-        "is-9873-3-Table_1-0",
         "is-9873-1-4.4-0",
         "is-9873-3-ANNEX_D-5",
         "is-9873-1-4.1-0",
-        "is-9873-3-ANNEX_D-4"
+        "is-9873-3-ANNEX_D-4",
+        "is-9873-3-ANNEX_D-9"
       ],
-      "ms": 86,
+      "ms": 151,
       "pass": false
     },
     {
@@ -1860,18 +1860,18 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 2,
+      "evRank": 1,
       "pkgHit": true,
       "pkgSentHit": false,
       "floorScore": 0.7793,
       "top5": [
-        "is-9873-3-ANNEX_D-0",
         "is-9873-3-0-4",
         "is-9873-3-5-0",
         "is-9873-3-0-0",
-        "is-9873-1-5.12-0"
+        "is-9873-1-5.12-0",
+        "is-9873-3-ANNEX_D-1"
       ],
-      "ms": 79,
+      "ms": 153,
       "pass": false
     },
     {
@@ -1880,7 +1880,7 @@
       "raw": true,
       "answered": true,
       "topStandard": "IS 1418",
-      "primary": "IS 1418",
+      "primary": "IS 4151",
       "std1": false,
       "primaryOk": false,
       "alsoFound": [],
@@ -1889,13 +1889,13 @@
       "pkgSentHit": false,
       "floorScore": 0.7018,
       "top5": [
-        "is-15820-1-0",
         "is-1418-3.2-0",
-        "is-9873-3-Table_2-0",
         "is-9873-3-ANNEX_D-3",
-        "is-9873-1-4.11.7-0"
+        "is-9873-1-4.11.7-0",
+        "is-1418-7.4-0",
+        "is-4151-6.2.1-0"
       ],
-      "ms": 81,
+      "ms": 297,
       "pass": false
     },
     {
@@ -1919,7 +1919,7 @@
         "is-15644-0-1",
         "is-15644-0-2"
       ],
-      "ms": 76,
+      "ms": 175,
       "pass": true
     },
     {
@@ -1943,7 +1943,7 @@
         "is-15644-0-11",
         "is-9873-1-Figure_14-0"
       ],
-      "ms": 80,
+      "ms": 121,
       "pass": false
     },
     {
@@ -1967,7 +1967,7 @@
         "is-15644-0-24",
         "is-15644-0-42"
       ],
-      "ms": 79,
+      "ms": 149,
       "pass": true
     },
     {
@@ -1980,18 +1980,18 @@
       "std1": false,
       "primaryOk": false,
       "alsoFound": [],
-      "evRank": 18,
+      "evRank": 17,
       "pkgHit": false,
       "pkgSentHit": false,
       "floorScore": 0.82,
       "top5": [
-        "is-9873-1-Figure_3-1",
         "is-9873-1-4.19-0",
         "is-15644-0-21",
         "is-9873-1-4.23-0",
-        "is-15644-0-6"
+        "is-15644-0-6",
+        "is-15644-0-5"
       ],
-      "ms": 206,
+      "ms": 145,
       "pass": false
     },
     {
@@ -2015,7 +2015,7 @@
         "is-9873-1-4.11.7-0",
         "is-9873-1-5.1-1"
       ],
-      "ms": 84,
+      "ms": 191,
       "pass": false
     },
     {
@@ -2039,7 +2039,7 @@
         "is-15644-0-26",
         "is-15644-0-17"
       ],
-      "ms": 87,
+      "ms": 186,
       "pass": false
     },
     {
@@ -2052,7 +2052,7 @@
       "std1": true,
       "primaryOk": true,
       "alsoFound": [],
-      "evRank": 12,
+      "evRank": 11,
       "pkgHit": false,
       "pkgSentHit": false,
       "floorScore": 0.7685,
@@ -2063,7 +2063,7 @@
         "is-15644-0-19",
         "is-15644-0-22"
       ],
-      "ms": 122,
+      "ms": 148,
       "pass": false
     },
     {
@@ -2083,13 +2083,13 @@
       "pkgSentHit": false,
       "floorScore": 0.7716,
       "top5": [
-        "is-9873-1-Table_2-0",
         "is-9873-1-4.20-0",
         "is-9873-1-Figure_12-0",
         "is-15644-0-10",
-        "is-9873-1-5.16.2-0"
+        "is-9873-1-5.16.2-0",
+        "is-9873-1-Table_2-0~2"
       ],
-      "ms": 84,
+      "ms": 212,
       "pass": false
     },
     {
@@ -2102,18 +2102,18 @@
       "std1": true,
       "primaryOk": false,
       "alsoFound": [],
-      "evRank": 3,
+      "evRank": 2,
       "pkgHit": false,
       "pkgSentHit": false,
       "floorScore": 0.7919,
       "top5": [
-        "is-4151-11-0",
         "form-i-jeweller-0-2",
         "form-i-jeweller-0-0",
         "form-i-jeweller-0-1",
-        "is-1417-5.2-1"
+        "is-1417-5.2-1",
+        "is-4151-11-0~2"
       ],
-      "ms": 85,
+      "ms": 160,
       "pass": false
     },
     {
@@ -2126,18 +2126,18 @@
       "std1": true,
       "primaryOk": false,
       "alsoFound": [],
-      "evRank": 2,
+      "evRank": 1,
       "pkgHit": false,
       "pkgSentHit": false,
       "floorScore": 0.7315,
       "top5": [
-        "is-15820-1-0",
         "form-i-jeweller-0-1",
         "form-i-jeweller-0-2",
         "form-i-jeweller-0-0",
-        "is-4151-11-0"
+        "is-4151-6.2-0",
+        "is-15820-1-0"
       ],
-      "ms": 77,
+      "ms": 109,
       "pass": false
     },
     {
@@ -2161,7 +2161,7 @@
         "is-9873-1-5.25.1-3",
         "is-9873-1-5.25.2.4.2-0"
       ],
-      "ms": 81,
+      "ms": 124,
       "pass": false
     },
     {
@@ -2179,13 +2179,13 @@
       "pkgSentHit": false,
       "floorScore": 0.7405,
       "top5": [
-        "is-15820-1-0",
         "is-1418-2-0",
         "is-15820-ANNEX_E-4",
         "is-9873-3-0-1",
-        "is-2925-8.5-0"
+        "is-2925-8.5-0",
+        "is-15820-4.4.2-0"
       ],
-      "ms": 79,
+      "ms": 133,
       "pass": false
     },
     {
@@ -2203,13 +2203,13 @@
       "pkgSentHit": false,
       "floorScore": 0.7401,
       "top5": [
-        "is-2925-1-0",
         "is-4151-0-3",
         "is-9873-3-ANNEX_D-1",
         "is-2925-8.6-0",
-        "is-2925-11.1-16"
+        "is-2925-11.1-16",
+        "is-9873-1-4.15.3-0"
       ],
-      "ms": 84,
+      "ms": 120,
       "pass": false
     },
     {
@@ -2229,11 +2229,11 @@
       "top5": [
         "is-9873-3-11.1.2.1.1-0",
         "is-9873-3-11.1.2-0",
+        "is-9873-3-Table_1-0",
         "is-9873-3-11.1.4.2-0",
-        "is-2925-10.1.2-0",
-        "is-9873-3-ANNEX_D-0"
+        "is-2925-10.1.2-0"
       ],
-      "ms": 83,
+      "ms": 140,
       "pass": false
     },
     {
@@ -2257,7 +2257,7 @@
         "is-15644-0-2",
         "is-15644-0-0"
       ],
-      "ms": 95,
+      "ms": 159,
       "pass": false
     },
     {
@@ -2273,15 +2273,15 @@
       "evRank": null,
       "pkgHit": false,
       "pkgSentHit": false,
-      "floorScore": 0.6944,
+      "floorScore": 0.6908,
       "top5": [
+        "is-15820-1-0",
         "is-15820-5.4.6.5-0",
         "is-1417-3.5-0",
         "is-2925-10.1.2-0",
-        "is-1417-5.4-0",
-        "is-4151-4.1-0"
+        "is-1417-5.4-0"
       ],
-      "ms": 161,
+      "ms": 191,
       "pass": false
     },
     {
@@ -2297,15 +2297,15 @@
       "evRank": null,
       "pkgHit": false,
       "pkgSentHit": false,
-      "floorScore": 0.7335,
+      "floorScore": 0.7363,
       "top5": [
-        "is-1417-4-0",
-        "is-1417-6.2-0",
         "is-1417-3.7-0",
+        "is-1417-4-0~2",
+        "is-1417-1-0",
         "is-1417-2-0",
-        "is-1417-1-0"
+        "is-1418-3.3-0"
       ],
-      "ms": 92,
+      "ms": 127,
       "pass": false
     },
     {
@@ -2323,13 +2323,13 @@
       "pkgSentHit": false,
       "floorScore": 1,
       "top5": [
-        "is-4151-11-0",
         "is-4151-1.2-0",
         "is-4151-0-3",
         "is-4151-0-1",
-        "is-4151-3-0"
+        "is-4151-3-0",
+        "is-4151-1-0"
       ],
-      "ms": 114,
+      "ms": 183,
       "pass": false
     }
   ]

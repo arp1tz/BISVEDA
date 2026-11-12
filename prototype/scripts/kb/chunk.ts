@@ -185,6 +185,10 @@ export function chunkDocument(doc: SourceDoc, pages: RawPage[]): KbChunk[] {
   const merged = mergeTinyForward(segments);
 
   const chunks: KbChunk[] = [];
+  // The same clause label can head two different segments (a mis-detected heading, or two "Annex C" passages),
+  // which used to produce identical ids and let one chunk shadow the other in BM25 and RRF (TD-23).
+  // The first occurrence keeps its id; later ones get "~2", "~3", ...
+  const idCount = new Map<string, number>();
   for (const seg of merged) {
     const text = seg.text.trim();
     if (text.length < MIN_SEGMENT_CHARS) continue; // still-tiny leading/orphan segment: drop
@@ -194,7 +198,10 @@ export function chunkDocument(doc: SourceDoc, pages: RawPage[]): KbChunk[] {
 
     parts.forEach((part, idx) => {
       if (!part.trim()) return;
-      const chunkId = `${doc.doc_id}-${seg.clause.replace(/\s+/g, "_")}-${idx}`;
+      const baseId = `${doc.doc_id}-${seg.clause.replace(/\s+/g, "_")}-${idx}`;
+      const seen = (idCount.get(baseId) ?? 0) + 1;
+      idCount.set(baseId, seen);
+      const chunkId = seen === 1 ? baseId : `${baseId}~${seen}`;
       chunks.push({
         chunk_id: chunkId,
         doc_id: doc.doc_id,

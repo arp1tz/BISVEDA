@@ -82,16 +82,18 @@ Data (since R1, 2026-11-12): PostgreSQL 16 + pgvector (docker-compose) → lib/k
 
 95 cases in `data/eval/retrieval.jsonl`. The gold is evidence text verified against the chunks (`--check-gold`). The eval runs retrieval only, with no LLM. In production, understand.ts (Groq) and route.ts run first: they often name the standard, which pins retrieval to it, and they refuse many off-topic products. So these numbers describe the retrieval layer alone. Full per-case output: `data/eval/results/retrieval-baseline.json`.
 
-| Metric | English working query (n=84) |
-|---|---|
-| Standard ranked first / adjudicated primary correct | 88.1% / 79.8% (**wrong standard 20.2%**) |
-| Evidence chunk at rank 1 / in top 5 / in top 50 | 20.2% / 63.1% / 92.9% (MRR 0.386) |
-| Evidence in the [S#] package (full chunk) / in the text actually sent to the LLM | 52.4% / 47.6% (4 cases lost only to the 500-char cut, TD-03) |
-| Raw Hinglish with no LLM (n=3) | 0/3 evidence found |
-| **Out-of-scope refused by retrieval (n=8)** | **0/8**: the 0.67 cosine floor sits below the similarity of unrelated queries (0.69–0.74), and the active-standard bypass passes everything (TD-05) |
-| Median retrieval time | ~100 ms (CPU) |
+| Metric (English working query, n=84) | R0 baseline | **After TD-23 fix (current baseline)** |
+|---|---|---|
+| Standard ranked first / adjudicated primary correct | 88.1% / 79.8% (wrong standard 20.2%) | **90.5% / 89.3% (wrong standard 10.7%)** |
+| Evidence chunk at rank 1 / in top 5 / in top 50 | 20.2% / 63.1% / 92.9% (MRR 0.386) | **47.6% / 72.6% / 98.8% (MRR 0.607)** |
+| Evidence in the [S#] package (full chunk) / in the text sent to the LLM | 52.4% / 47.6% | **67.9% / 61.9%** (5 cases lost only to the 500-char cut, TD-03) |
+| Raw Hinglish with no LLM (n=3) | 0/3 evidence found | 1/3 |
+| **Out-of-scope refused by retrieval (n=8)** | **0/8** | **0/8** (TD-05 unchanged) |
+| Median retrieval time | ~100 ms | ~100–170 ms (CPU) |
 
-What this means: the right document is usually found, but the right clause often isn't in the 8 chunks passed on (the evidence is in the top 50 for 93% of cases, yet in the package for only 52%). The retrieval floor does no filtering on its own. These are the R4 targets: clause-level aggregation, a reranker, a reranker-based floor, and full-clause context.
+The TD-23 fix (unique chunk ids) turned 12 cases from fail to pass with no case going from pass to fail; 6 cases slipped by one rank because previously hidden chunks now compete. Overall pass rate: 47.6% → 61.9%.
+
+What this means: the right document is usually found, and the evidence is in the top 50 for 99% of cases, but it reaches the LLM in only 62%. The retrieval floor still filters nothing. The retrieval floor does no filtering on its own. These are the R4 targets: clause-level aggregation, a reranker, a reranker-based floor, and full-clause context.
 
 ## 6. Module status
 
