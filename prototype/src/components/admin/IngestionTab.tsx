@@ -139,63 +139,41 @@ export function IngestionTab() {
     setCurrentStep(1);
     setLogs([]);
 
-    const fileName = selectedFile?.name || `${standardId.replace(/\s+/g, "_")}.pdf`;
-    const fileSizeKb = selectedFile ? Math.round(selectedFile.size / 1024) : 1850;
+    if (!selectedFile) {
+      setErrorMessage("Choose a PDF file to upload.");
+      setIsProcessing(false);
+      return;
+    }
 
-    addLog(`Initiating BIS ingestion pipeline for "${standardId}"...`);
-    addLog(`Document: ${fileName} (${fileSizeKb} KB) | Class: ${docClass}`);
+    const fileName = selectedFile.name;
+    const fileSizeKb = Math.round(selectedFile.size / 1024);
+
+    addLog(`Uploading ${fileName} (${fileSizeKb} KB) for "${standardId}"...`);
+    setProgress(30);
+    setCurrentStep(1);
 
     try {
-      // Step 1: Parsing & Text Extraction
-      await new Promise((r) => setTimeout(r, 600));
-      setProgress(25);
-      setCurrentStep(2);
-      addLog(`[OCR Parser] Extracted 38 pages. Normalized formatting and clause hierarchy.`);
+      // Real upload: the server checks the PDF, stores it and queues an ingest job.
+      const body = new FormData();
+      body.append("file", selectedFile);
+      body.append("standard_id", standardId);
+      body.append("title", title);
+      body.append("domain", domain);
+      body.append("version", version);
+      body.append("doc_class", docClass);
 
-      // Step 2: Clause Chunking & Tokenization
-      await new Promise((r) => setTimeout(r, 700));
-      setProgress(50);
-      setCurrentStep(3);
-      const chunkCount = Math.max(16, Math.floor(fileSizeKb / 40));
-      addLog(`[Semantic Chunker] Created ${chunkCount} structured clause chunks (avg 380 tokens/chunk).`);
-      addLog(`[Sliding Window] Overlapped clause definitions and cross-references.`);
-
-      // Step 3: Vector Embeddings
-      await new Promise((r) => setTimeout(r, 700));
-      setProgress(75);
-      setCurrentStep(4);
-      addLog(`[Embedding Engine] Generated 1024-dimensional dense vectors with local bge-m3.`);
-
-      // Step 4: Knowledge Graph Linking
-      await new Promise((r) => setTimeout(r, 600));
-      setProgress(90);
-      setCurrentStep(5);
-      const nodeCount = Math.max(5, Math.floor(chunkCount / 3.5));
-      addLog(`[Knowledge Graph] Extracted ${nodeCount} entities and linked to domain "${domain}".`);
-
-      // Post to API
-      const res = await fetch("/api/admin/ingest", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          standard_id: standardId,
-          title,
-          domain,
-          version,
-          doc_class: docClass,
-          file_name: fileName,
-          file_size_kb: fileSizeKb,
-        }),
-      });
+      const res = await fetch("/api/admin/ingest", { method: "POST", body });
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        throw new Error("Server failed to register ingested document.");
+        throw new Error(data.error || `Upload failed (HTTP ${res.status}).`);
       }
 
-      const data = await res.json();
       setProgress(100);
-      addLog(`[Index Complete] Standard registered in official KB index! Status: Active.`);
-      setSuccessMessage(data.message || `Successfully ingested ${standardId}!`);
+      setCurrentStep(2);
+      addLog(`[Upload] Stored original. Ingest job ${String(data.job_id).slice(0, 8)} queued.`);
+      addLog(`[Worker] Parsing, chunking and embedding are not built yet; the job will show as failed until they are.`);
+      setSuccessMessage(data.message || `Uploaded ${standardId}.`);
 
       // Reset form
       setStandardId("");

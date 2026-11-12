@@ -19,7 +19,8 @@
     "db:down": "docker compose down",
     "db:migrate": "tsx scripts/db/migrate.ts",
     "db:reset": "tsx scripts/db/migrate.ts --reset",
-    "db:import": "tsx scripts/db/import-json.ts"
+    "db:import": "tsx scripts/db/import-json.ts",
+    "worker:ingest": "tsx scripts/ingest/worker.ts"
   },
   "dependencies": {
     "@huggingface/transformers": "^4.3.0",

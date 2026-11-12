@@ -175,3 +175,9 @@ R6, R7 independent (any time after R1)
 2. Sonnet implements. Typecheck, then verify the feature in the running app (browser or curl) or with the retrieval eval.
 3. Opus reviews the diff against the acceptance criteria.
 4. Update PROJECT_CONTEXT.md status, TECHNICAL_DEBT.md (resolved items), progress.md, and commit only if you ask.
+
+### R2 status (2026-11-12)
+- **Slice 1 done (API and queue):** R2.1 upload checks (PDF signature, %%EOF, 50 MB limit, SHA-256 duplicate → 409), originals stored under `prototype/storage/originals/` on D:, job queued. R2.2 worker `npm run worker:ingest` claims jobs with SKIP LOCKED. Verified with curl: non-PDF 400, truncated 400, duplicate 409, new PDF 201, worker marks the job failed with the reason "parsing not built yet".
+- **Not verified:** clicking through the admin form in the browser pane (pane would not render). The form now posts to the real endpoint; typecheck passes.
+- **Still simulated:** the "Pipeline Visualizer" steps on the admin form and the chunk/node counts; both are removed in slice 2.
+- **Next (slice 2):** R2.3 parse with quality scoring and OCR fallback, R2.4 clause tree and chunker, R2.6 graph links.
